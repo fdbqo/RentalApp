@@ -20,20 +20,16 @@ __decorate([
 ], Property.prototype, "name", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", Number)
-], Property.prototype, "price", void 0);
+    __metadata("design:type", String)
+], Property.prototype, "description", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
+    (0, mongoose_1.Prop)(),
     __metadata("design:type", String)
 ], Property.prototype, "image", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
 ], Property.prototype, "availability", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", String)
-], Property.prototype, "description", void 0);
 __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
@@ -50,6 +46,10 @@ __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", Number)
 ], Property.prototype, "distanceFromUniversity", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: true }),
+    __metadata("design:type", Number)
+], Property.prototype, "price", void 0);
 exports.Property = Property = __decorate([
     (0, mongoose_1.Schema)({ collection: 'properties', versionKey: false })
 ], Property);

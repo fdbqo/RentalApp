@@ -1,43 +1,22 @@
-import {create} from 'zustand';
-
-interface Property {
-  name: string;
-  description: string;
-  image: string;
-  availability: string;
-  propertyType: 'room' | 'whole house';
-  rooms: number;
-  bathrooms: number;
-  distanceFromUniversity: number;
-  price: number;
-}
-
-interface PropertyState {
-  properties: Property[];
-  name: string;
-  description: string;
-  image: string | null;
-  availability: string;
-  propertyType: 'room' | 'whole house';
-  rooms: number | null;
-  bathrooms: number | null;
-  distanceFromUniversity: number | null;
-  price: string;
-  setName: (name: string) => void;
-  setDescription: (description: string) => void;
-  setImage: (image: string | null) => void;
-  setAvailability: (availability: string) => void;
-  setPropertyType: (propertyType: 'room' | 'whole house') => void;
-  setRooms: (rooms: number | null) => void;
-  setBathrooms: (bathrooms: number | null) => void;
-  setDistanceFromUniversity: (distance: number | null) => void;
-  setPrice: (price: string) => void;
-  fetchProperties: () => Promise<void>;
-  listProperty: () => Promise<void>;
-}
+import { create } from 'zustand';
+import { Property } from './interfaces/Property';
+import { PropertyState } from './interfaces/PropertyState';
 
 export const usePropertyStore = create<PropertyState>((set, get) => ({
-  properties: [],
+  properties: [
+    {
+      id: '1',
+      name: 'Dublin Apt',
+      description: 'A cozy apartment in Dublin.',
+      image: 'https://example.com/image.jpg',
+      availability: 'Available now',
+      propertyType: 'room',
+      rooms: 2,
+      bathrooms: 1,
+      distanceFromUniversity: 3,
+      price: 1200,
+    },
+  ],
 
   name: '',
   description: '',
@@ -61,9 +40,12 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
 
   fetchProperties: async () => {
     try {
-      const response = await fetch('http://<your-backend-ip>:3000/properties');
+      const response = await fetch('http://localhost:3000/properties');
       const data = await response.json();
-      set({ properties: data });
+
+      set((state) => ({
+        properties: [...data],
+      }));
     } catch (error) {
       console.error('Error fetching properties:', (error as Error).message);
     }
@@ -83,6 +65,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     } = get();
 
     const propertyData = {
+      id: Math.random().toString(36).substr(2, 9),
       name,
       description,
       image: image || '',
@@ -95,7 +78,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     };
 
     try {
-      const response = await fetch('http://<your-backend-ip>:3000/properties', {
+      const response = await fetch('http://localhost:3000/properties', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

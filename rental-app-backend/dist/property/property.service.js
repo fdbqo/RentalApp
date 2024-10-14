@@ -22,33 +22,13 @@ let PropertyService = class PropertyService {
         this.propertyModel = propertyModel;
     }
     async create(createPropertyDto) {
-        const newProperty = new this.propertyModel(createPropertyDto);
-        return newProperty.save();
+        const createdProperty = new this.propertyModel(createPropertyDto);
+        return createdProperty.save();
     }
     async findAll() {
         return this.propertyModel.find().exec();
     }
-    async findOne(id) {
-        const property = await this.propertyModel.findById(id).exec();
-        if (!property) {
-            throw new common_1.NotFoundException(`Property with ID ${id} not found`);
-        }
-        return property;
-    }
-    async update(id, updatePropertyDto) {
-        const updatedProperty = await this.propertyModel.findByIdAndUpdate(id, updatePropertyDto, { new: true }).exec();
-        if (!updatedProperty) {
-            throw new common_1.NotFoundException(`Property with ID ${id} not found`);
-        }
-        return updatedProperty;
-    }
-    async delete(id) {
-        const deletedProperty = await this.propertyModel.findByIdAndDelete(id).exec();
-        if (!deletedProperty) {
-            throw new common_1.NotFoundException(`Property with ID ${id} not found`);
-        }
-        return deletedProperty;
-    }
+    ;
 };
 exports.PropertyService = PropertyService;
 exports.PropertyService = PropertyService = __decorate([

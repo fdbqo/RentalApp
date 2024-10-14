@@ -1,28 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, useWindowDimensions, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-
-const properties = [
-  {
-    id: '1',
-    name: 'Dublin Apt',
-    price: 1200,
-    availability: 'Available now',
-  },
-  {
-    id: '2',
-    name: 'Cork House',
-    price: 1500,
-    availability: 'Available from July',
-  },
-  {
-    id: '3',
-    name: 'Galway Studio',
-    price: 900,
-    availability: 'Available now',
-  },
-];
+import { usePropertyStore } from '../store/property.store';
 
 const PropertyItem = ({ item }: { item: { id: string; name: string; price: number; availability: string } }) => {
   return (
@@ -38,6 +18,16 @@ export default function LandlordDashboardScreen() {
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === 'web';
   const router = useRouter();
+
+  const { properties, fetchProperties } = usePropertyStore();
+  const hasFetched = useRef(false);
+
+  useEffect(() => {
+    if (!hasFetched.current) {
+      fetchProperties();
+      hasFetched.current = true;
+    }
+  }, [fetchProperties]);
 
   return (
     <View style={styles.container}>
@@ -58,7 +48,7 @@ export default function LandlordDashboardScreen() {
       <FlatList
         data={properties}
         renderItem={({ item }) => <PropertyItem item={item} />}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id} 
         numColumns={isWeb ? 3 : 1}
         key={isWeb ? 'web' : 'mobile'}
         columnWrapperStyle={isWeb ? styles.row : undefined}
