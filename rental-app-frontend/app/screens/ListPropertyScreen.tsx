@@ -1,22 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Platform, Image, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { usePropertyStore } from '../store/property.store';
 
 export default function ListPropertyScreen() {
   const router = useRouter();
-
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [image, setImage] = useState<string | null>(null);
-  const [availability, setAvailability] = useState('');
-  const [propertyType, setPropertyType] = useState<'room' | 'whole house'>('room');
-  const [rooms, setRooms] = useState<number | null>(null);
-  const [bathrooms, setBathrooms] = useState<number | null>(null);
-  const [distanceFromUniversity, setDistanceFromUniversity] = useState<number | null>(null);
-  const [price, setPrice] = useState('');
-  const [isFormValid, setIsFormValid] = useState(false);
+    const {
+    name,
+    description,
+    image,
+    availability,
+    propertyType,
+    rooms,
+    bathrooms,
+    distanceFromUniversity,
+    price,
+    setName,
+    setDescription,
+    setImage,
+    setAvailability,
+    setPropertyType,
+    setRooms,
+    setBathrooms,
+    setDistanceFromUniversity,
+    setPrice,
+    listProperty
+  } = usePropertyStore();
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -36,26 +46,13 @@ export default function ListPropertyScreen() {
     }
   };
 
-  const handleSubmit = () => {
-    const propertyData = {
-      name,
-      description,
-      image,
-      availability,
-      propertyType,
-      rooms,
-      bathrooms,
-      distanceFromUniversity,
-      price: Number(price),
-    };
-
-    console.log('Property Data:', propertyData);
-
+  const handleSubmit = async () => {
+    await listProperty();
     router.push('/(tabs)/landlord-dashboard');
   };
 
   const validateForm = () => {
-    const isValid =
+    return (
       name.trim() !== '' &&
       description.trim() !== '' &&
       image !== null &&
@@ -64,14 +61,11 @@ export default function ListPropertyScreen() {
       rooms !== null &&
       bathrooms !== null &&
       distanceFromUniversity !== null &&
-      price.trim() !== '';
-
-    setIsFormValid(isValid);
+      price.trim() !== ''
+    );
   };
 
-  useEffect(() => {
-    validateForm();
-  }, [name, description, image, availability, propertyType, rooms, bathrooms, distanceFromUniversity, price]);
+  const isFormValid = validateForm();
 
   return (
     <View style={styles.container}>

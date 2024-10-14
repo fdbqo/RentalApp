@@ -9,16 +9,13 @@ export class Property {
   name: string;
 
   @Prop({ required: true })
-  price: number;
+  description: string;
 
-  @Prop({ required: true })
+  @Prop()
   image: string;
 
   @Prop({ required: true })
   availability: string;
-
-  @Prop({ required: true })
-  description: string;
 
   @Prop({ required: true })
   propertyType: string;
@@ -31,6 +28,9 @@ export class Property {
 
   @Prop({ required: true })
   distanceFromUniversity: number;
+
+  @Prop({ required: true })
+  price: number;
 }
 
 export const PropertySchema = SchemaFactory.createForClass(Property);
