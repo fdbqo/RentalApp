@@ -7,16 +7,18 @@ import * as ImagePicker from 'expo-image-picker';
 export default function ListPropertyScreen() {
   const router = useRouter();
 
-  const [address, setAddress] = useState('');
+  const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [images, setImages] = useState<string[]>([]);
+  const [image, setImage] = useState<string | null>(null);
+  const [availability, setAvailability] = useState('');
   const [propertyType, setPropertyType] = useState<'room' | 'whole house'>('room');
-  const [numberOfRooms, setNumberOfRooms] = useState<number | null>(null);
+  const [rooms, setRooms] = useState<number | null>(null);
+  const [bathrooms, setBathrooms] = useState<number | null>(null);
+  const [distanceFromUniversity, setDistanceFromUniversity] = useState<number | null>(null);
   const [price, setPrice] = useState('');
   const [isFormValid, setIsFormValid] = useState(false);
 
-  // Function to pick images
-  const pickImages = async () => {
+  const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       alert('Sorry, we need camera roll permissions to make this work!');
@@ -25,24 +27,26 @@ export default function ListPropertyScreen() {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
+      allowsMultipleSelection: false,
       quality: 1,
     });
 
     if (!result.canceled) {
-      const selectedImages = result.assets.map((asset) => asset.uri);
-      setImages([...images, ...selectedImages]);
+      setImage(result.assets[0].uri);
     }
   };
 
   const handleSubmit = () => {
     const propertyData = {
-      address,
+      name,
       description,
-      images,
+      image,
+      availability,
       propertyType,
-      numberOfRooms: propertyType === 'whole house' ? numberOfRooms : 1,
-      price,
+      rooms,
+      bathrooms,
+      distanceFromUniversity,
+      price: Number(price),
     };
 
     console.log('Property Data:', propertyData);
@@ -50,35 +54,39 @@ export default function ListPropertyScreen() {
     router.push('/(tabs)/landlord-dashboard');
   };
 
-  // Validation function to check if all fields are filled in
   const validateForm = () => {
     const isValid =
-      address.trim() !== '' &&
+      name.trim() !== '' &&
       description.trim() !== '' &&
-      images.length > 0 &&
-      (propertyType === 'room' || (propertyType === 'whole house' && numberOfRooms !== null)) &&
+      image !== null &&
+      availability.trim() !== '' &&
+      (propertyType === 'room' || propertyType === 'whole house') &&
+      rooms !== null &&
+      bathrooms !== null &&
+      distanceFromUniversity !== null &&
       price.trim() !== '';
 
     setIsFormValid(isValid);
   };
 
-  // Trigger validation whenever form inputs change
   useEffect(() => {
     validateForm();
-  }, [address, description, images, propertyType, numberOfRooms, price]);
+  }, [name, description, image, availability, propertyType, rooms, bathrooms, distanceFromUniversity, price]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView>
         <Text style={styles.title}>List a Property</Text>
 
+        {/* Property Name */}
         <TextInput
           style={styles.input}
-          placeholder="Property Address"
-          value={address}
-          onChangeText={setAddress}
+          placeholder="Property Name"
+          value={name}
+          onChangeText={setName}
         />
 
+        {/* Property Description */}
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Description"
@@ -88,19 +96,21 @@ export default function ListPropertyScreen() {
         />
 
         {/* Image Picker */}
-        <Text style={styles.label}>Images</Text>
-        <TouchableOpacity style={styles.imageButton} onPress={pickImages}>
-          <Text style={styles.imageButtonText}>Pick Images</Text>
+        <Text style={styles.label}>Property Image</Text>
+        <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
+          <Text style={styles.imageButtonText}>Pick Image</Text>
         </TouchableOpacity>
 
-        {/* Display selected images */}
-        {images.length > 0 && (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {images.map((imageUri, index) => (
-              <Image key={index} source={{ uri: imageUri }} style={styles.imagePreview} />
-            ))}
-          </ScrollView>
-        )}
+        {/* Display selected image */}
+        {image && <Image source={{ uri: image }} style={styles.imagePreview} />}
+
+        {/* Property Availability */}
+        <TextInput
+          style={styles.input}
+          placeholder="Availability (e.g. Immediate, Next Month)"
+          value={availability}
+          onChangeText={setAvailability}
+        />
 
         {/* Property Type */}
         <Text style={styles.label}>Property Type</Text>
@@ -120,16 +130,33 @@ export default function ListPropertyScreen() {
         </View>
 
         {/* Number of Rooms */}
-        {propertyType === 'whole house' && (
-          <TextInput
-            style={styles.input}
-            placeholder="Number of Rooms"
-            value={numberOfRooms ? numberOfRooms.toString() : ''}
-            onChangeText={(text) => setNumberOfRooms(Number(text))}
-            keyboardType={Platform.OS === 'android' ? 'numeric' : 'number-pad'}
-          />
-        )}
+        <TextInput
+          style={styles.input}
+          placeholder="Number of Rooms"
+          value={rooms ? rooms.toString() : ''}
+          onChangeText={(text) => setRooms(Number(text))}
+          keyboardType={Platform.OS === 'android' ? 'numeric' : 'number-pad'}
+        />
 
+        {/* Number of Bathrooms */}
+        <TextInput
+          style={styles.input}
+          placeholder="Number of Bathrooms"
+          value={bathrooms ? bathrooms.toString() : ''}
+          onChangeText={(text) => setBathrooms(Number(text))}
+          keyboardType={Platform.OS === 'android' ? 'numeric' : 'number-pad'}
+        />
+
+        {/* Distance from University */}
+        <TextInput
+          style={styles.input}
+          placeholder="Distance from University (in km)"
+          value={distanceFromUniversity ? distanceFromUniversity.toString() : ''}
+          onChangeText={(text) => setDistanceFromUniversity(Number(text))}
+          keyboardType={Platform.OS === 'android' ? 'numeric' : 'number-pad'}
+        />
+
+        {/* Price */}
         <TextInput
           style={styles.input}
           placeholder="Price"
@@ -147,7 +174,7 @@ export default function ListPropertyScreen() {
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -197,7 +224,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 8,
-    marginRight: 10,
+    marginBottom: 16,
   },
   buttonGroup: {
     flexDirection: 'row',
