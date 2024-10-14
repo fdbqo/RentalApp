@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common'
 import { PropertyService } from './property.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { Property } from './schemas/property.schema';
 
 @Controller('properties')
 export class PropertyController {
@@ -31,4 +32,9 @@ export class PropertyController {
   remove(@Param('id') id: string) {
     return this.propertyService.delete(id);
   }
+
+  @Get()
+  async getAllProperties(): Promise<Property[]> {
+  return this.propertyService.findAll();
+}
 }
