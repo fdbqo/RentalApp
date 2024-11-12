@@ -120,7 +120,7 @@ export default function ListingsScreen() {
         <FlatList
           data={filteredData}
           renderItem={({ item }) => (
-            <YStack marginBottom="$4">
+            <YStack marginBottom="$4" padding="$2">
               <PropertyCard
                 item={item}
                 isWeb={isWeb}
