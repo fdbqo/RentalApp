@@ -6,7 +6,7 @@ import ListingsScreen from "@/app/screens/ListingsScreen";
 const userType: "landlord" | "tenant" = "landlord";
 
 export default function Home() {
-  if (userType === "tenant") {
+  if (userType === "landlord") {
     return <LandlordDashboardScreen />;
   } else {
     return <ListingsScreen />;
