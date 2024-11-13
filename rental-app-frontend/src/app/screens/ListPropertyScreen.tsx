@@ -11,39 +11,17 @@ import {
   Theme,
   Select,
   Separator,
+  Adapt,
+  Sheet,
 } from "tamagui";
+import { ChevronDown, ChevronUp, Check, Plus, X as CloseIcon } from "@tamagui/lucide-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import NavigationHeader from "@/components/NavigationHeader";
+import { usePropertyStore } from "@/store/property.store";
+import { Property } from "@/store/interfaces/Property";
 
-interface PropertyImage {
-  id: string;
-  uri: string;
-}
-
-interface PropertyAddress {
-  houseNumber: string;
-  line1: string;
-  line2: string;
-  city: string;
-  county: string;
-  eircode: string;
-}
-
-interface PropertyFormData {
-  name: string;
-  price: number;
-  availability: string;
-  description: string;
-  shortDescription: string;
-  propertyType: string;
-  images: PropertyImage[];
-  address: PropertyAddress;
-  rooms: number | null;
-  bathrooms: number | null;
-  distanceFromUniversity: number | null;
-}
 
 const theme = {
   primary: "#2563eb",
@@ -77,25 +55,24 @@ const rentalAppTheme = {
 
 export default function ListPropertyScreen() {
   const router = useRouter();
-  const [formData, setFormData] = useState<PropertyFormData>({
-    name: "",
+  const [formData, setFormData] = useState<Property>({
     price: 0,
-    availability: "",
+    availability: false,
     description: "",
     shortDescription: "",
     propertyType: "",
+    roomsAvailable: 0,
+    bathrooms: 0,
+    distanceFromUniversity: 0,
     images: [],
-    address: {
-      houseNumber: "",
-      line1: "",
-      line2: "",
-      city: "",
+    houseAddress: {
+      addressLine1: "",
+      addressLine2: "",
+      townCity: "",
       county: "",
       eircode: "",
     },
-    rooms: null,
-    bathrooms: null,
-    distanceFromUniversity: null,
+    lenderId: "",
   });
 
   const updateFormData = (field, value) => {
@@ -108,8 +85,8 @@ export default function ListPropertyScreen() {
   const updateAddress = (field, value) => {
     setFormData((prev) => ({
       ...prev,
-      address: {
-        ...prev.address,
+      houseAddress: {
+        ...prev.houseAddress,
         [field]: value,
       },
     }));
@@ -146,6 +123,8 @@ export default function ListPropertyScreen() {
       <Separator />
     </YStack>
   );
+  const propertyTypes = [{type: "House"}, {type: "Apartment"}, {type: "Shared living"}];
+  const availabilityOptions = [{type: "Available"}, {type: "Not available"}];
 
   const PageInput: React.FC<PageInputProps> = ({
     label,
@@ -172,7 +151,6 @@ export default function ListPropertyScreen() {
       />
     </YStack>
   );
-
   return (
     <Theme name="light">
       <NavigationHeader title="List Property" />
@@ -181,13 +159,6 @@ export default function ListPropertyScreen() {
           <YStack padding="$5" space="$2">
             {/* Main Content */}
             <YStack>
-              <PageInput
-                label="Property Name"
-                value={formData.name}
-                onChangeText={(text) => updateFormData("name", text)}
-                placeholder="Enter property name"
-              />
-
               <XStack space="$4" marginBottom="$5">
                 <YStack flex={1}>
                   <Text
@@ -240,7 +211,7 @@ export default function ListPropertyScreen() {
               </XStack>
 
               <XStack space="$4" marginBottom="$5">
-                <YStack flex={1}>
+              <YStack flex={1}>
                   <Text
                     fontSize="$4"
                     fontWeight="500"
@@ -251,9 +222,7 @@ export default function ListPropertyScreen() {
                   </Text>
                   <Select
                     value={formData.propertyType}
-                    onValueChange={(value) =>
-                      updateFormData("propertyType", value)
-                    }
+                    onValueChange={(value) => updateFormData("propertyType", value.toLowerCase())}
                     disablePreventBodyScroll
                   >
                     <Select.Trigger
@@ -262,22 +231,49 @@ export default function ListPropertyScreen() {
                       borderWidth={1}
                       borderRadius="$4"
                       padding="$3"
+                      iconAfter={ChevronDown}
                     >
                       <Select.Value placeholder="Select type" />
                     </Select.Trigger>
 
+                    <Adapt when="sm" platform="touch">
+                      <Sheet
+                        modal
+                        dismissOnSnapToBottom
+                        animation="medium"
+                        snapPoints={[45]}
+                        position={0}
+                        zIndex={200000}
+                      >
+                        <Sheet.Overlay 
+                          animation="lazy" 
+                          enterStyle={{ opacity: 0 }} 
+                          exitStyle={{ opacity: 0 }}
+                        />
+                        <Sheet.Frame>
+                          <Sheet.ScrollView>
+                            <Adapt.Contents />
+                          </Sheet.ScrollView>
+                        </Sheet.Frame>
+                      </Sheet>
+                    </Adapt>
+
                     <Select.Content>
                       <Select.Viewport>
                         <Select.Group>
-                          <Select.Item index={0} value="room">
-                            <Select.ItemText>Room</Select.ItemText>
-                          </Select.Item>
-                          <Select.Item index={1} value="house">
-                            <Select.ItemText>House</Select.ItemText>
-                          </Select.Item>
-                          <Select.Item index={2} value="apartment">
-                            <Select.ItemText>Apartment</Select.ItemText>
-                          </Select.Item>
+                          <Select.Label>Property Type</Select.Label>
+                          {propertyTypes.map((item, i) => (
+                            <Select.Item
+                              index={i}
+                              key={item.type}
+                              value={item.type.toLowerCase()}
+                            >
+                              <Select.ItemText>{item.type}</Select.ItemText>
+                              <Select.ItemIndicator marginLeft="auto">
+                                <Check size={16} />
+                              </Select.ItemIndicator>
+                            </Select.Item>
+                          ))}
                         </Select.Group>
                       </Select.Viewport>
                     </Select.Content>
@@ -294,10 +290,8 @@ export default function ListPropertyScreen() {
                     Availability
                   </Text>
                   <Select
-                    value={formData.availability}
-                    onValueChange={(value) =>
-                      updateFormData("availability", value)
-                    }
+                    value={formData.availability ? "available" : "not available"}
+                    onValueChange={(value) =>updateFormData("availability", value === "available")}
                     disablePreventBodyScroll
                   >
                     <Select.Trigger
@@ -306,22 +300,48 @@ export default function ListPropertyScreen() {
                       borderWidth={1}
                       borderRadius="$4"
                       padding="$3"
+                      iconAfter={ChevronDown}
                     >
-                      <Select.Value placeholder="Select availability" />
+                      <Select.Value placeholder="Select Availability" />
                     </Select.Trigger>
+                    <Adapt when="sm" platform="touch">
+                      <Sheet
+                        modal
+                        dismissOnSnapToBottom
+                        animation="medium"
+                        snapPoints={[45]}
+                        position={0}
+                        zIndex={200000}
+                      >
+                        <Sheet.Overlay 
+                          animation="lazy" 
+                          enterStyle={{ opacity: 0 }} 
+                          exitStyle={{ opacity: 0 }}
+                        />
+                        <Sheet.Frame>
+                          <Sheet.ScrollView>
+                            <Adapt.Contents />
+                          </Sheet.ScrollView>
+                        </Sheet.Frame>
+                      </Sheet>
+                    </Adapt>
 
                     <Select.Content>
                       <Select.Viewport>
                         <Select.Group>
-                          <Select.Item index={0} value="immediate">
-                            <Select.ItemText>Available Now</Select.ItemText>
-                          </Select.Item>
-                          <Select.Item index={1} value="1month">
-                            <Select.ItemText>In 1 Month</Select.ItemText>
-                          </Select.Item>
-                          <Select.Item index={2} value="2month">
-                            <Select.ItemText>In 2 Months</Select.ItemText>
-                          </Select.Item>
+                          <Select.Label>Availability</Select.Label>
+                          {availabilityOptions.map((item, i) => (
+                            <Select.Item
+                              index={i}
+                              key={item.type}
+                              value={item.type.toLowerCase()}
+                            >
+                              <Select.ItemText>{item.type}</Select.ItemText>
+                              <Select.ItemIndicator marginLeft="auto">
+                                <Check size={16} />
+                              </Select.ItemIndicator>
+                            </Select.Item>
+                          ))}
                         </Select.Group>
                       </Select.Viewport>
                     </Select.Content>
@@ -404,26 +424,17 @@ export default function ListPropertyScreen() {
 
             <SectionHeader title="Location" />
             <YStack space="$4">
-              <XStack space="$4">
-                <PageInput
-                  label="House Number"
-                  value={formData.address.houseNumber}
-                  onChangeText={(text) => updateAddress("houseNumber", text)}
-                  placeholder="No."
-                />
-              </XStack>
-
               <PageInput
                 label="Address Line 1"
-                value={formData.address.line1}
-                onChangeText={(text) => updateAddress("line1", text)}
+                value={formData.houseAddress.addressLine1}
+                onChangeText={(text) => updateAddress("addressLine1", text)}
                 placeholder="Street address"
               />
 
               <PageInput
                 label="Address Line 2"
-                value={formData.address.line2}
-                onChangeText={(text) => updateAddress("line2", text)}
+                value={formData.houseAddress.addressLine2}
+                onChangeText={(text) => updateAddress("addressLine2", text)}
                 placeholder="Apartment, suite, etc. (optional)"
               />
 
@@ -431,15 +442,15 @@ export default function ListPropertyScreen() {
                 <YStack flex={1}>
                   <PageInput
                     label="City"
-                    value={formData.address.city}
-                    onChangeText={(text) => updateAddress("city", text)}
+                    value={formData.houseAddress.townCity}
+                    onChangeText={(text) => updateAddress("townCity", text)}
                     placeholder="City"
                   />
                 </YStack>
                 <YStack flex={1}>
                   <PageInput
                     label="County"
-                    value={formData.address.county}
+                    value={formData.houseAddress.county}
                     onChangeText={(text) => updateAddress("county", text)}
                     placeholder="County"
                   />
@@ -448,7 +459,7 @@ export default function ListPropertyScreen() {
 
               <PageInput
                 label="Eircode"
-                value={formData.address.eircode}
+                value={formData.houseAddress.eircode}
                 onChangeText={(text) => updateAddress("eircode", text)}
                 placeholder="Enter eircode"
               />
@@ -461,9 +472,9 @@ export default function ListPropertyScreen() {
                   <YStack flex={1}>
                     <PageInput
                       label="Bedrooms"
-                      value={formData.rooms}
+                      value={formData.roomsAvailable}
                       onChangeText={(text) =>
-                        updateFormData("rooms", Number(text))
+                        updateFormData("roomsAvailable", Number(text))
                       }
                       placeholder="0"
                       keyboardType="numeric"
@@ -489,8 +500,22 @@ export default function ListPropertyScreen() {
               pressStyle={{ backgroundColor: rentalAppTheme.primaryLight }}
               borderRadius="$4"
               marginTop="$4"
-              onPress={() => {
+              onPress={async () => {
                 console.log(formData);
+                const propertyStore = usePropertyStore.getState();
+      
+                propertyStore.setPrice(formData.price.toString());
+                propertyStore.setAvailability(formData.availability);
+                propertyStore.setDescription(formData.description);
+                propertyStore.setShortDescription(formData.shortDescription);
+                propertyStore.setPropertyType(formData.propertyType);
+                propertyStore.setRoomsAvailable(formData.roomsAvailable);
+                propertyStore.setBathrooms(formData.bathrooms);
+                propertyStore.setDistanceFromUniversity(formData.distanceFromUniversity);
+                propertyStore.setImages(formData.images.map(img => img.uri));
+                propertyStore.setHouseAddress(formData.houseAddress);
+                await propertyStore.createProperty();
+                
                 router.push("/screens/LandlordDashboardScreen");
               }}
             >

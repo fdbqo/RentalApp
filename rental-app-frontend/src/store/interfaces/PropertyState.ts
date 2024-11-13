@@ -27,7 +27,7 @@ export interface PropertyState {
   };
 
   // Actions
-  fetchProperties: () => Promise<void>;
+  fetchLandlordProperties: () => Promise<void>;
   createProperty: () => Promise<void>;
   resetForm: () => void;
   

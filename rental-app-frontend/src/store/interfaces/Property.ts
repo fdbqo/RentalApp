@@ -1,5 +1,5 @@
 export interface Property {
-  _id: string;
+  _id?: string;
   price: number;
   availability: boolean;
   description: string;
@@ -8,7 +8,10 @@ export interface Property {
   roomsAvailable: number;
   bathrooms: number;
   distanceFromUniversity: number;
-  images: string[];
+  images: {
+    id: string;
+    uri: string;
+  }[];
   houseAddress: {
     addressLine1: string;
     addressLine2: string;
@@ -17,4 +20,6 @@ export interface Property {
     eircode: string;
   };
   lenderId: string;
+  lastUpdated?: string;
+
 }

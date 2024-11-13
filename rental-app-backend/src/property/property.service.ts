@@ -23,7 +23,11 @@ export class PropertyService {
   }
 
   async create(createPropertyDto: CreatePropertyDto): Promise<Property> {
-    const createdProperty = new this.propertyModel(createPropertyDto);
+    const propertyData = {
+      ...createPropertyDto,
+      lenderId: new Types.ObjectId(createPropertyDto.lenderId)
+    };
+    const createdProperty = new this.propertyModel(propertyData);
     return createdProperty.save();
   }
 }

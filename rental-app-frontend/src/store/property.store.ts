@@ -44,7 +44,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
   },
 
   // Actions
-  fetchProperties: async () => {
+  fetchLandlordProperties: async () => {
     set({ isLoading: true, error: null });
     
     try {
@@ -68,14 +68,16 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       const { formData } = get();
       const propertyData = {
         ...formData,
-        price: parseFloat(formData.price),
-        lenderId: HARDCODED_LENDER_ID
+        price: parseFloat(formData.price.toString()),
+        lenderId: HARDCODED_LENDER_ID,
+        lastUpdated: new Date().toISOString()
       };
       
       const response = await axios.post(`${API_URL}/listings`, propertyData);
       
-      await get().fetchProperties();
+      await get().fetchLandlordProperties();
       get().resetForm();
+      set({ isLoading: false });
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to create property',
