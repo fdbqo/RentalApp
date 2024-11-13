@@ -44,7 +44,7 @@ exports.CreatePropertyDto = CreatePropertyDto;
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
+    __metadata("design:type", Number)
 ], CreatePropertyDto.prototype, "price", void 0);
 __decorate([
     (0, class_validator_1.IsBoolean)(),

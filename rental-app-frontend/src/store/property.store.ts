@@ -3,7 +3,7 @@ import { PropertyState } from './interfaces/PropertyState';
 import axios from 'axios';
 
 const API_URL = "http://localhost:3000";
-const HARDCODED_LENDER_ID = "672fb0f0fc13ae3f1bc902eb";
+const HARDCODED_LENDER_ID = "6734ce60fc13ae56ffef7d50";
 
 axios.interceptors.request.use(request => {
   return request;

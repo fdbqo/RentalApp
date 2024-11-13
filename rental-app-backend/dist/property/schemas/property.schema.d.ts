@@ -1,7 +1,7 @@
 import { Document, Schema as MongooseSchema } from 'mongoose';
 export type PropertyDocument = Property & Document;
 export declare class Property {
-    price: string;
+    price: number;
     availability: boolean;
     description: string;
     shortDescription: string;

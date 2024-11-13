@@ -7,7 +7,7 @@ declare class HouseAddressDto {
     eircode: string;
 }
 export declare class CreatePropertyDto {
-    price: string;
+    price: number;
     availability: boolean;
     description: string;
     shortDescription: string;

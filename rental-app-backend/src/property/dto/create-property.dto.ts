@@ -26,7 +26,7 @@ class HouseAddressDto {
 export class CreatePropertyDto {
   @IsNumber()
   @IsNotEmpty()
-  price: string;
+  price: number;
 
   @IsBoolean()
   availability: boolean;

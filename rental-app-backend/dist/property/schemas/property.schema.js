@@ -17,7 +17,7 @@ let Property = class Property {
 exports.Property = Property;
 __decorate([
     (0, mongoose_1.Prop)(),
-    __metadata("design:type", String)
+    __metadata("design:type", Number)
 ], Property.prototype, "price", void 0);
 __decorate([
     (0, mongoose_1.Prop)(),

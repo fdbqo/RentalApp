@@ -1,6 +1,6 @@
 export interface Property {
   _id: string;
-  price: string;
+  price: number;
   availability: boolean;
   description: string;
   shortDescription: string;

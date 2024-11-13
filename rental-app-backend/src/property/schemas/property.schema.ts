@@ -6,7 +6,7 @@ export type PropertyDocument = Property & Document;
 @Schema({ collection: 'listings' })
 export class Property {
   @Prop()
-  price: string;
+  price: number;
 
   @Prop()
   availability: boolean;
