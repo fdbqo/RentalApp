@@ -6,7 +6,6 @@ declare class HouseAddressDto {
     eircode: string;
 }
 declare class ImageDto {
-    id: string;
     uri: string;
 }
 export declare class CreatePropertyDto {

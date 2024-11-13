@@ -25,9 +25,6 @@ class HouseAddressDto {
 
 class ImageDto {
   @IsString()
-  id: string;
-
-  @IsString()
   uri: string;
 }
 

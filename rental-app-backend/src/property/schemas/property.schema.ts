@@ -29,8 +29,8 @@ export class Property {
   @Prop()
   distanceFromUniversity: number;
 
-  @Prop({ type: [{ id: String, uri: String }] })
-  images: { id: string; uri: string }[];
+  @Prop({ type: [{ _id: MongooseSchema.Types.ObjectId, uri: String }] })
+  images: { _id: MongooseSchema.Types.ObjectId; uri: string }[];
 
   @Prop({ type: Object })
   houseAddress: {

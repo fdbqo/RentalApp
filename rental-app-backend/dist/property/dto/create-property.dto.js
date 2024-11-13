@@ -43,10 +43,6 @@ class ImageDto {
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], ImageDto.prototype, "id", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
 ], ImageDto.prototype, "uri", void 0);
 class CreatePropertyDto {
 }

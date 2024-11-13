@@ -10,7 +10,7 @@ export declare class Property {
     bathrooms: number;
     distanceFromUniversity: number;
     images: {
-        id: string;
+        _id: MongooseSchema.Types.ObjectId;
         uri: string;
     }[];
     houseAddress: {
