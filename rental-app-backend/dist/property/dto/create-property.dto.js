@@ -38,6 +38,12 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], HouseAddressDto.prototype, "eircode", void 0);
+class ImageDto {
+}
+__decorate([
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], ImageDto.prototype, "uri", void 0);
 class CreatePropertyDto {
 }
 exports.CreatePropertyDto = CreatePropertyDto;
@@ -79,6 +85,8 @@ __decorate([
 ], CreatePropertyDto.prototype, "distanceFromUniversity", void 0);
 __decorate([
     (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => ImageDto),
     __metadata("design:type", Array)
 ], CreatePropertyDto.prototype, "images", void 0);
 __decorate([
@@ -87,4 +95,9 @@ __decorate([
     (0, class_transformer_1.Type)(() => HouseAddressDto),
     __metadata("design:type", HouseAddressDto)
 ], CreatePropertyDto.prototype, "houseAddress", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreatePropertyDto.prototype, "lenderId", void 0);
 //# sourceMappingURL=create-property.dto.js.map

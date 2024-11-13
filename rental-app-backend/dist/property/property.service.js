@@ -32,8 +32,22 @@ let PropertyService = class PropertyService {
         }
     }
     async create(createPropertyDto) {
-        const createdProperty = new this.propertyModel(createPropertyDto);
-        return createdProperty.save();
+        try {
+            const propertyData = {
+                ...createPropertyDto,
+                lenderId: new mongoose_2.Types.ObjectId(createPropertyDto.lenderId),
+                images: createPropertyDto.images.map(img => ({
+                    _id: new mongoose_2.Types.ObjectId(),
+                    uri: img.uri
+                }))
+            };
+            const createdProperty = new this.propertyModel(propertyData);
+            return createdProperty.save();
+        }
+        catch (error) {
+            console.error('Error creating property:', error);
+            throw error;
+        }
     }
 };
 exports.PropertyService = PropertyService;

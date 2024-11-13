@@ -41,10 +41,11 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       county: '',
       eircode: '',
     },
+    lenderId: HARDCODED_LENDER_ID,
   },
 
   // Actions
-  fetchProperties: async () => {
+  fetchLandlordProperties: async () => {
     set({ isLoading: true, error: null });
     
     try {
@@ -68,19 +69,32 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       const { formData } = get();
       const propertyData = {
         ...formData,
-        price: parseFloat(formData.price),
-        lenderId: HARDCODED_LENDER_ID
+        price: parseFloat(formData.price.toString()),
+        lenderId: HARDCODED_LENDER_ID,
+        lastUpdated: new Date().toISOString(),
+        images: formData.images.map(img => ({
+          id: img.id,
+          uri: img.uri
+        }))
       };
       
-      const response = await axios.post(`${API_URL}/listings`, propertyData);
+      console.log('About to send property data:', propertyData);
       
-      await get().fetchProperties();
+      const response = await axios.post(`${API_URL}/listings`, propertyData);
+      console.log('Response from server:', response.data);
+      
+      await get().fetchLandlordProperties();
       get().resetForm();
+      set({ isLoading: false });
+      
+      return response.data;
     } catch (error) {
+      console.error('Error details:', error.response?.data);
       set({ 
         error: error instanceof Error ? error.message : 'Failed to create property',
         isLoading: false 
       });
+      throw error;
     }
   },
 
@@ -103,6 +117,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
           county: '',
           eircode: '',
         },
+        lenderId: HARDCODED_LENDER_ID,
       }
     });
   },
@@ -149,5 +164,9 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       ...state.formData,
       houseAddress: { ...state.formData.houseAddress, ...address }
     }
+  })),
+
+  setLenderId: (lenderId) => set((state) => ({
+    formData: { ...state.formData, lenderId }
   })),
 }));

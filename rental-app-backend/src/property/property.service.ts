@@ -23,7 +23,21 @@ export class PropertyService {
   }
 
   async create(createPropertyDto: CreatePropertyDto): Promise<Property> {
-    const createdProperty = new this.propertyModel(createPropertyDto);
-    return createdProperty.save();
+    try {
+      const propertyData = {
+        ...createPropertyDto,
+        lenderId: new Types.ObjectId(createPropertyDto.lenderId),
+        images: createPropertyDto.images.map(img => ({
+          _id: new Types.ObjectId(),
+          uri: img.uri
+        }))
+      };
+      
+      const createdProperty = new this.propertyModel(propertyData);
+      return createdProperty.save();
+    } catch (error) {
+      console.error('Error creating property:', error);
+      throw error;
+    }
   }
 }

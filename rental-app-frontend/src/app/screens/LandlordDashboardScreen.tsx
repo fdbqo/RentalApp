@@ -11,6 +11,7 @@ import {
   Theme,
 } from "tamagui";
 import { usePropertyStore } from '../../store/property.store';
+import { Property } from '../../store/interfaces/Property';
 
 // Theme definition
 const rentalAppTheme = {
@@ -22,29 +23,6 @@ const rentalAppTheme = {
   textLight: "#666",
   border: "#e2e8f0",
 } as const;
-
-// Types
-interface Property {
-  _id: string;
-  price: number;
-  availability: boolean;
-  description: string;
-  shortDescription: string;
-  propertyType: string;
-  roomsAvailable: number;
-  bathrooms: number;
-  distanceFromUniversity: number;
-  images: string[];
-  houseAddress: {
-    addressLine1: string;
-    addressLine2: string;
-    townCity: string;
-    county: string;
-    eircode: string;
-  };
-  lenderId: string;
-  lastUpdated?: string;
-}
 
 interface StatCardProps {
   title: string;
@@ -216,10 +194,10 @@ const RevenueCard: React.FC<{ totalRevenue: number }> = ({ totalRevenue }) => (
 
 export default function LandlordDashboardScreen() {
   const router = useRouter();
-  const { properties, isLoading, error, fetchProperties } = usePropertyStore();
+  const { properties, isLoading, error, fetchLandlordProperties } = usePropertyStore();
 
   React.useEffect(() => {
-    fetchProperties();
+    fetchLandlordProperties();
   }, []);
 
   const totalProperties = properties.length;

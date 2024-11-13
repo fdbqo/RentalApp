@@ -48,7 +48,7 @@ __decorate([
     __metadata("design:type", Number)
 ], Property.prototype, "distanceFromUniversity", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ type: [{ _id: mongoose_2.Schema.Types.ObjectId, uri: String }] }),
     __metadata("design:type", Array)
 ], Property.prototype, "images", void 0);
 __decorate([
