@@ -9,11 +9,23 @@ import { UsersModule } from './users/users.module';
 @Module({
   imports: [
     PropertyModule,
-    MongooseModule.forRoot(process.env.MONGO_URI, {
-      tls: true,
-      tlsCAFile: process.env.TLS_CA_FILE
-    }),
+    MongooseModule.forRoot(process.env.MONGO_URI),
     UsersModule,
   ]
 })
 export class AppModule {}
+
+
+
+// AWS Connection function
+
+// @Module({
+//   imports: [
+//     PropertyModule,
+//     MongooseModule.forRoot(process.env.MONGO_URI, {
+//       tls: true,
+//       tlsCAFile: process.env.TLS_CA_FILE
+//     }),
+//     UsersModule,
+//   ]
+// })

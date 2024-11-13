@@ -1,12 +1,20 @@
 export interface Property {
-    id: string;
-    name: string;
-    description: string;
-    image: string;
-    availability: string;
-    propertyType: 'room' | 'whole house';
-    rooms: number;
-    bathrooms: number;
-    distanceFromUniversity: number;
-    price: number;
-  }
+  _id: string;
+  price: string;
+  availability: boolean;
+  description: string;
+  shortDescription: string;
+  propertyType: string;
+  roomsAvailable: number;
+  bathrooms: number;
+  distanceFromUniversity: number;
+  images: string[];
+  houseAddress: {
+    addressLine1: string;
+    addressLine2: string;
+    townCity: string;
+    county: string;
+    eircode: string;
+  };
+  lenderId: string;
+}
