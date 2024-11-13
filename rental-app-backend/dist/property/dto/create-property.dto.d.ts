@@ -1,11 +1,22 @@
-export declare class CreatePropertyDto {
-    readonly name: string;
-    readonly description: string;
-    readonly image: string;
-    readonly availability: string;
-    readonly propertyType: string;
-    readonly rooms: number;
-    readonly bathrooms: number;
-    readonly distanceFromUniversity: number;
-    readonly price: number;
+import { Types } from 'mongoose';
+declare class HouseAddressDto {
+    addressLine1: string;
+    addressLine2: string;
+    townCity: string;
+    county: string;
+    eircode: string;
 }
+export declare class CreatePropertyDto {
+    price: string;
+    availability: boolean;
+    description: string;
+    shortDescription: string;
+    propertyType: string;
+    roomsAvailable: number;
+    bathrooms: number;
+    distanceFromUniversity: number;
+    images: string[];
+    houseAddress: HouseAddressDto;
+    lenderId: Types.ObjectId;
+}
+export {};

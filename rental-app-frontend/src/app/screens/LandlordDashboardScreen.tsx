@@ -1,5 +1,4 @@
 import React from "react";
-import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import {
@@ -9,9 +8,10 @@ import {
   Button,
   Card,
   ScrollView,
-  useTheme,
   Theme,
 } from "tamagui";
+import { usePropertyStore } from '../../store/property.store';
+import { Property } from '../../store/interfaces/Property';
 
 const rentalAppTheme = {
   primaryDark: "#016180",
@@ -21,16 +21,7 @@ const rentalAppTheme = {
   textDark: "#000",
 };
 
-// Hardcoded properties
-const hardcodedProperties = [
-  { id: "1", name: "Sunny Apartment", price: 1200, availability: "Available" },
-  { id: "2", name: "Cozy Studio", price: 800, availability: "Rented" },
-  { id: "3", name: "Spacious Villa", price: 2500, availability: "Available" },
-  { id: "4", name: "Modern Loft", price: 1500, availability: "Available" },
-  { id: "5", name: "Beachfront Condo", price: 2000, availability: "Rented" },
-];
-
-const PropertyItem = ({ item }: { item: (typeof hardcodedProperties)[0] }) => {
+const PropertyItem = ({ item }: { item: Property }) => {
   return (
     <Card
       bordered
@@ -50,7 +41,7 @@ const PropertyItem = ({ item }: { item: (typeof hardcodedProperties)[0] }) => {
       <XStack space="$3" padding="$3" alignItems="center">
         <YStack flex={1} space="$1">
           <Text fontSize={16} fontWeight="bold" color={rentalAppTheme.textDark}>
-            {item.name}
+            {item.houseAddress.addressLine1}
           </Text>
           <Text
             fontSize={15}
@@ -63,13 +54,13 @@ const PropertyItem = ({ item }: { item: (typeof hardcodedProperties)[0] }) => {
         <Text
           fontSize={14}
           color={
-            item.availability === "Available"
+            item.availability
               ? rentalAppTheme.primaryLight
               : rentalAppTheme.accentDarkRed
           }
           fontWeight="500"
         >
-          {item.availability}
+          {item.availability ? 'Available' : 'Rented'}
         </Text>
       </XStack>
     </Card>
@@ -78,14 +69,33 @@ const PropertyItem = ({ item }: { item: (typeof hardcodedProperties)[0] }) => {
 
 export default function LandlordDashboardScreen() {
   const router = useRouter();
+  const { properties, isLoading, error, fetchProperties } = usePropertyStore();
 
-  const totalProperties = hardcodedProperties.length;
-  const availableProperties = hardcodedProperties.filter(
-    (p) => p.availability === "Available"
-  ).length;
-  const rentedProperties = hardcodedProperties.filter(
-    (p) => p.availability === "Rented"
-  ).length;
+  React.useEffect(() => {
+    fetchProperties();
+  }, []);
+  React.useEffect(() => {
+  }, [properties, isLoading, error]);
+
+  const totalProperties = properties.length;
+  const availableProperties = properties.filter((p) => p.availability).length;
+  const rentedProperties = properties.filter((p) => !p.availability).length;
+
+  if (isLoading) {
+    return (
+      <YStack flex={1} justifyContent="center" alignItems="center">
+        <Text>Loading...</Text>
+      </YStack>
+    );
+  }
+
+  if (error) {
+    return (
+      <YStack flex={1} justifyContent="center" alignItems="center">
+        <Text color="red">{error}</Text>
+      </YStack>
+    );
+  }
 
   return (
     <Theme name="light">
@@ -94,7 +104,6 @@ export default function LandlordDashboardScreen() {
         backgroundColor={rentalAppTheme.backgroundLight}
         padding="$4"
       >
-        {/* Header */}
         <XStack
           justifyContent="space-between"
           alignItems="center"
@@ -141,8 +150,8 @@ export default function LandlordDashboardScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}
         >
-          {hardcodedProperties.map((property) => (
-            <PropertyItem key={property.id} item={property} />
+          {properties.map((property) => (
+            <PropertyItem key={property._id} item={property} />
           ))}
         </ScrollView>
 

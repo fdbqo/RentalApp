@@ -1,17 +1,25 @@
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 export type PropertyDocument = Property & Document;
 export declare class Property {
-    name: string;
+    price: string;
+    availability: boolean;
     description: string;
-    image: string;
-    availability: string;
+    shortDescription: string;
     propertyType: string;
-    rooms: number;
+    roomsAvailable: number;
     bathrooms: number;
     distanceFromUniversity: number;
-    price: number;
+    images: string[];
+    houseAddress: {
+        addressLine1: string;
+        addressLine2: string;
+        townCity: string;
+        county: string;
+        eircode: string;
+    };
+    lenderId: MongooseSchema.Types.ObjectId;
 }
-export declare const PropertySchema: import("mongoose").Schema<Property, import("mongoose").Model<Property, any, any, any, Document<unknown, any, Property> & Property & {
+export declare const PropertySchema: MongooseSchema<Property, import("mongoose").Model<Property, any, any, any, Document<unknown, any, Property> & Property & {
     _id: import("mongoose").Types.ObjectId;
 } & {
     __v?: number;

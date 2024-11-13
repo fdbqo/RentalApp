@@ -20,14 +20,21 @@ let PropertyController = class PropertyController {
     constructor(propertyService) {
         this.propertyService = propertyService;
     }
+    async getAllProperties(lenderId) {
+        return this.propertyService.findAll(lenderId);
+    }
     async create(createPropertyDto) {
         return this.propertyService.create(createPropertyDto);
     }
-    async getAllProperties() {
-        return this.propertyService.findAll();
-    }
 };
 exports.PropertyController = PropertyController;
+__decorate([
+    (0, common_1.Get)(),
+    __param(0, (0, common_1.Query)('lenderId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], PropertyController.prototype, "getAllProperties", null);
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
@@ -35,14 +42,8 @@ __decorate([
     __metadata("design:paramtypes", [create_property_dto_1.CreatePropertyDto]),
     __metadata("design:returntype", Promise)
 ], PropertyController.prototype, "create", null);
-__decorate([
-    (0, common_1.Get)(),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], PropertyController.prototype, "getAllProperties", null);
 exports.PropertyController = PropertyController = __decorate([
-    (0, common_1.Controller)('properties'),
+    (0, common_1.Controller)('listings'),
     __metadata("design:paramtypes", [property_service_1.PropertyService])
 ], PropertyController);
 //# sourceMappingURL=property.controller.js.map
