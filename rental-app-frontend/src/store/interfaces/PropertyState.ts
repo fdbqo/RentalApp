@@ -1,7 +1,7 @@
 import { Property } from './Property';
 
 interface Image {
-  id: string;
+  _id: string;
   uri: string;
 }
 
