@@ -73,7 +73,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         lenderId: HARDCODED_LENDER_ID,
         lastUpdated: new Date().toISOString(),
         images: formData.images.map(img => ({
-          id: img.id,
+          id: img._id,
           uri: img.uri
         }))
       };

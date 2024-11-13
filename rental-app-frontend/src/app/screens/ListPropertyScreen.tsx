@@ -111,7 +111,7 @@ export default function ListPropertyScreen() {
   const removeImage = (id) => {
     updateFormData(
       "images",
-      formData.images.filter((img) => img.id !== id)
+      formData.images.filter((img) => img._id !== id)
     );
   };
 
@@ -383,7 +383,7 @@ export default function ListPropertyScreen() {
             <YStack marginBottom="$6">
               <XStack flexWrap="wrap" gap="$4">
                 {formData.images.map((img) => (
-                  <YStack key={img.id} position="relative">
+                  <YStack key={img._id} position="relative">
                     <Image
                       source={{ uri: img.uri }}
                       width={150}
@@ -398,7 +398,7 @@ export default function ListPropertyScreen() {
                       top={-8}
                       right={-8}
                       backgroundColor={theme.error}
-                      onPress={() => removeImage(img.id)}
+                      onPress={() => removeImage(img._id)}
                     />
                   </YStack>
                 ))}
