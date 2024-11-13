@@ -1,10 +1,13 @@
-import { Types } from 'mongoose';
 declare class HouseAddressDto {
     addressLine1: string;
     addressLine2: string;
     townCity: string;
     county: string;
     eircode: string;
+}
+declare class ImageDto {
+    id: string;
+    uri: string;
 }
 export declare class CreatePropertyDto {
     price: number;
@@ -15,8 +18,8 @@ export declare class CreatePropertyDto {
     roomsAvailable: number;
     bathrooms: number;
     distanceFromUniversity: number;
-    images: string[];
+    images: ImageDto[];
     houseAddress: HouseAddressDto;
-    lenderId: Types.ObjectId;
+    lenderId: string;
 }
 export {};

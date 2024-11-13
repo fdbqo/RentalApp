@@ -1,5 +1,10 @@
 import { Property } from './Property';
 
+interface Image {
+  id: string;
+  uri: string;
+}
+
 export interface PropertyState {
   // List of properties
   properties: Property[];
@@ -16,7 +21,7 @@ export interface PropertyState {
     roomsAvailable: number | null;
     bathrooms: number | null;
     distanceFromUniversity: number | null;
-    images: string[];
+    images: Image[];
     houseAddress: {
       addressLine1: string;
       addressLine2: string;
@@ -24,6 +29,7 @@ export interface PropertyState {
       county: string;
       eircode: string;
     };
+    lenderId: string;
   };
 
   // Actions
@@ -40,6 +46,7 @@ export interface PropertyState {
   setRoomsAvailable: (rooms: number | null) => void;
   setBathrooms: (bathrooms: number | null) => void;
   setDistanceFromUniversity: (distance: number | null) => void;
-  setImages: (images: string[]) => void;
+  setImages: (images: Image[]) => void;
   setHouseAddress: (address: Partial<PropertyState['formData']['houseAddress']>) => void;
+  setLenderId: (lenderId: string) => void;
 }

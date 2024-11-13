@@ -32,12 +32,23 @@ let PropertyService = class PropertyService {
         }
     }
     async create(createPropertyDto) {
-        const propertyData = {
-            ...createPropertyDto,
-            lenderId: new mongoose_2.Types.ObjectId(createPropertyDto.lenderId)
-        };
-        const createdProperty = new this.propertyModel(propertyData);
-        return createdProperty.save();
+        try {
+            console.log('Received DTO:', createPropertyDto);
+            const propertyData = {
+                ...createPropertyDto,
+                lenderId: new mongoose_2.Types.ObjectId(createPropertyDto.lenderId),
+                images: createPropertyDto.images
+            };
+            console.log('Creating property with data:', propertyData);
+            const createdProperty = new this.propertyModel(propertyData);
+            const savedProperty = await createdProperty.save();
+            console.log('Saved property:', savedProperty);
+            return savedProperty;
+        }
+        catch (error) {
+            console.error('Error creating property:', error);
+            throw error;
+        }
     }
 };
 exports.PropertyService = PropertyService;

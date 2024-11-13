@@ -29,8 +29,8 @@ export class Property {
   @Prop()
   distanceFromUniversity: number;
 
-  @Prop()
-  images: string[];
+  @Prop({ type: [{ id: String, uri: String }] })
+  images: { id: string; uri: string }[];
 
   @Prop({ type: Object })
   houseAddress: {

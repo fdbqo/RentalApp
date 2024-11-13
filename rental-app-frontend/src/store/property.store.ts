@@ -41,6 +41,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       county: '',
       eircode: '',
     },
+    lenderId: HARDCODED_LENDER_ID,
   },
 
   // Actions
@@ -70,19 +71,30 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         ...formData,
         price: parseFloat(formData.price.toString()),
         lenderId: HARDCODED_LENDER_ID,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
+        images: formData.images.map(img => ({
+          id: img.id,
+          uri: img.uri
+        }))
       };
       
+      console.log('About to send property data:', propertyData);
+      
       const response = await axios.post(`${API_URL}/listings`, propertyData);
+      console.log('Response from server:', response.data);
       
       await get().fetchLandlordProperties();
       get().resetForm();
       set({ isLoading: false });
+      
+      return response.data;
     } catch (error) {
+      console.error('Error details:', error.response?.data);
       set({ 
         error: error instanceof Error ? error.message : 'Failed to create property',
         isLoading: false 
       });
+      throw error;
     }
   },
 
@@ -105,6 +117,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
           county: '',
           eircode: '',
         },
+        lenderId: HARDCODED_LENDER_ID,
       }
     });
   },
@@ -151,5 +164,9 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       ...state.formData,
       houseAddress: { ...state.formData.houseAddress, ...address }
     }
+  })),
+
+  setLenderId: (lenderId) => set((state) => ({
+    formData: { ...state.formData, lenderId }
   })),
 }));

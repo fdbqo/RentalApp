@@ -23,6 +23,14 @@ class HouseAddressDto {
   eircode: string;
 }
 
+class ImageDto {
+  @IsString()
+  id: string;
+
+  @IsString()
+  uri: string;
+}
+
 export class CreatePropertyDto {
   @IsNumber()
   @IsNotEmpty()
@@ -53,12 +61,16 @@ export class CreatePropertyDto {
   distanceFromUniversity: number;
 
   @IsArray()
-  images: string[];
+  @ValidateNested({ each: true })
+  @Type(() => ImageDto)
+  images: ImageDto[];
 
   @IsObject()
   @ValidateNested()
   @Type(() => HouseAddressDto)
   houseAddress: HouseAddressDto;
 
-  lenderId: Types.ObjectId;
+  @IsString()
+  @IsNotEmpty()
+  lenderId: string;
 }

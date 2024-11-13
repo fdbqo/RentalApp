@@ -501,9 +501,9 @@ export default function ListPropertyScreen() {
               borderRadius="$4"
               marginTop="$4"
               onPress={async () => {
-                console.log(formData);
                 const propertyStore = usePropertyStore.getState();
-      
+                
+                propertyStore.setImages(formData.images);
                 propertyStore.setPrice(formData.price.toString());
                 propertyStore.setAvailability(formData.availability);
                 propertyStore.setDescription(formData.description);
@@ -512,11 +512,15 @@ export default function ListPropertyScreen() {
                 propertyStore.setRoomsAvailable(formData.roomsAvailable);
                 propertyStore.setBathrooms(formData.bathrooms);
                 propertyStore.setDistanceFromUniversity(formData.distanceFromUniversity);
-                propertyStore.setImages(formData.images.map(img => img.uri));
                 propertyStore.setHouseAddress(formData.houseAddress);
-                await propertyStore.createProperty();
+                propertyStore.setLenderId(formData.lenderId);
                 
-                router.push("/screens/LandlordDashboardScreen");
+                try {
+                  await propertyStore.createProperty();
+                  router.push("/screens/LandlordDashboardScreen");
+                } catch (error) {
+                  console.error('Failed to create property:', error);
+                }
               }}
             >
               <Text
