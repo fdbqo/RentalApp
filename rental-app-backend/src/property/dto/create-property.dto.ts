@@ -1,7 +1,7 @@
 export class CreatePropertyDto {
   readonly name: string;
   readonly description: string;
-  readonly images: string[];
+  readonly image: string;
   readonly availability: string;
   readonly propertyType: string;
   readonly rooms: number;

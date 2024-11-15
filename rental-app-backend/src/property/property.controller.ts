@@ -11,8 +11,8 @@ export class PropertyController {
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  async create(@Body() createPropertyDto: CreatePropertyDto, @UploadedFile() image: Express.Multer.File){
-    return this.propertyService.create(createPropertyDto, image);
+  async create(@Body() createPropertyDto: CreatePropertyDto){
+    return this.propertyService.create(createPropertyDto);
   }
   
 

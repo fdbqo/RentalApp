@@ -31,11 +31,8 @@ export class PropertyService {
     private configService: ConfigService
   ) {}
 
-  async create(createPropertyDto: CreatePropertyDto, image): Promise<Property> {
+  async create(createPropertyDto: CreatePropertyDto): Promise<Property> {
     const createdProperty = new this.propertyModel(createPropertyDto);
-    //Uploads the image to S3 and returns the Key
-    const imageKey = await this.uploadImage(image);
-    createdProperty.images.push(imageKey.Key);
     return createdProperty.save();
   }
 
