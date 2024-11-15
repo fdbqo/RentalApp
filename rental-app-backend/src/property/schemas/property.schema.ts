@@ -12,7 +12,7 @@ export class Property {
   description: string;
 
   @Prop()
-  image: string;
+  images: string[];
 
   @Prop({ required: true })
   availability: string;
