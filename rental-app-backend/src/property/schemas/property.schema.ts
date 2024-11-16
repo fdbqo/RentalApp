@@ -1,36 +1,48 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type PropertyDocument = Property & Document;
 
-@Schema({ collection: 'properties', versionKey: false })
+@Schema({ collection: 'listings' })
 export class Property {
-  @Prop({ required: true })
-  name: string;
+  @Prop()
+  price: number;
 
-  @Prop({ required: true })
+  @Prop()
+  availability: boolean;
+
+  @Prop()
   description: string;
 
   @Prop()
-  images: string[];
+  shortDescription: string;
 
-  @Prop({ required: true })
-  availability: string;
-
-  @Prop({ required: true })
+  @Prop()
   propertyType: string;
 
-  @Prop({ required: true })
-  rooms: number;
+  @Prop()
+  roomsAvailable: number;
 
-  @Prop({ required: true })
+  @Prop()
   bathrooms: number;
 
-  @Prop({ required: true })
+  @Prop()
   distanceFromUniversity: number;
 
-  @Prop({ required: true })
-  price: number;
+  @Prop({ type: [{ _id: MongooseSchema.Types.ObjectId, uri: String }] })
+  images: { _id: MongooseSchema.Types.ObjectId; uri: string }[];
+
+  @Prop({ type: Object })
+  houseAddress: {
+    addressLine1: string;
+    addressLine2: string;
+    townCity: string;
+    county: string;
+    eircode: string;
+  };
+
+  @Prop({ type: MongooseSchema.Types.ObjectId })
+  lenderId: MongooseSchema.Types.ObjectId;
 }
 
 export const PropertySchema = SchemaFactory.createForClass(Property);

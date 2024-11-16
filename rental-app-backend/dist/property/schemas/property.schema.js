@@ -11,47 +11,56 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PropertySchema = exports.Property = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
+const mongoose_2 = require("mongoose");
 let Property = class Property {
 };
 exports.Property = Property;
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", String)
-], Property.prototype, "name", void 0);
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", Number)
+], Property.prototype, "price", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", Boolean)
+], Property.prototype, "availability", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
     __metadata("design:type", String)
 ], Property.prototype, "description", void 0);
 __decorate([
     (0, mongoose_1.Prop)(),
     __metadata("design:type", String)
-], Property.prototype, "image", void 0);
+], Property.prototype, "shortDescription", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", String)
-], Property.prototype, "availability", void 0);
-__decorate([
-    (0, mongoose_1.Prop)({ required: true }),
+    (0, mongoose_1.Prop)(),
     __metadata("design:type", String)
 ], Property.prototype, "propertyType", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
+    (0, mongoose_1.Prop)(),
     __metadata("design:type", Number)
-], Property.prototype, "rooms", void 0);
+], Property.prototype, "roomsAvailable", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
+    (0, mongoose_1.Prop)(),
     __metadata("design:type", Number)
 ], Property.prototype, "bathrooms", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
+    (0, mongoose_1.Prop)(),
     __metadata("design:type", Number)
 ], Property.prototype, "distanceFromUniversity", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
-    __metadata("design:type", Number)
-], Property.prototype, "price", void 0);
+    (0, mongoose_1.Prop)({ type: [{ _id: mongoose_2.Schema.Types.ObjectId, uri: String }] }),
+    __metadata("design:type", Array)
+], Property.prototype, "images", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: Object }),
+    __metadata("design:type", Object)
+], Property.prototype, "houseAddress", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: mongoose_2.Schema.Types.ObjectId }),
+    __metadata("design:type", mongoose_2.Schema.Types.ObjectId)
+], Property.prototype, "lenderId", void 0);
 exports.Property = Property = __decorate([
-    (0, mongoose_1.Schema)({ collection: 'properties', versionKey: false })
+    (0, mongoose_1.Schema)({ collection: 'listings' })
 ], Property);
 exports.PropertySchema = mongoose_1.SchemaFactory.createForClass(Property);
 //# sourceMappingURL=property.schema.js.map

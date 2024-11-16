@@ -1,11 +1,24 @@
-export declare class CreatePropertyDto {
-    readonly name: string;
-    readonly description: string;
-    readonly image: string;
-    readonly availability: string;
-    readonly propertyType: string;
-    readonly rooms: number;
-    readonly bathrooms: number;
-    readonly distanceFromUniversity: number;
-    readonly price: number;
+declare class HouseAddressDto {
+    addressLine1: string;
+    addressLine2: string;
+    townCity: string;
+    county: string;
+    eircode: string;
 }
+declare class ImageDto {
+    uri: string;
+}
+export declare class CreatePropertyDto {
+    price: number;
+    availability: boolean;
+    description: string;
+    shortDescription: string;
+    propertyType: string;
+    roomsAvailable: number;
+    bathrooms: number;
+    distanceFromUniversity: number;
+    images: ImageDto[];
+    houseAddress: HouseAddressDto;
+    lenderId: string;
+}
+export {};

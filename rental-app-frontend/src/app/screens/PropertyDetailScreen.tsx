@@ -3,6 +3,7 @@ import { ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { YStack, XStack, Text, Button, Image, Theme } from "tamagui";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import NavigationHeader from "@/components/NavigationHeader";
 
 const rentalAppTheme = {
   primaryDark: "#016180",
@@ -30,9 +31,18 @@ export default function PropertyDetailScreen() {
 
   return (
     <Theme name="light">
-      <YStack flex={1} backgroundColor={rentalAppTheme.backgroundLight} padding="$4">
+      <NavigationHeader title="Property Details" />
+      <YStack
+        flex={1}
+        backgroundColor={rentalAppTheme.backgroundLight}
+        padding="$4"
+      >
         {/* Header */}
-        <XStack justifyContent="space-between" alignItems="center" marginBottom="$4">
+        <XStack
+          justifyContent="space-between"
+          alignItems="center"
+          marginBottom="$4"
+        >
           <Text fontSize={24} fontWeight="bold" color="black">
             {name}
           </Text>
@@ -41,17 +51,29 @@ export default function PropertyDetailScreen() {
           </Button>
         </XStack>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 16 }}
+        >
           {/* Property Image */}
           <Image
             source={{ uri: Array.isArray(image) ? image[0] : image }}
-            style={{ width: "100%", height: 300, borderRadius: 12, marginBottom: 16 }}
+            style={{
+              width: "100%",
+              height: 300,
+              borderRadius: 12,
+              marginBottom: 16,
+            }}
             resizeMode="cover"
           />
 
           {/* Property Details */}
           <YStack space="$4">
-            <Text fontSize={18} fontWeight="bold" color={rentalAppTheme.textDark}>
+            <Text
+              fontSize={18}
+              fontWeight="bold"
+              color={rentalAppTheme.textDark}
+            >
               €{price}/month
             </Text>
 
@@ -75,7 +97,14 @@ export default function PropertyDetailScreen() {
               Distance from University: {distanceFromUniversity} km
             </Text>
 
-            <Text fontSize={16} color={availability === "Available now" ? rentalAppTheme.primaryLight : rentalAppTheme.accentDarkRed}>
+            <Text
+              fontSize={16}
+              color={
+                availability === "Available now"
+                  ? rentalAppTheme.primaryLight
+                  : rentalAppTheme.accentDarkRed
+              }
+            >
               {availability}
             </Text>
           </YStack>

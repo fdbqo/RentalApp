@@ -9,8 +9,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PropertyModule = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
-const property_service_1 = require("./property.service");
 const property_controller_1 = require("./property.controller");
+const property_service_1 = require("./property.service");
 const property_schema_1 = require("./schemas/property.schema");
 let PropertyModule = class PropertyModule {
 };
@@ -18,11 +18,12 @@ exports.PropertyModule = PropertyModule;
 exports.PropertyModule = PropertyModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            mongoose_1.MongooseModule.forFeature([{ name: property_schema_1.Property.name, schema: property_schema_1.PropertySchema }]),
+            mongoose_1.MongooseModule.forFeature([
+                { name: property_schema_1.Property.name, schema: property_schema_1.PropertySchema, collection: 'listings' }
+            ]),
         ],
         controllers: [property_controller_1.PropertyController],
         providers: [property_service_1.PropertyService],
-        exports: [property_service_1.PropertyService]
     })
 ], PropertyModule);
 //# sourceMappingURL=property.module.js.map

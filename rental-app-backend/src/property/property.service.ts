@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, Req, Res, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Property, PropertyDocument } from '../property/schemas/property.schema';
+import { Model, Types } from 'mongoose';
+import { Property, PropertyDocument } from './schemas/property.schema';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import * as AWS from 'aws-sdk';
@@ -31,11 +31,18 @@ export class PropertyService {
     private configService: ConfigService
   ) {}
 
-  async create(createPropertyDto: CreatePropertyDto): Promise<Property> {
-    const createdProperty = new this.propertyModel(createPropertyDto);
-    return createdProperty.save();
+  async findAll(lenderId: string): Promise<Property[]> {    
+    try {      
+      const objectId = new Types.ObjectId(lenderId);
+      
+      const properties = await this.propertyModel.find({ lenderId: objectId }).exec();
+      
+      return properties;
+    } catch (error) {
+      return [];
+    }
   }
-
+  
   async findAll(): Promise<Property[]> {
     return this.propertyModel.find().exec();
   };
@@ -76,6 +83,25 @@ export class PropertyService {
       return s3Response;
     }catch(e){
       console.log(e);
+    }
+  }
+  
+  async create(createPropertyDto: CreatePropertyDto): Promise<Property> {
+    try {
+      const propertyData = {
+        ...createPropertyDto,
+        lenderId: new Types.ObjectId(createPropertyDto.lenderId),
+        images: createPropertyDto.images.map(img => ({
+          _id: new Types.ObjectId(),
+          uri: img.uri
+        }))
+      };
+      
+      const createdProperty = new this.propertyModel(propertyData);
+      return createdProperty.save();
+    } catch (error) {
+      console.error('Error creating property:', error);
+      throw error;
     }
   }
 }
