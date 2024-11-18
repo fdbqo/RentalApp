@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { KeyboardTypeOptions, ScrollView } from "react-native";
 import {
   YStack,
@@ -10,19 +10,18 @@ import {
   Image,
   Theme,
   Select,
-  Separator,
   Adapt,
   Sheet,
   Card,
   Heading,
 } from "tamagui";
-import { ChevronDown, Check, X as CloseIcon } from "@tamagui/lucide-icons";
+import { ChevronDown, Check } from "@tamagui/lucide-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import NavigationHeader from "@/components/NavigationHeader";
 import { usePropertyStore } from "@/store/property.store";
-import { Property } from "@/store/interfaces/Property";
+
 
 const rentalAppTheme = {
   primaryDark: "#016180",
@@ -41,18 +40,58 @@ const rentalAppTheme = {
   },
 };
 
+type PageInputProps = {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder: string;
+  keyboardType?: KeyboardTypeOptions;
+};
+
+const PageInput = React.memo(
+  ({
+    label,
+    value,
+    onChangeText,
+    placeholder,
+    keyboardType = "default",
+  }: PageInputProps) => (
+    <YStack space="$2" marginBottom="$4">
+      <Text
+        fontSize="$4"
+        fontWeight="500"
+        color={rentalAppTheme.text.secondary}
+      >
+        {label}
+      </Text>
+      <Input
+        value={value || ""}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        keyboardType={keyboardType}
+        borderColor={rentalAppTheme.border}
+        borderWidth={1}
+        borderRadius="$4"
+        padding="$3"
+        fontSize="$4"
+        backgroundColor="transparent"
+      />
+    </YStack>
+  )
+);
+
 export default function ListPropertyScreen() {
   const router = useRouter();
-  const [formData, setFormData] = useState<Property>({
-    price: 0,
+  const [formData, setFormData] = useState({
+    price: "",
     availability: false,
     description: "",
     shortDescription: "",
     propertyType: "",
-    roomsAvailable: 0,
-    bathrooms: 0,
-    distanceFromUniversity: 0,
-    images: [],
+    roomsAvailable: "",
+    bathrooms: "",
+    distanceFromUniversity: "",
+    images: [] as Array<{ _id: string; uri: string }>,
     houseAddress: {
       addressLine1: "",
       addressLine2: "",
@@ -63,14 +102,14 @@ export default function ListPropertyScreen() {
     lenderId: "",
   });
 
-  const updateFormData = (field, value) => {
+  const updateFormData = useCallback((field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
-  };
+  }, []);
 
-  const updateAddress = (field, value) => {
+  const updateAddress = useCallback((field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       houseAddress: {
@@ -78,7 +117,70 @@ export default function ListPropertyScreen() {
         [field]: value,
       },
     }));
-  };
+  }, []);
+
+  const handlePriceChange = useCallback(
+    (text: string) => {
+      updateFormData("price", text);
+    },
+    [updateFormData]
+  );
+
+  const handleDistanceChange = useCallback(
+    (text: string) => {
+      updateFormData("distanceFromUniversity", text);
+    },
+    [updateFormData]
+  );
+
+  const handleRoomsAvailableChange = useCallback(
+    (text: string) => {
+      updateFormData("roomsAvailable", text);
+    },
+    [updateFormData]
+  );
+
+  const handleBathroomsChange = useCallback(
+    (text: string) => {
+      updateFormData("bathrooms", text);
+    },
+    [updateFormData]
+  );
+
+  const handleAddressLine1Change = useCallback(
+    (text: string) => {
+      updateAddress("addressLine1", text);
+    },
+    [updateAddress]
+  );
+
+  const handleAddressLine2Change = useCallback(
+    (text: string) => {
+      updateAddress("addressLine2", text);
+    },
+    [updateAddress]
+  );
+
+  const handleTownCityChange = useCallback(
+    (text: string) => {
+      updateAddress("townCity", text);
+    },
+    [updateAddress]
+  );
+
+  const handleCountyChange = useCallback(
+    (text: string) => {
+      updateAddress("county", text);
+    },
+    [updateAddress]
+  );
+
+  const handleEircodeChange = useCallback(
+    (text: string) => {
+      updateAddress("eircode", text);
+    },
+    [updateAddress]
+  );
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -89,14 +191,14 @@ export default function ListPropertyScreen() {
 
     if (!result.canceled) {
       const newImages = result.assets.map((asset) => ({
-        id: Date.now().toString(),
+        _id: Date.now().toString(),
         uri: asset.uri,
       }));
       updateFormData("images", [...formData.images, ...newImages]);
     }
   };
 
-  const removeImage = (id) => {
+  const removeImage = (id: string) => {
     updateFormData(
       "images",
       formData.images.filter((img) => img._id !== id)
@@ -112,36 +214,6 @@ export default function ListPropertyScreen() {
     { type: "Available" },
     { type: "Not available" },
   ];
-
-  const PageInput = ({
-    label,
-    value,
-    onChangeText,
-    placeholder,
-    keyboardType = "default" as KeyboardTypeOptions,
-  }) => (
-    <YStack space="$2" marginBottom="$4">
-      <Text
-        fontSize="$4"
-        fontWeight="500"
-        color={rentalAppTheme.text.secondary}
-      >
-        {label}
-      </Text>
-      <Input
-        value={value?.toString() || ""}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        keyboardType={keyboardType}
-        borderColor={rentalAppTheme.border}
-        borderWidth={1}
-        borderRadius="$4"
-        padding="$3"
-        fontSize="$4"
-        backgroundColor="transparent"
-      />
-    </YStack>
-  );
 
   return (
     <Theme name="light">
@@ -163,7 +235,7 @@ export default function ListPropertyScreen() {
                 <PageInput
                   label="Price per Month (€)"
                   value={formData.price}
-                  onChangeText={(text) => updateFormData("price", Number(text))}
+                  onChangeText={handlePriceChange}
                   placeholder="Enter price"
                   keyboardType="numeric"
                 />
@@ -171,9 +243,7 @@ export default function ListPropertyScreen() {
                 <PageInput
                   label="Distance from University (km)"
                   value={formData.distanceFromUniversity}
-                  onChangeText={(text) =>
-                    updateFormData("distanceFromUniversity", Number(text))
-                  }
+                  onChangeText={handleDistanceChange}
                   placeholder="Enter distance"
                   keyboardType="numeric"
                 />
@@ -277,7 +347,7 @@ export default function ListPropertyScreen() {
                       padding="$3"
                       iconAfter={ChevronDown}
                     >
-                      <Select.Value placeholder="Select availability"/>
+                      <Select.Value placeholder="Select availability" />
                     </Select.Trigger>
                     <Adapt when="sm" platform="touch">
                       <Sheet
@@ -327,18 +397,14 @@ export default function ListPropertyScreen() {
                     <PageInput
                       label="Bedrooms"
                       value={formData.roomsAvailable}
-                      onChangeText={(text) =>
-                        updateFormData("roomsAvailable", Number(text))
-                      }
+                      onChangeText={handleRoomsAvailableChange}
                       placeholder="Enter number"
                       keyboardType="numeric"
                     />
                     <PageInput
                       label="Bathrooms"
                       value={formData.bathrooms}
-                      onChangeText={(text) =>
-                        updateFormData("bathrooms", Number(text))
-                      }
+                      onChangeText={handleBathroomsChange}
                       placeholder="Enter number"
                       keyboardType="numeric"
                     />
@@ -454,13 +520,13 @@ export default function ListPropertyScreen() {
                 <PageInput
                   label="Address Line 1"
                   value={formData.houseAddress.addressLine1}
-                  onChangeText={(text) => updateAddress("addressLine1", text)}
+                  onChangeText={handleAddressLine1Change}
                   placeholder="Street address"
                 />
                 <PageInput
                   label="Address Line 2"
                   value={formData.houseAddress.addressLine2}
-                  onChangeText={(text) => updateAddress("addressLine2", text)}
+                  onChangeText={handleAddressLine2Change}
                   placeholder="Apartment, suite, etc. (optional)"
                 />
                 <XStack space="$4">
@@ -468,7 +534,7 @@ export default function ListPropertyScreen() {
                     <PageInput
                       label="City"
                       value={formData.houseAddress.townCity}
-                      onChangeText={(text) => updateAddress("townCity", text)}
+                      onChangeText={handleTownCityChange}
                       placeholder="City"
                     />
                   </YStack>
@@ -476,7 +542,7 @@ export default function ListPropertyScreen() {
                     <PageInput
                       label="County"
                       value={formData.houseAddress.county}
-                      onChangeText={(text) => updateAddress("county", text)}
+                      onChangeText={handleCountyChange}
                       placeholder="County"
                     />
                   </YStack>
@@ -484,7 +550,7 @@ export default function ListPropertyScreen() {
                 <PageInput
                   label="Eircode"
                   value={formData.houseAddress.eircode}
-                  onChangeText={(text) => updateAddress("eircode", text)}
+                  onChangeText={handleEircodeChange}
                   placeholder="Enter eircode"
                 />
               </YStack>
@@ -493,22 +559,32 @@ export default function ListPropertyScreen() {
             {/* Submit Button */}
             <Button
               backgroundColor={rentalAppTheme.primaryDark}
-              pressStyle={{ backgroundColor: rentalAppTheme.primaryLight }}
+              pressStyle={{
+                backgroundColor: rentalAppTheme.primaryLight,
+              }}
               borderRadius="$4"
               marginTop="$4"
               onPress={async () => {
                 const propertyStore = usePropertyStore.getState();
 
                 propertyStore.setImages(formData.images);
-                propertyStore.setPrice(formData.price.toString());
+                propertyStore.setPrice(formData.price);
                 propertyStore.setAvailability(formData.availability);
                 propertyStore.setDescription(formData.description);
                 propertyStore.setShortDescription(formData.shortDescription);
                 propertyStore.setPropertyType(formData.propertyType);
-                propertyStore.setRoomsAvailable(formData.roomsAvailable);
-                propertyStore.setBathrooms(formData.bathrooms);
+                propertyStore.setRoomsAvailable(
+                  formData.roomsAvailable
+                    ? Number(formData.roomsAvailable)
+                    : null
+                );
+                propertyStore.setBathrooms(
+                  formData.bathrooms ? Number(formData.bathrooms) : null
+                );
                 propertyStore.setDistanceFromUniversity(
                   formData.distanceFromUniversity
+                    ? Number(formData.distanceFromUniversity)
+                    : null
                 );
                 propertyStore.setHouseAddress(formData.houseAddress);
                 propertyStore.setLenderId(formData.lenderId);
