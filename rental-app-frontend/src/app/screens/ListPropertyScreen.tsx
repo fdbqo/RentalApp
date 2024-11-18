@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScrollView } from "react-native";
+import { KeyboardTypeOptions, ScrollView } from "react-native";
 import {
   YStack,
   XStack,
@@ -13,8 +13,10 @@ import {
   Separator,
   Adapt,
   Sheet,
+  Card,
+  Heading,
 } from "tamagui";
-import { ChevronDown, ChevronUp, Check, Plus, X as CloseIcon } from "@tamagui/lucide-icons";
+import { ChevronDown, Check, X as CloseIcon } from "@tamagui/lucide-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -22,9 +24,12 @@ import NavigationHeader from "@/components/NavigationHeader";
 import { usePropertyStore } from "@/store/property.store";
 import { Property } from "@/store/interfaces/Property";
 
-
-const theme = {
-  primary: "#2563eb",
+const rentalAppTheme = {
+  primaryDark: "#016180",
+  primaryLight: "#1abc9c",
+  backgroundLight: "#fff",
+  accentDarkRed: "#8B0000",
+  textDark: "#000",
   secondary: "#4b5563",
   background: "#ffffff",
   border: "#e2e8f0",
@@ -34,23 +39,6 @@ const theme = {
     secondary: "#64748b",
     light: "#94a3b8",
   },
-};
-
-// Define type for PageInput props
-interface PageInputProps {
-  label: string;
-  value: string | number | null;
-  onChangeText: (text: string) => void;
-  placeholder: string;
-  keyboardType?: "default" | "numeric" | "email-address" | "phone-pad";
-}
-
-const rentalAppTheme = {
-  primaryDark: "#016180",
-  primaryLight: "#1abc9c",
-  backgroundLight: "#fff",
-  accentDarkRed: "#8B0000",
-  textDark: "#000",
 };
 
 export default function ListPropertyScreen() {
@@ -115,26 +103,29 @@ export default function ListPropertyScreen() {
     );
   };
 
-  const SectionHeader = ({ title }) => (
-    <YStack space="$2" marginTop="$6" marginBottom="$4">
-      <Text fontSize="$7" fontWeight="600" color={theme.text.primary}>
-        {title}
-      </Text>
-      <Separator />
-    </YStack>
-  );
-  const propertyTypes = [{type: "House"}, {type: "Apartment"}, {type: "Shared living"}];
-  const availabilityOptions = [{type: "Available"}, {type: "Not available"}];
+  const propertyTypes = [
+    { type: "House" },
+    { type: "Apartment" },
+    { type: "Shared living" },
+  ];
+  const availabilityOptions = [
+    { type: "Available" },
+    { type: "Not available" },
+  ];
 
-  const PageInput: React.FC<PageInputProps> = ({
+  const PageInput = ({
     label,
     value,
     onChangeText,
     placeholder,
-    keyboardType = "default",
+    keyboardType = "default" as KeyboardTypeOptions,
   }) => (
-    <YStack space="$1" marginBottom="$5">
-      <Text fontSize="$4" fontWeight="500" color={theme.text.secondary}>
+    <YStack space="$2" marginBottom="$4">
+      <Text
+        fontSize="$4"
+        fontWeight="500"
+        color={rentalAppTheme.text.secondary}
+      >
         {label}
       </Text>
       <Input
@@ -142,7 +133,7 @@ export default function ListPropertyScreen() {
         onChangeText={onChangeText}
         placeholder={placeholder}
         keyboardType={keyboardType}
-        borderColor={theme.border}
+        borderColor={rentalAppTheme.border}
         borderWidth={1}
         borderRadius="$4"
         padding="$3"
@@ -151,83 +142,61 @@ export default function ListPropertyScreen() {
       />
     </YStack>
   );
+
   return (
     <Theme name="light">
       <NavigationHeader title="List Property" />
-      <YStack flex={1} backgroundColor={theme.background}>
+      <YStack flex={1} backgroundColor={rentalAppTheme.background}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack padding="$5" space="$2">
-            {/* Main Content */}
-            <YStack>
-              <XStack space="$4" marginBottom="$5">
-                <YStack flex={1}>
-                  <Text
-                    fontSize="$4"
-                    fontWeight="500"
-                    color={theme.text.secondary}
-                    marginBottom="$2"
-                  >
-                    Price per Month (€)
-                  </Text>
-                  <Input
-                    value={formData.price?.toString()}
-                    onChangeText={(text) =>
-                      updateFormData("price", Number(text))
-                    }
-                    placeholder="0"
-                    keyboardType="numeric"
-                    borderColor={theme.border}
-                    borderWidth={1}
-                    borderRadius="$4"
-                    padding="$3"
-                    fontSize="$4"
-                    backgroundColor="transparent"
-                  />
-                </YStack>
-                <YStack flex={1}>
-                  <Text
-                    fontSize="$4"
-                    fontWeight="500"
-                    color={theme.text.secondary}
-                    marginBottom="$2"
-                  >
-                    Distance from Uni (km)
-                  </Text>
-                  <Input
-                    value={formData.distanceFromUniversity?.toString()}
-                    onChangeText={(text) =>
-                      updateFormData("distanceFromUniversity", Number(text))
-                    }
-                    placeholder="0"
-                    keyboardType="numeric"
-                    borderColor={theme.border}
-                    borderWidth={1}
-                    borderRadius="$4"
-                    padding="$3"
-                    fontSize="$4"
-                    backgroundColor="transparent"
-                  />
-                </YStack>
-              </XStack>
+          <YStack padding="$4" paddingBottom="$8" space="$4">
+            {/* Property Details Section */}
+            <Card padding="$4" marginBottom="$4">
+              <Heading
+                size="$6"
+                color={rentalAppTheme.textDark}
+                marginBottom="$4"
+              >
+                Property Details
+              </Heading>
 
-              <XStack space="$4" marginBottom="$5">
-              <YStack flex={1}>
+              <YStack space="$1">
+                <PageInput
+                  label="Price per Month (€)"
+                  value={formData.price}
+                  onChangeText={(text) => updateFormData("price", Number(text))}
+                  placeholder="Enter price"
+                  keyboardType="numeric"
+                />
+
+                <PageInput
+                  label="Distance from University (km)"
+                  value={formData.distanceFromUniversity}
+                  onChangeText={(text) =>
+                    updateFormData("distanceFromUniversity", Number(text))
+                  }
+                  placeholder="Enter distance"
+                  keyboardType="numeric"
+                />
+
+                <YStack marginBottom="$4">
                   <Text
                     fontSize="$4"
                     fontWeight="500"
-                    color={theme.text.secondary}
+                    color={rentalAppTheme.text.secondary}
                     marginBottom="$2"
                   >
                     Property Type
                   </Text>
                   <Select
-                    value={formData.propertyType}
-                    onValueChange={(value) => updateFormData("propertyType", value.toLowerCase())}
+                    value={formData.propertyType || ""}
+                    onValueChange={(value) =>
+                      updateFormData("propertyType", value.toLowerCase())
+                    }
                     disablePreventBodyScroll
                   >
                     <Select.Trigger
                       backgroundColor="transparent"
-                      borderColor={theme.border}
+                      borderColor={rentalAppTheme.border}
                       borderWidth={1}
                       borderRadius="$4"
                       padding="$3"
@@ -235,7 +204,6 @@ export default function ListPropertyScreen() {
                     >
                       <Select.Value placeholder="Select type" />
                     </Select.Trigger>
-
                     <Adapt when="sm" platform="touch">
                       <Sheet
                         modal
@@ -245,9 +213,9 @@ export default function ListPropertyScreen() {
                         position={0}
                         zIndex={200000}
                       >
-                        <Sheet.Overlay 
-                          animation="lazy" 
-                          enterStyle={{ opacity: 0 }} 
+                        <Sheet.Overlay
+                          animation="lazy"
+                          enterStyle={{ opacity: 0 }}
                           exitStyle={{ opacity: 0 }}
                         />
                         <Sheet.Frame>
@@ -257,7 +225,6 @@ export default function ListPropertyScreen() {
                         </Sheet.Frame>
                       </Sheet>
                     </Adapt>
-
                     <Select.Content>
                       <Select.Viewport>
                         <Select.Group>
@@ -280,29 +247,37 @@ export default function ListPropertyScreen() {
                   </Select>
                 </YStack>
 
-                <YStack flex={1}>
+                <YStack marginBottom="$4">
                   <Text
                     fontSize="$4"
                     fontWeight="500"
-                    color={theme.text.secondary}
+                    color={rentalAppTheme.text.secondary}
                     marginBottom="$2"
                   >
                     Availability
                   </Text>
                   <Select
-                    value={formData.availability ? "available" : "not available"}
-                    onValueChange={(value) =>updateFormData("availability", value === "available")}
+                    value={
+                      formData.availability
+                        ? "available"
+                        : formData.availability === false
+                        ? "not available"
+                        : undefined
+                    }
+                    onValueChange={(value) =>
+                      updateFormData("availability", value === "available")
+                    }
                     disablePreventBodyScroll
                   >
                     <Select.Trigger
                       backgroundColor="transparent"
-                      borderColor={theme.border}
+                      borderColor={rentalAppTheme.border}
                       borderWidth={1}
                       borderRadius="$4"
                       padding="$3"
                       iconAfter={ChevronDown}
                     >
-                      <Select.Value placeholder="Select Availability" />
+                      <Select.Value placeholder="Select availability"/>
                     </Select.Trigger>
                     <Adapt when="sm" platform="touch">
                       <Sheet
@@ -313,9 +288,9 @@ export default function ListPropertyScreen() {
                         position={0}
                         zIndex={200000}
                       >
-                        <Sheet.Overlay 
-                          animation="lazy" 
-                          enterStyle={{ opacity: 0 }} 
+                        <Sheet.Overlay
+                          animation="lazy"
+                          enterStyle={{ opacity: 0 }}
                           exitStyle={{ opacity: 0 }}
                         />
                         <Sheet.Frame>
@@ -325,7 +300,6 @@ export default function ListPropertyScreen() {
                         </Sheet.Frame>
                       </Sheet>
                     </Adapt>
-
                     <Select.Content>
                       <Select.Viewport>
                         <Select.Group>
@@ -347,154 +321,176 @@ export default function ListPropertyScreen() {
                     </Select.Content>
                   </Select>
                 </YStack>
-              </XStack>
-            </YStack>
 
-            <SectionHeader title="Description" />
-            <YStack space="$4" marginBottom="$5">
-              <TextArea
-                value={formData.description}
-                onChangeText={(text) => updateFormData("description", text)}
-                placeholder="Describe your property in detail..."
-                minHeight={120}
-                borderColor={theme.border}
-                borderWidth={1}
-                borderRadius="$4"
-                padding="$3"
-                fontSize="$4"
-                backgroundColor="transparent"
-              />
-              <Input
-                value={formData.shortDescription}
-                onChangeText={(text) =>
-                  updateFormData("shortDescription", text)
-                }
-                placeholder="Brief overview of your property"
-                borderColor={theme.border}
-                borderWidth={1}
-                borderRadius="$4"
-                padding="$3"
-                fontSize="$4"
-                backgroundColor="transparent"
-              />
-            </YStack>
-
-            <SectionHeader title="Photos" />
-            <YStack marginBottom="$6">
-              <XStack flexWrap="wrap" gap="$4">
-                {formData.images.map((img) => (
-                  <YStack key={img._id} position="relative">
-                    <Image
-                      source={{ uri: img.uri }}
-                      width={150}
-                      height={150}
-                      borderRadius="$4"
-                    />
-                    <Button
-                      size="$3"
-                      circular
-                      icon={<Feather name="x" size={16} color="white" />}
-                      position="absolute"
-                      top={-8}
-                      right={-8}
-                      backgroundColor={theme.error}
-                      onPress={() => removeImage(img._id)}
-                    />
-                  </YStack>
-                ))}
-                <Button
-                  width={150}
-                  height={150}
-                  backgroundColor="transparent"
-                  borderColor={theme.border}
-                  borderWidth={2}
-                  borderRadius="$4"
-                  borderStyle="dashed"
-                  onPress={pickImage}
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <Feather name="plus" size={24} color={theme.text.secondary} />
-                  <Text color={theme.text.secondary} marginTop="$2">
-                    Add Photos
-                  </Text>
-                </Button>
-              </XStack>
-            </YStack>
-
-            <SectionHeader title="Location" />
-            <YStack space="$4">
-              <PageInput
-                label="Address Line 1"
-                value={formData.houseAddress.addressLine1}
-                onChangeText={(text) => updateAddress("addressLine1", text)}
-                placeholder="Street address"
-              />
-
-              <PageInput
-                label="Address Line 2"
-                value={formData.houseAddress.addressLine2}
-                onChangeText={(text) => updateAddress("addressLine2", text)}
-                placeholder="Apartment, suite, etc. (optional)"
-              />
-
-              <XStack space="$4">
-                <YStack flex={1}>
-                  <PageInput
-                    label="City"
-                    value={formData.houseAddress.townCity}
-                    onChangeText={(text) => updateAddress("townCity", text)}
-                    placeholder="City"
-                  />
-                </YStack>
-                <YStack flex={1}>
-                  <PageInput
-                    label="County"
-                    value={formData.houseAddress.county}
-                    onChangeText={(text) => updateAddress("county", text)}
-                    placeholder="County"
-                  />
-                </YStack>
-              </XStack>
-
-              <PageInput
-                label="Eircode"
-                value={formData.houseAddress.eircode}
-                onChangeText={(text) => updateAddress("eircode", text)}
-                placeholder="Enter eircode"
-              />
-            </YStack>
-
-            {formData.propertyType === "house" && (
-              <>
-                <SectionHeader title="Property Details" />
-                <XStack space="$4" marginBottom="$6">
-                  <YStack flex={1}>
+                {formData.propertyType === "house" && (
+                  <>
                     <PageInput
                       label="Bedrooms"
                       value={formData.roomsAvailable}
                       onChangeText={(text) =>
                         updateFormData("roomsAvailable", Number(text))
                       }
-                      placeholder="0"
+                      placeholder="Enter number"
                       keyboardType="numeric"
                     />
-                  </YStack>
-                  <YStack flex={1}>
                     <PageInput
                       label="Bathrooms"
                       value={formData.bathrooms}
                       onChangeText={(text) =>
                         updateFormData("bathrooms", Number(text))
                       }
-                      placeholder="0"
+                      placeholder="Enter number"
                       keyboardType="numeric"
+                    />
+                  </>
+                )}
+              </YStack>
+            </Card>
+
+            {/* Description Section */}
+            <Card padding="$4" marginBottom="$4">
+              <Heading
+                size="$6"
+                color={rentalAppTheme.textDark}
+                marginBottom="$4"
+              >
+                Description
+              </Heading>
+              <YStack space="$4">
+                <TextArea
+                  value={formData.description}
+                  onChangeText={(text) => updateFormData("description", text)}
+                  placeholder="Describe your property in detail..."
+                  minHeight={120}
+                  borderColor={rentalAppTheme.border}
+                  borderWidth={1}
+                  borderRadius="$4"
+                  padding="$3"
+                  fontSize="$4"
+                  backgroundColor="transparent"
+                />
+                <Input
+                  value={formData.shortDescription}
+                  onChangeText={(text) =>
+                    updateFormData("shortDescription", text)
+                  }
+                  placeholder="Brief overview of your property"
+                  borderColor={rentalAppTheme.border}
+                  borderWidth={1}
+                  borderRadius="$4"
+                  padding="$3"
+                  fontSize="$4"
+                  backgroundColor="transparent"
+                />
+              </YStack>
+            </Card>
+
+            {/* Photos Section */}
+            <Card padding="$4" marginBottom="$4">
+              <Heading
+                size="$6"
+                color={rentalAppTheme.textDark}
+                marginBottom="$4"
+              >
+                Photos
+              </Heading>
+              <YStack>
+                <XStack flexWrap="wrap" gap="$4">
+                  {formData.images.map((img) => (
+                    <YStack key={img._id} position="relative">
+                      <Image
+                        source={{ uri: img.uri }}
+                        width={150}
+                        height={150}
+                        borderRadius="$4"
+                      />
+                      <Button
+                        size="$3"
+                        circular
+                        icon={<Feather name="x" size={16} color="white" />}
+                        position="absolute"
+                        top={-8}
+                        right={-8}
+                        backgroundColor={rentalAppTheme.error}
+                        onPress={() => removeImage(img._id)}
+                      />
+                    </YStack>
+                  ))}
+                  <Button
+                    width={150}
+                    height={150}
+                    backgroundColor="transparent"
+                    borderColor={rentalAppTheme.border}
+                    borderWidth={2}
+                    borderRadius="$4"
+                    borderStyle="dashed"
+                    onPress={pickImage}
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Feather
+                      name="plus"
+                      size={24}
+                      color={rentalAppTheme.text.secondary}
+                    />
+                    <Text color={rentalAppTheme.text.secondary} marginTop="$2">
+                      Add Photos
+                    </Text>
+                  </Button>
+                </XStack>
+              </YStack>
+            </Card>
+
+            {/* Location Section */}
+            <Card padding="$4" marginBottom="$4">
+              <Heading
+                size="$6"
+                color={rentalAppTheme.textDark}
+                marginBottom="$4"
+              >
+                Location
+              </Heading>
+              <YStack space="$4">
+                <PageInput
+                  label="Address Line 1"
+                  value={formData.houseAddress.addressLine1}
+                  onChangeText={(text) => updateAddress("addressLine1", text)}
+                  placeholder="Street address"
+                />
+                <PageInput
+                  label="Address Line 2"
+                  value={formData.houseAddress.addressLine2}
+                  onChangeText={(text) => updateAddress("addressLine2", text)}
+                  placeholder="Apartment, suite, etc. (optional)"
+                />
+                <XStack space="$4">
+                  <YStack flex={1}>
+                    <PageInput
+                      label="City"
+                      value={formData.houseAddress.townCity}
+                      onChangeText={(text) => updateAddress("townCity", text)}
+                      placeholder="City"
+                    />
+                  </YStack>
+                  <YStack flex={1}>
+                    <PageInput
+                      label="County"
+                      value={formData.houseAddress.county}
+                      onChangeText={(text) => updateAddress("county", text)}
+                      placeholder="County"
                     />
                   </YStack>
                 </XStack>
-              </>
-            )}
+                <PageInput
+                  label="Eircode"
+                  value={formData.houseAddress.eircode}
+                  onChangeText={(text) => updateAddress("eircode", text)}
+                  placeholder="Enter eircode"
+                />
+              </YStack>
+            </Card>
 
+            {/* Submit Button */}
             <Button
               backgroundColor={rentalAppTheme.primaryDark}
               pressStyle={{ backgroundColor: rentalAppTheme.primaryLight }}
@@ -502,7 +498,7 @@ export default function ListPropertyScreen() {
               marginTop="$4"
               onPress={async () => {
                 const propertyStore = usePropertyStore.getState();
-                
+
                 propertyStore.setImages(formData.images);
                 propertyStore.setPrice(formData.price.toString());
                 propertyStore.setAvailability(formData.availability);
@@ -511,21 +507,23 @@ export default function ListPropertyScreen() {
                 propertyStore.setPropertyType(formData.propertyType);
                 propertyStore.setRoomsAvailable(formData.roomsAvailable);
                 propertyStore.setBathrooms(formData.bathrooms);
-                propertyStore.setDistanceFromUniversity(formData.distanceFromUniversity);
+                propertyStore.setDistanceFromUniversity(
+                  formData.distanceFromUniversity
+                );
                 propertyStore.setHouseAddress(formData.houseAddress);
                 propertyStore.setLenderId(formData.lenderId);
-                
+
                 try {
                   await propertyStore.createProperty();
                   router.push("/screens/LandlordDashboardScreen");
                 } catch (error) {
-                  console.error('Failed to create property:', error);
+                  console.error("Failed to create property:", error);
                 }
               }}
             >
               <Text
                 color="white"
-                fontSize={16}
+                fontSize="$4"
                 fontWeight="bold"
                 textAlign="center"
               >
