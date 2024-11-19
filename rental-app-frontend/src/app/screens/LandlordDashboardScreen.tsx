@@ -13,7 +13,6 @@ import {
 import { usePropertyStore } from '../../store/property.store';
 import { Property } from '../../store/interfaces/Property';
 
-// Theme definition
 const rentalAppTheme = {
   primaryDark: "#016180",
   primaryLight: "#1abc9c",
@@ -216,10 +215,9 @@ export default function LandlordDashboardScreen() {
 
   const handlePropertyPress = (item: Property) => {
     router.push({
-      pathname: "/screens/PropertyDetailScreen",
+      pathname: "/screens/ManagePropertyScreen",
       params: {
         id: item._id,
-        // Add other properties as needed
       },
     });
   };
