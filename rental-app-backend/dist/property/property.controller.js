@@ -16,6 +16,7 @@ exports.PropertyController = void 0;
 const common_1 = require("@nestjs/common");
 const property_service_1 = require("./property.service");
 const create_property_dto_1 = require("./dto/create-property.dto");
+const update_property_dto_1 = require("./dto/update-property.dto");
 let PropertyController = class PropertyController {
     constructor(propertyService) {
         this.propertyService = propertyService;
@@ -28,6 +29,12 @@ let PropertyController = class PropertyController {
     }
     async getPropertyById(id) {
         return this.propertyService.findById(id);
+    }
+    async updateProperty(id, updatePropertyDto) {
+        return this.propertyService.update(id, updatePropertyDto);
+    }
+    async deleteProperty(id) {
+        return this.propertyService.delete(id);
     }
 };
 exports.PropertyController = PropertyController;
@@ -52,6 +59,21 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], PropertyController.prototype, "getPropertyById", null);
+__decorate([
+    (0, common_1.Put)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_property_dto_1.UpdatePropertyDto]),
+    __metadata("design:returntype", Promise)
+], PropertyController.prototype, "updateProperty", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], PropertyController.prototype, "deleteProperty", null);
 exports.PropertyController = PropertyController = __decorate([
     (0, common_1.Controller)('listings'),
     __metadata("design:paramtypes", [property_service_1.PropertyService])

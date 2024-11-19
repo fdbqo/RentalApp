@@ -52,4 +52,6 @@ export interface PropertyState {
   setImages: (images: Image[]) => void;
   setHouseAddress: (address: Partial<PropertyState['formData']['houseAddress']>) => void;
   setLenderId: (lenderId: string) => void;
+  updateProperty: (id: string, propertyData: Partial<Property>) => Promise<Property>;
+  deleteProperty: (id: string) => Promise<void>;
 }

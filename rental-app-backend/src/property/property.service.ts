@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Property, PropertyDocument } from './schemas/property.schema';
 import { CreatePropertyDto } from './dto/create-property.dto';
+import { UpdatePropertyDto } from './dto/update-property.dto';
 
 @Injectable()
 export class PropertyService {
@@ -50,6 +51,34 @@ export class PropertyService {
       return property;
     } catch (error) {
       throw new NotFoundException(`Property with ID ${id} not found`);
+    }
+  }
+
+  async update(id: string, updatePropertyDto: UpdatePropertyDto): Promise<Property> {
+    try {
+      const updatedProperty = await this.propertyModel
+        .findByIdAndUpdate(id, updatePropertyDto, { new: true })
+        .exec();
+      
+      if (!updatedProperty) {
+        throw new NotFoundException(`Property with ID ${id} not found`);
+      }
+      
+      return updatedProperty;
+    } catch (error) {
+      throw new NotFoundException(`Error updating property: ${error.message}`);
+    }
+  }
+
+  async delete(id: string): Promise<void> {
+    try {
+      const result = await this.propertyModel.findByIdAndDelete(id).exec();
+      
+      if (!result) {
+        throw new NotFoundException(`Property with ID ${id} not found`);
+      }
+    } catch (error) {
+      throw new NotFoundException(`Error deleting property: ${error.message}`);
     }
   }
 }

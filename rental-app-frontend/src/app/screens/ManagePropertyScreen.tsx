@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { usePropertyStore } from '@/store/property.store';
 import {
@@ -18,7 +18,8 @@ import NavigationHeader from '@/components/NavigationHeader';
 export default function ManagePropertyScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { properties } = usePropertyStore();
+  const { properties, deleteProperty } = usePropertyStore();
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const property = properties.find(p => p._id === id);
 
@@ -31,10 +32,22 @@ export default function ManagePropertyScreen() {
   }
 
   const handleEdit = () => {
+    // router.push({
+    //   pathname: "/screens/EditPropertyScreen",
+    //   params: { id: id as string }
+    // });
   };
 
-  const handleDelete = () => {
-
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteProperty(id as string);
+      router.back();
+    } catch (error) {
+      console.error('Failed to delete property:', error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleViewApplications = () => {
@@ -121,11 +134,12 @@ export default function ManagePropertyScreen() {
               pressStyle={{ backgroundColor: '#a80000' }}
               borderRadius="$4"
               onPress={handleDelete}
+              disabled={isDeleting}
             >
               <XStack alignItems="center" space="$2">
                 <Feather name="trash-2" size={20} color="white" />
                 <Text color="white" fontSize={16} fontWeight="bold">
-                  Delete Property
+                  {isDeleting ? 'Deleting...' : 'Delete Property'}
                 </Text>
               </XStack>
             </Button>

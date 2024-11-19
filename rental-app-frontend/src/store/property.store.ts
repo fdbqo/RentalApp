@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { PropertyState } from './interfaces/PropertyState';
 import axios from 'axios';
+import { Property } from './interfaces/Property';
 
 const API_URL = "http://localhost:3000";
 const HARDCODED_LENDER_ID = "6734ce60fc13ae56ffef7d50";
@@ -186,4 +187,52 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
   setLenderId: (lenderId) => set((state) => ({
     formData: { ...state.formData, lenderId }
   })),
+
+  updateProperty: async (id: string, propertyData: Partial<Property>) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const response = await axios.put(`${API_URL}/listings/${id}`, propertyData);
+      
+      const updatedProperties = get().properties.map(prop => 
+        prop._id === id ? response.data : prop
+      );
+      
+      set({ 
+        properties: updatedProperties,
+        selectedProperty: response.data,
+        isLoading: false 
+      });
+      
+      return response.data;
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to update property',
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
+
+  deleteProperty: async (id: string) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      await axios.delete(`${API_URL}/listings/${id}`);
+      
+      const updatedProperties = get().properties.filter(prop => prop._id !== id);
+      
+      set({ 
+        properties: updatedProperties,
+        selectedProperty: null,
+        isLoading: false 
+      });
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to delete property',
+        isLoading: false 
+      });
+      throw error;
+    }
+  },
 }));
