@@ -44,6 +44,8 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     lenderId: HARDCODED_LENDER_ID,
   },
 
+  selectedProperty: null,
+
   // Actions
   fetchLandlordProperties: async () => {
     set({ isLoading: true, error: null });
@@ -121,6 +123,21 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       }
     });
   },
+
+  fetchPropertyById: async (id: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await axios.get(`${API_URL}/listings/${id}`);
+      set({ selectedProperty: response.data, isLoading: false });
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to fetch property',
+        isLoading: false 
+      });
+    }
+  },
+
+  setSelectedProperty: (property) => set({ selectedProperty: property }),
 
   // Form setters
   setPrice: (price) => set((state) => ({

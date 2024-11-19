@@ -6,4 +6,5 @@ export declare class PropertyService {
     constructor(propertyModel: Model<PropertyDocument>);
     findAll(lenderId: string): Promise<Property[]>;
     create(createPropertyDto: CreatePropertyDto): Promise<Property>;
+    findById(id: string): Promise<Property>;
 }

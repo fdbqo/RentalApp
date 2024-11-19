@@ -26,6 +26,9 @@ let PropertyController = class PropertyController {
     async create(createPropertyDto) {
         return this.propertyService.create(createPropertyDto);
     }
+    async getPropertyById(id) {
+        return this.propertyService.findById(id);
+    }
 };
 exports.PropertyController = PropertyController;
 __decorate([
@@ -42,6 +45,13 @@ __decorate([
     __metadata("design:paramtypes", [create_property_dto_1.CreatePropertyDto]),
     __metadata("design:returntype", Promise)
 ], PropertyController.prototype, "create", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], PropertyController.prototype, "getPropertyById", null);
 exports.PropertyController = PropertyController = __decorate([
     (0, common_1.Controller)('listings'),
     __metadata("design:paramtypes", [property_service_1.PropertyService])

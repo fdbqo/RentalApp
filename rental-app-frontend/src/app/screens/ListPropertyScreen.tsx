@@ -392,7 +392,7 @@ export default function ListPropertyScreen() {
                   </Select>
                 </YStack>
 
-                {formData.propertyType === "house" && (
+                {formData.propertyType.toLowerCase() === "house" && (
                   <>
                     <PageInput
                       label="Bedrooms"
@@ -405,7 +405,7 @@ export default function ListPropertyScreen() {
                       label="Bathrooms"
                       value={formData.bathrooms}
                       onChangeText={handleBathroomsChange}
-                      placeholder="Enter number"
+                      placeholder="Enter number"  
                       keyboardType="numeric"
                     />
                   </>

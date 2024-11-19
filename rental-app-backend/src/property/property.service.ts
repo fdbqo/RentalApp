@@ -40,4 +40,16 @@ export class PropertyService {
       throw error;
     }
   }
+
+  async findById(id: string): Promise<Property> {
+    try {
+      const property = await this.propertyModel.findById(id).exec();
+      if (!property) {
+        throw new NotFoundException(`Property with ID ${id} not found`);
+      }
+      return property;
+    } catch (error) {
+      throw new NotFoundException(`Property with ID ${id} not found`);
+    }
+  }
 }

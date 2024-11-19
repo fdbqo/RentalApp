@@ -6,4 +6,5 @@ export declare class PropertyController {
     constructor(propertyService: PropertyService);
     getAllProperties(lenderId: string): Promise<Property[]>;
     create(createPropertyDto: CreatePropertyDto): Promise<Property>;
+    getPropertyById(id: string): Promise<Property>;
 }

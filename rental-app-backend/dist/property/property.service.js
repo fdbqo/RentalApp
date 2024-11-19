@@ -49,6 +49,18 @@ let PropertyService = class PropertyService {
             throw error;
         }
     }
+    async findById(id) {
+        try {
+            const property = await this.propertyModel.findById(id).exec();
+            if (!property) {
+                throw new common_1.NotFoundException(`Property with ID ${id} not found`);
+            }
+            return property;
+        }
+        catch (error) {
+            throw new common_1.NotFoundException(`Property with ID ${id} not found`);
+        }
+    }
 };
 exports.PropertyService = PropertyService;
 exports.PropertyService = PropertyService = __decorate([

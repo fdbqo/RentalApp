@@ -16,4 +16,9 @@ export class PropertyController {
   async create(@Body() createPropertyDto: CreatePropertyDto) {
     return this.propertyService.create(createPropertyDto);
   }
+
+  @Get(':id')
+  async getPropertyById(@Param('id') id: string): Promise<Property> {
+    return this.propertyService.findById(id);
+  }
 }

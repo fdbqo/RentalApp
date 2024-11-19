@@ -8,6 +8,7 @@ interface Image {
 export interface PropertyState {
   // List of properties
   properties: Property[];
+  selectedProperty: Property | null;
   isLoading: boolean;
   error: string | null;
 
@@ -34,8 +35,10 @@ export interface PropertyState {
 
   // Actions
   fetchLandlordProperties: () => Promise<void>;
+  fetchPropertyById: (id: string) => Promise<void>;
   createProperty: () => Promise<void>;
   resetForm: () => void;
+  setSelectedProperty: (property: Property | null) => void;
   
   // Form setters
   setPrice: (price: string) => void;
