@@ -91,7 +91,7 @@ export default function ListPropertyScreen() {
     roomsAvailable: "",
     bathrooms: "",
     distanceFromUniversity: "",
-    images: [] as Array<{ _id: string; uri: string }>,
+    images: [] as Array<{ id: string; uri: string }>,
     houseAddress: {
       addressLine1: "",
       addressLine2: "",
@@ -191,7 +191,7 @@ export default function ListPropertyScreen() {
 
     if (!result.canceled) {
       const newImages = result.assets.map((asset) => ({
-        _id: Date.now().toString(),
+        id: Date.now().toString(),
         uri: asset.uri,
       }));
       updateFormData("images", [...formData.images, ...newImages]);
@@ -201,7 +201,7 @@ export default function ListPropertyScreen() {
   const removeImage = (id: string) => {
     updateFormData(
       "images",
-      formData.images.filter((img) => img._id !== id)
+      formData.images.filter((img) => img.id !== id)
     );
   };
 
@@ -463,7 +463,7 @@ export default function ListPropertyScreen() {
               <YStack>
                 <XStack flexWrap="wrap" gap="$4">
                   {formData.images.map((img) => (
-                    <YStack key={img._id} position="relative">
+                    <YStack key={img.id} position="relative">
                       <Image
                         source={{ uri: img.uri }}
                         width={150}
@@ -478,7 +478,7 @@ export default function ListPropertyScreen() {
                         top={-8}
                         right={-8}
                         backgroundColor={rentalAppTheme.error}
-                        onPress={() => removeImage(img._id)}
+                        onPress={() => removeImage(img.id)}
                       />
                     </YStack>
                   ))}

@@ -9,7 +9,7 @@ export interface Property {
   bathrooms: number;
   distanceFromUniversity: number;
   images: {
-    _id: string;
+    id: string;
     uri: string;
   }[];
   houseAddress: {
