@@ -1,5 +1,6 @@
-import React from 'react';
-import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { usePropertyStore } from '@/store/property.store';
 import {
   YStack,
   XStack,
@@ -11,50 +12,46 @@ import {
   Separator,
 } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
-import { rentalAppTheme } from '@/constants/Colors';// Assuming you have exported your theme
-import { Property } from '@/store/interfaces/Property';
+import { rentalAppTheme } from '@/constants/Colors';
 import NavigationHeader from '@/components/NavigationHeader';
-
-const hardcodedProperty: Property = {
-  _id: '12345',
-  price: 1200,
-  availability: true,
-  description: 'A beautiful apartment in the city center with modern amenities and a stunning view.',
-  shortDescription: 'Modern City Center Apartment',
-  propertyType: 'Apartment',
-  roomsAvailable: 2,
-  bathrooms: 1,
-  distanceFromUniversity: 3,
-  images: [],
-  houseAddress: {
-    addressLine1: '123 Main Street',
-    addressLine2: 'Apt 4B',
-    townCity: 'Dublin',
-    county: 'Dublin',
-    eircode: 'D01 ABC2',
-  },
-  lenderId: 'landlord123',
-  lastUpdated: new Date().toISOString(),
-};
 
 export default function ManagePropertyScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
+  const { properties, deleteProperty } = usePropertyStore();
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  const property = properties.find(p => p._id === id);
+
+  if (!property) {
+    return (
+      <YStack flex={1} justifyContent="center" alignItems="center">
+        <Text>Property not found</Text>
+      </YStack>
+    );
+  }
 
   const handleEdit = () => {
-    // Navigate to an edit screen or open a modal for editing
-    // For now, just log to console
-    console.log('Edit property');
+    // router.push({
+    //   pathname: "/screens/EditPropertyScreen",
+    //   params: { id: id as string }
+    // });
   };
 
-  const handleDelete = () => {
-    // Confirm and delete the property
-    // For now, just log to console
-    console.log('Delete property');
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteProperty(id as string);
+      router.back();
+    } catch (error) {
+      console.error('Failed to delete property:', error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleViewApplications = () => {
-    // Navigate to applications screen
-    console.log('View applications');
+
   };
 
   return (
@@ -78,25 +75,25 @@ export default function ManagePropertyScreen() {
           >
             <YStack space="$3">
               <Text fontSize={20} fontWeight="bold" color={rentalAppTheme.textDark}>
-                {hardcodedProperty.shortDescription}
+                {property.shortDescription}
               </Text>
               <XStack space="$2" alignItems="center">
                 <Feather name="map-pin" size={16} color={rentalAppTheme.textLight} />
                 <Text fontSize={16} color={rentalAppTheme.textLight}>
-                  {`${hardcodedProperty.houseAddress.addressLine1}, ${hardcodedProperty.houseAddress.townCity}, ${hardcodedProperty.houseAddress.county}`}
+                  {`${property.houseAddress.addressLine1}, ${property.houseAddress.townCity}, ${property.houseAddress.county}`}
                 </Text>
               </XStack>
               <XStack space="$2" alignItems="center">
                 <Feather name="dollar-sign" size={16} color={rentalAppTheme.textLight} />
                 <Text fontSize={16} color={rentalAppTheme.textDark}>
-                  €{hardcodedProperty.price.toLocaleString()}/month
+                  €{property.price.toLocaleString()}/month
                 </Text>
               </XStack>
               <XStack space="$2" alignItems="center">
                 <Feather name="home" size={16} color={rentalAppTheme.textLight} />
                 <Text fontSize={16} color={rentalAppTheme.textDark}>
-                  {`${hardcodedProperty.propertyType} • ${hardcodedProperty.roomsAvailable} ${
-                    hardcodedProperty.roomsAvailable === 1 ? 'room' : 'rooms'
+                  {`${property.propertyType} • ${property.roomsAvailable} ${
+                    property.roomsAvailable === 1 ? 'room' : 'rooms'
                   }`}
                 </Text>
               </XStack>
@@ -105,12 +102,12 @@ export default function ManagePropertyScreen() {
                 <Text
                   fontSize={16}
                   color={
-                    hardcodedProperty.availability
+                    property.availability
                       ? rentalAppTheme.primaryLight
                       : rentalAppTheme.accentDarkRed
                   }
                 >
-                  {hardcodedProperty.availability ? 'Available' : 'Rented'}
+                  {property.availability ? 'Available' : 'Rented'}
                 </Text>
               </XStack>
             </YStack>
@@ -137,11 +134,12 @@ export default function ManagePropertyScreen() {
               pressStyle={{ backgroundColor: '#a80000' }}
               borderRadius="$4"
               onPress={handleDelete}
+              disabled={isDeleting}
             >
               <XStack alignItems="center" space="$2">
                 <Feather name="trash-2" size={20} color="white" />
                 <Text color="white" fontSize={16} fontWeight="bold">
-                  Delete Property
+                  {isDeleting ? 'Deleting...' : 'Delete Property'}
                 </Text>
               </XStack>
             </Button>
@@ -179,7 +177,7 @@ export default function ManagePropertyScreen() {
                 Description
               </Text>
               <Text fontSize={16} color={rentalAppTheme.textLight}>
-                {hardcodedProperty.description}
+                {property.description}
               </Text>
             </YStack>
           </Card>
@@ -205,19 +203,19 @@ export default function ManagePropertyScreen() {
                 <XStack space="$2" alignItems="center">
                   <Feather name="arrow-right" size={16} color={rentalAppTheme.textLight} />
                   <Text fontSize={16} color={rentalAppTheme.textDark}>
-                    Bathrooms: {hardcodedProperty.bathrooms}
+                    Bathrooms: {property.bathrooms}
                   </Text>
                 </XStack>
                 <XStack space="$2" alignItems="center">
                   <Feather name="arrow-right" size={16} color={rentalAppTheme.textLight} />
                   <Text fontSize={16} color={rentalAppTheme.textDark}>
-                    Distance from University: {hardcodedProperty.distanceFromUniversity} km
+                    Distance from University: {property.distanceFromUniversity} km
                   </Text>
                 </XStack>
                 <XStack space="$2" alignItems="center">
                   <Feather name="arrow-right" size={16} color={rentalAppTheme.textLight} />
                   <Text fontSize={16} color={rentalAppTheme.textDark}>
-                    Eircode: {hardcodedProperty.houseAddress.eircode}
+                    Eircode: {property.houseAddress.eircode}
                   </Text>
                 </XStack>
               </YStack>

@@ -1,13 +1,14 @@
 import { Property } from './Property';
 
 interface Image {
-  _id: string;
+  id: string;
   uri: string;
 }
 
 export interface PropertyState {
   // List of properties
   properties: Property[];
+  selectedProperty: Property | null;
   isLoading: boolean;
   error: string | null;
 
@@ -34,8 +35,10 @@ export interface PropertyState {
 
   // Actions
   fetchLandlordProperties: () => Promise<void>;
+  fetchPropertyById: (id: string) => Promise<void>;
   createProperty: () => Promise<void>;
   resetForm: () => void;
+  setSelectedProperty: (property: Property | null) => void;
   
   // Form setters
   setPrice: (price: string) => void;
@@ -49,4 +52,6 @@ export interface PropertyState {
   setImages: (images: Image[]) => void;
   setHouseAddress: (address: Partial<PropertyState['formData']['houseAddress']>) => void;
   setLenderId: (lenderId: string) => void;
+  updateProperty: (id: string, propertyData: Partial<Property>) => Promise<Property>;
+  deleteProperty: (id: string) => Promise<void>;
 }
