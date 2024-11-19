@@ -392,24 +392,20 @@ export default function ListPropertyScreen() {
                   </Select>
                 </YStack>
 
-                {formData.propertyType.toLowerCase() === "house" && (
-                  <>
-                    <PageInput
-                      label="Bedrooms"
-                      value={formData.roomsAvailable}
-                      onChangeText={handleRoomsAvailableChange}
-                      placeholder="Enter number"
-                      keyboardType="numeric"
-                    />
-                    <PageInput
-                      label="Bathrooms"
-                      value={formData.bathrooms}
-                      onChangeText={handleBathroomsChange}
-                      placeholder="Enter number"  
-                      keyboardType="numeric"
-                    />
-                  </>
-                )}
+                <PageInput
+                  label="Bedrooms"
+                  value={formData.roomsAvailable}
+                  onChangeText={handleRoomsAvailableChange}
+                  placeholder="Enter number"
+                  keyboardType="numeric"
+                />
+                <PageInput
+                  label="Bathrooms"
+                  value={formData.bathrooms}
+                  onChangeText={handleBathroomsChange}
+                  placeholder="Enter number"  
+                  keyboardType="numeric"
+                />
               </YStack>
             </Card>
 
