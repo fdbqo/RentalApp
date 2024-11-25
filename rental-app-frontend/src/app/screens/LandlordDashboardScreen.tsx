@@ -12,16 +12,7 @@ import {
 } from "tamagui";
 import { usePropertyStore } from '../../store/property.store';
 import { Property } from '../../store/interfaces/Property';
-
-const rentalAppTheme = {
-  primaryDark: "#016180",
-  primaryLight: "#1abc9c",
-  backgroundLight: "#fff",
-  accentDarkRed: "#8B0000",
-  textDark: "#000",
-  textLight: "#666",
-  border: "#e2e8f0",
-} as const;
+import { rentalAppTheme } from '../../constants/Colors';
 
 interface StatCardProps {
   title: string;
