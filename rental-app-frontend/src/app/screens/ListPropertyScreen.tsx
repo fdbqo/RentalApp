@@ -570,7 +570,7 @@ export default function ListPropertyScreen() {
 
                 try {
                   await propertyStore.createProperty();
-                  router.push("/screens/LandlordDashboardScreen");
+                  router.replace("/(tabs)");
                 } catch (error) {
                   console.error("Failed to create property:", error);
                 }
