@@ -4,14 +4,7 @@ import { Feather } from "@expo/vector-icons";
 import { YStack, XStack, Text, Button, Image, Theme } from "tamagui";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import NavigationHeader from "@/components/NavigationHeader";
-
-const rentalAppTheme = {
-  primaryDark: "#016180",
-  primaryLight: "#1abc9c",
-  backgroundLight: "#fff",
-  accentDarkRed: "#8B0000",
-  textDark: "#000",
-};
+import { rentalAppTheme } from '../../constants/Colors';
 
 export default function PropertyDetailScreen() {
   const router = useRouter();

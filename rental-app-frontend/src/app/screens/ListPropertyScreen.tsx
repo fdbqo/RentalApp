@@ -21,24 +21,7 @@ import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import NavigationHeader from "@/components/NavigationHeader";
 import { usePropertyStore } from "@/store/property.store";
-
-
-const rentalAppTheme = {
-  primaryDark: "#016180",
-  primaryLight: "#1abc9c",
-  backgroundLight: "#fff",
-  accentDarkRed: "#8B0000",
-  textDark: "#000",
-  secondary: "#4b5563",
-  background: "#ffffff",
-  border: "#e2e8f0",
-  error: "#ef4444",
-  text: {
-    primary: "#1e293b",
-    secondary: "#64748b",
-    light: "#94a3b8",
-  },
-};
+import { rentalAppTheme } from '../../constants/Colors';
 
 type PageInputProps = {
   label: string;
@@ -587,7 +570,7 @@ export default function ListPropertyScreen() {
 
                 try {
                   await propertyStore.createProperty();
-                  router.push("/screens/LandlordDashboardScreen");
+                  router.replace("/(tabs)");
                 } catch (error) {
                   console.error("Failed to create property:", error);
                 }
