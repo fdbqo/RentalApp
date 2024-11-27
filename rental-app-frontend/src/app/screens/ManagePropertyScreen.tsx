@@ -14,6 +14,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { rentalAppTheme } from '@/constants/Colors';
 import NavigationHeader from '@/components/NavigationHeader';
+import { Image } from 'react-native';
 
 export default function ManagePropertyScreen() {
   const router = useRouter();
@@ -222,7 +223,7 @@ export default function ManagePropertyScreen() {
             </YStack>
           </Card>
 
-          {/* Placeholder for Images */}
+          {/* Images Card - Replace the placeholder */}
           <Card
             bordered
             elevate
@@ -239,9 +240,27 @@ export default function ManagePropertyScreen() {
               <Text fontSize={18} fontWeight="bold" color={rentalAppTheme.textDark}>
                 Images
               </Text>
-              <Text fontSize={16} color={rentalAppTheme.textLight}>
-                Images here
-              </Text>
+              {property.images && property.images.length > 0 ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <XStack space="$2">
+                    {property.images.map((image, index) => (
+                      <Image
+                        key={image.id}
+                        source={{ uri: image.uri }}
+                        style={{
+                          width: 200,
+                          height: 150,
+                          borderRadius: 8,
+                        }}
+                      />
+                    ))}
+                  </XStack>
+                </ScrollView>
+              ) : (
+                <Text fontSize={16} color={rentalAppTheme.textLight}>
+                  No images available
+                </Text>
+              )}
             </YStack>
           </Card>
         </ScrollView>
