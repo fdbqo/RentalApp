@@ -5,12 +5,14 @@ import { Module } from '@nestjs/common';
 import { PropertyModule } from './property/property.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     PropertyModule,
     MongooseModule.forRoot(process.env.MONGO_URI),
     UsersModule,
+    AuthModule,
   ]
 })
 export class AppModule {}
