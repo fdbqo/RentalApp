@@ -32,10 +32,10 @@ export default function ManagePropertyScreen() {
   }
 
   const handleEdit = () => {
-    // router.push({
-    //   pathname: "/screens/EditPropertyScreen",
-    //   params: { id: id as string }
-    // });
+    router.push({
+      pathname: "/screens/EditPropertyScreen",
+      params: { id: id as string }
+    });
   };
 
   const handleDelete = async () => {
