@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "expo-router";
 import {
   YStack,
   Text,
   Button,
   Input,
+  Select,
   XStack,
   Circle,
   Theme,
@@ -13,15 +14,14 @@ import { rentalAppTheme } from "../../constants/Colors";
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const [userType, setUserType] = useState("tenant");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [addressLine, setAddressLine] = useState("");
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
-  const [eircode, setEircode] = useState("");
-  const [showOptional, setShowOptional] = useState(false);
+  const [userType, setUserType] = React.useState("tenant");
+  const [name, setName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [phone, setPhone] = React.useState("");
+  const [addressLine, setAddressLine] = React.useState("");
+  const [city, setCity] = React.useState("");
+  const [country, setCountry] = React.useState("");
+  const [eircode, setEircode] = React.useState("");
 
   const handleRegister = () => {
     // Registration logic here
@@ -103,7 +103,7 @@ export default function RegisterScreen() {
             </XStack>
           </YStack>
 
-          {/* Required Fields */}
+          {/* Name */}
           <Input
             placeholder="Full Name"
             value={name}
@@ -113,6 +113,8 @@ export default function RegisterScreen() {
             padding="$3"
             borderRadius="$4"
           />
+
+          {/* Email */}
           <Input
             placeholder="Email"
             value={email}
@@ -124,71 +126,61 @@ export default function RegisterScreen() {
             borderRadius="$4"
           />
 
-          {/* Toggle Optional Fields */}
-          <Button
-            onPress={() => setShowOptional(!showOptional)}
-            variant="outlined"
+          {/* Phone */}
+          <Input
+            placeholder="Phone"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
             borderColor={rentalAppTheme.border}
             borderWidth={1}
             padding="$3"
             borderRadius="$4"
-          >
-            <Text color={rentalAppTheme.textDark} fontSize={14}>
-              {showOptional ? "Hide Optional Details" : "Optional Details"}
-            </Text>
-          </Button>
+          />
 
-          {/* Optional Fields */}
-          {showOptional && (
-            <YStack space="$3">
-              <Input
-                placeholder="Phone"
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-                borderColor={rentalAppTheme.border}
-                borderWidth={1}
-                padding="$3"
-                borderRadius="$4"
-              />
-              <Input
-                placeholder="Address Line"
-                value={addressLine}
-                onChangeText={setAddressLine}
-                borderColor={rentalAppTheme.border}
-                borderWidth={1}
-                padding="$3"
-                borderRadius="$4"
-              />
-              <Input
-                placeholder="City"
-                value={city}
-                onChangeText={setCity}
-                borderColor={rentalAppTheme.border}
-                borderWidth={1}
-                padding="$3"
-                borderRadius="$4"
-              />
-              <Input
-                placeholder="Country"
-                value={country}
-                onChangeText={setCountry}
-                borderColor={rentalAppTheme.border}
-                borderWidth={1}
-                padding="$3"
-                borderRadius="$4"
-              />
-              <Input
-                placeholder="Eircode"
-                value={eircode}
-                onChangeText={setEircode}
-                borderColor={rentalAppTheme.border}
-                borderWidth={1}
-                padding="$3"
-                borderRadius="$4"
-              />
-            </YStack>
-          )}
+          {/* Address Line */}
+          <Input
+            placeholder="Address Line"
+            value={addressLine}
+            onChangeText={setAddressLine}
+            borderColor={rentalAppTheme.border}
+            borderWidth={1}
+            padding="$3"
+            borderRadius="$4"
+          />
+
+          {/* City */}
+          <Input
+            placeholder="City"
+            value={city}
+            onChangeText={setCity}
+            borderColor={rentalAppTheme.border}
+            borderWidth={1}
+            padding="$3"
+            borderRadius="$4"
+          />
+
+          {/* County */}
+          <Input
+            placeholder="County"
+            value={country}
+            onChangeText={setCountry}
+            borderColor={rentalAppTheme.border}
+            borderWidth={1}
+            padding="$3"
+            borderRadius="$4"
+          />
+
+          {/* Eircode */}
+          <Input
+            placeholder="Eircode"
+            value={eircode}
+            onChangeText={setEircode}
+            borderColor={rentalAppTheme.border}
+            borderWidth={1}
+            padding="$3"
+            borderRadius="$4"
+          />
 
           <Button
             onPress={handleRegister}
