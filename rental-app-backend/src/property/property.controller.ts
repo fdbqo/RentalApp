@@ -1,8 +1,12 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+
+
+import { Controller, Get, Post, Body, Param, Delete, Put, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Property } from './schemas/property.schema';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Expr } from 'aws-sdk/clients/cloudsearchdomain';
 
 @Controller('listings')
 export class PropertyController {
@@ -14,9 +18,15 @@ export class PropertyController {
   }
 
   @Post()
-  async create(@Body() createPropertyDto: CreatePropertyDto) {
+  async create(@Body() createPropertyDto: CreatePropertyDto){
     return this.propertyService.create(createPropertyDto);
   }
+  
+
+  @Get()
+  async getAllProperties(): Promise<Property[]> {
+  return this.propertyService.findAll();
+}
 
   @Get(':id')
   async getPropertyById(@Param('id') id: string): Promise<Property> {
