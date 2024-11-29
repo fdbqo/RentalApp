@@ -61,6 +61,19 @@ __decorate([
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "userType", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "phone", void 0);
+__decorate([
+    (0, class_validator_1.ValidateIf)((o) => o.userType === "landlord"),
+    (0, class_validator_1.IsNotEmpty)({
+        message: "License number is required for landlords",
+    }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "licenseNumber", void 0);
+__decorate([
     (0, class_validator_1.ValidateNested)(),
     (0, class_transformer_1.Type)(() => AddressDto),
     __metadata("design:type", AddressDto)

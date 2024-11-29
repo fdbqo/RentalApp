@@ -13,6 +13,7 @@ import {
 import { usePropertyStore } from '../../store/property.store';
 import { Property } from '../../store/interfaces/Property';
 import { rentalAppTheme } from '../../constants/Colors';
+import { useUserStore } from "@/store/user.store";
 
 interface StatCardProps {
   title: string;

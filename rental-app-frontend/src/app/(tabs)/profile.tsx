@@ -11,6 +11,8 @@ import {
   ScrollView,
 } from "tamagui";
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useUserStore } from "@/store/user.store";
 
 const rentalAppTheme = {
   primaryDark: "#016180",
@@ -39,6 +41,11 @@ const userData = {
 
 export default function ProfileScreen() {
   const { name, contactInfo, address } = userData;
+  const logout = useUserStore((state) => state.logout);
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <Theme name="light">
@@ -164,6 +171,7 @@ export default function ProfileScreen() {
               justifyContent="center"
               alignItems="center"
               borderRadius={8}
+              onPress={handleLogout}
             >
               <Feather name="log-out" size={18} color="white" />
               <Text fontWeight="600" fontSize={16} color="white">

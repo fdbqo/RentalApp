@@ -1,31 +1,62 @@
 import React from "react";
 import { useRouter } from "expo-router";
-import {
-  YStack,
-  Text,
-  Button,
-  Input,
-  Select,
-  XStack,
-  Circle,
-  Theme,
-} from "tamagui";
+import { YStack, Text, Button, Input, XStack, Circle, Theme } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
+import { useUserStore } from "@/store/user.store";
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const [userType, setUserType] = React.useState("tenant");
-  const [name, setName] = React.useState("");
+  const [userType, setUserType] = React.useState<"tenant" | "landlord">(
+    "tenant"
+  );
+  const [firstName, setFirstName] = React.useState("");
+  const [lastName, setLastName] = React.useState("");
   const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [phone, setPhone] = React.useState("");
+  const [licenseNumber, setLicenseNumber] = React.useState("");
   const [addressLine, setAddressLine] = React.useState("");
   const [city, setCity] = React.useState("");
-  const [country, setCountry] = React.useState("");
+  const [county, setCounty] = React.useState("");
   const [eircode, setEircode] = React.useState("");
+  const [error, setError] = React.useState("");
 
-  const handleRegister = () => {
-    // Registration logic here
-    router.push("/screens/LandlordDashboardScreen");
+  const register = useUserStore((state) => state.register);
+  const userError = useUserStore((state) => state.error);
+
+  const handleRegister = async () => {
+    // Build the user object
+    const userData: any = {
+      firstName,
+      lastName,
+      email,
+      password,
+      userType,
+    };
+
+    if (phone) userData.phone = phone;
+
+    if (userType === "landlord") {
+      if (!addressLine || !city || !county || !eircode) {
+        setError("Please fill in all address fields");
+        return;
+      }
+
+      userData.address = {
+        addressLine1: addressLine,
+        city,
+        county,
+        eircode,
+      };
+      if (licenseNumber) userData.licenseNumber = licenseNumber;
+    }
+
+    try {
+      await register(userData);
+      router.push("/screens/LoginScreen");
+    } catch (err) {
+      setError(userError || "Registration failed");
+    }
   };
 
   return (
@@ -52,6 +83,13 @@ export default function RegisterScreen() {
           >
             Please fill in the details below
           </Text>
+
+          {/* Display Error Message */}
+          {error ? (
+            <Text color="red" textAlign="center">
+              {error}
+            </Text>
+          ) : null}
 
           {/* User Type Selection */}
           <YStack space="$2">
@@ -103,11 +141,22 @@ export default function RegisterScreen() {
             </XStack>
           </YStack>
 
-          {/* Name */}
+          {/* First Name */}
           <Input
-            placeholder="Full Name"
-            value={name}
-            onChangeText={setName}
+            placeholder="First Name"
+            value={firstName}
+            onChangeText={setFirstName}
+            borderColor={rentalAppTheme.border}
+            borderWidth={1}
+            padding="$3"
+            borderRadius="$4"
+          />
+
+          {/* Last Name */}
+          <Input
+            placeholder="Last Name"
+            value={lastName}
+            onChangeText={setLastName}
             borderColor={rentalAppTheme.border}
             borderWidth={1}
             padding="$3"
@@ -126,9 +175,21 @@ export default function RegisterScreen() {
             borderRadius="$4"
           />
 
+          {/* Password */}
+          <Input
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            borderColor={rentalAppTheme.border}
+            borderWidth={1}
+            padding="$3"
+            borderRadius="$4"
+          />
+
           {/* Phone */}
           <Input
-            placeholder="Phone"
+            placeholder="Phone (Optional)"
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
@@ -138,49 +199,60 @@ export default function RegisterScreen() {
             borderRadius="$4"
           />
 
-          {/* Address Line */}
-          <Input
-            placeholder="Address Line"
-            value={addressLine}
-            onChangeText={setAddressLine}
-            borderColor={rentalAppTheme.border}
-            borderWidth={1}
-            padding="$3"
-            borderRadius="$4"
-          />
+          {/* License Number - Landlord Only */}
+          {userType === "landlord" && (
+            <Input
+              placeholder="License Number"
+              value={licenseNumber}
+              onChangeText={setLicenseNumber}
+              borderColor={rentalAppTheme.border}
+              borderWidth={1}
+              padding="$3"
+              borderRadius="$4"
+            />
+          )}
 
-          {/* City */}
-          <Input
-            placeholder="City"
-            value={city}
-            onChangeText={setCity}
-            borderColor={rentalAppTheme.border}
-            borderWidth={1}
-            padding="$3"
-            borderRadius="$4"
-          />
-
-          {/* County */}
-          <Input
-            placeholder="County"
-            value={country}
-            onChangeText={setCountry}
-            borderColor={rentalAppTheme.border}
-            borderWidth={1}
-            padding="$3"
-            borderRadius="$4"
-          />
-
-          {/* Eircode */}
-          <Input
-            placeholder="Eircode"
-            value={eircode}
-            onChangeText={setEircode}
-            borderColor={rentalAppTheme.border}
-            borderWidth={1}
-            padding="$3"
-            borderRadius="$4"
-          />
+          {/* Address - Landlord Only */}
+          {userType === "landlord" && (
+            <YStack space="$4">
+              <Input
+                placeholder="Address Line"
+                value={addressLine}
+                onChangeText={setAddressLine}
+                borderColor={rentalAppTheme.border}
+                borderWidth={1}
+                padding="$3"
+                borderRadius="$4"
+              />
+              <Input
+                placeholder="City"
+                value={city}
+                onChangeText={setCity}
+                borderColor={rentalAppTheme.border}
+                borderWidth={1}
+                padding="$3"
+                borderRadius="$4"
+              />
+              <Input
+                placeholder="County"
+                value={county}
+                onChangeText={setCounty}
+                borderColor={rentalAppTheme.border}
+                borderWidth={1}
+                padding="$3"
+                borderRadius="$4"
+              />
+              <Input
+                placeholder="Eircode"
+                value={eircode}
+                onChangeText={setEircode}
+                borderColor={rentalAppTheme.border}
+                borderWidth={1}
+                padding="$3"
+                borderRadius="$4"
+              />
+            </YStack>
+          )}
 
           <Button
             onPress={handleRegister}

@@ -12,6 +12,7 @@ export declare class CreateUserDto {
     password: string;
     userType: "landlord" | "tenant";
     phone?: string;
+    licenseNumber?: string;
     address?: AddressDto;
 }
 export {};
