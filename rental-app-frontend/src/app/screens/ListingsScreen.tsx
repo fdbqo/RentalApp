@@ -4,14 +4,7 @@ import { Feather } from "@expo/vector-icons";
 import PropertyCard from "../../components/PropertyCard";
 import { YStack, XStack, Text, Input, Button, Theme } from "tamagui";
 import { router } from "expo-router";
-
-const rentalAppTheme = {
-  primaryDark: "#016180",
-  primaryLight: "#1abc9c",
-  backgroundLight: "#fff",
-  accentDarkRed: "#8B0000",
-  textDark: "#000",
-};
+import { rentalAppTheme } from '../../constants/Colors';
 
 const propertyData = [
   {
