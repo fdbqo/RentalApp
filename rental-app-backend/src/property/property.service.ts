@@ -43,9 +43,9 @@ export class PropertyService {
     }
   }
   
-  async findAll(): Promise<Property[]> {
+  /*async findAll(): Promise<Property[]> {
     return this.propertyModel.find().exec();
-  };
+  };*/
 
   //Upload Image to S3 Bucket
   //TODO: Implement for multiplle images
@@ -86,12 +86,16 @@ export class PropertyService {
     }
   }
   
-  async create(createPropertyDto: CreatePropertyDto): Promise<Property> {
+  async create(createPropertyDto: CreatePropertyDto, image): Promise<Property> {
     try {
+      //Uploads the image to the S3 bucket
+      const s3Response = await this.uploadImage(image);  
+
+
       const propertyData = {
         ...createPropertyDto,
         lenderId: new Types.ObjectId(createPropertyDto.lenderId),
-        images: createPropertyDto.images.map(img => ({
+        image: createPropertyDto.images.map(img => ({
           _id: new Types.ObjectId(),
           uri: img.uri
         }))

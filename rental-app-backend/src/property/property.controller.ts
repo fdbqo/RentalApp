@@ -1,6 +1,6 @@
 
 
-import { Controller, Get, Post, Body, Param, Delete, Put, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseInterceptors, UploadedFile, Query } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
@@ -18,15 +18,17 @@ export class PropertyController {
   }
 
   @Post()
-  async create(@Body() createPropertyDto: CreatePropertyDto){
-    return this.propertyService.create(createPropertyDto);
+  async create(
+    @Body() createPropertyDto: CreatePropertyDto,
+    @UploadedFile() image: Express.Multer.File){
+    return this.propertyService.create(createPropertyDto, image);
   }
   
 
-  @Get()
+ /*@Get()
   async getAllProperties(): Promise<Property[]> {
   return this.propertyService.findAll();
-}
+  }*/
 
   @Get(':id')
   async getPropertyById(@Param('id') id: string): Promise<Property> {
