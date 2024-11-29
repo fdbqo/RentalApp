@@ -25,7 +25,6 @@ export default function RegisterScreen() {
   const userError = useUserStore((state) => state.error);
 
   const handleRegister = async () => {
-    // Build the user object
     const userData: any = {
       firstName,
       lastName,

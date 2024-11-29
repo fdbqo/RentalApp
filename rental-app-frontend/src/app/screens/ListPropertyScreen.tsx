@@ -535,8 +535,8 @@ export default function ListPropertyScreen() {
               </YStack>
             </Card>
 
-            {/* Submit Button */}
-            <Button
+             {/* Submit Button */}
+             <Button
               backgroundColor={rentalAppTheme.primaryDark}
               pressStyle={{
                 backgroundColor: rentalAppTheme.primaryLight,
@@ -566,8 +566,6 @@ export default function ListPropertyScreen() {
                     : null
                 );
                 propertyStore.setHouseAddress(formData.houseAddress);
-                propertyStore.setLenderId(formData.lenderId);
-
                 try {
                   await propertyStore.createProperty();
                   router.replace("/(tabs)");

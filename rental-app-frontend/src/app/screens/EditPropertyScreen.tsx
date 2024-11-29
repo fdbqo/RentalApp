@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { usePropertyStore } from '@/store/property.store';
-import { Property } from '@/store/interfaces/Property';
+import React, { useState, useCallback } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { usePropertyStore } from "@/store/property.store";
+import { Property } from "@/store/interfaces/Property";
 import {
   YStack,
   XStack,
@@ -14,10 +14,10 @@ import {
   TextArea,
   Image,
   Select,
-} from 'tamagui';
-import { Feather } from '@expo/vector-icons';
-import { rentalAppTheme } from '@/constants/Colors';
-import NavigationHeader from '@/components/NavigationHeader';
+} from "tamagui";
+import { Feather } from "@expo/vector-icons";
+import { rentalAppTheme } from "@/constants/Colors";
+import NavigationHeader from "@/components/NavigationHeader";
 import * as ImagePicker from "expo-image-picker";
 import { ChevronDown, Check } from "@tamagui/lucide-icons";
 import { Adapt, Sheet, Card, Heading } from "tamagui";
@@ -68,27 +68,31 @@ export default function EditPropertyScreen() {
   const { id } = useLocalSearchParams();
   const { properties, updateProperty } = usePropertyStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-   const property = properties.find(p => p._id === id);
+
+  const property = properties.find((p) => p._id === id);
 
   const [formData, setFormData] = useState({
-    shortDescription: property?.shortDescription || '',
-    description: property?.description || '',
-    price: property?.price.toString() || '',
-    propertyType: property?.propertyType || '',
-    roomsAvailable: property?.roomsAvailable.toString() || '',
-    bathrooms: property?.bathrooms.toString() || '',
-    distanceFromUniversity: property?.distanceFromUniversity.toString() || '',
+    shortDescription: property?.shortDescription || "",
+    description: property?.description || "",
+    price: property?.price.toString() || "",
+    propertyType: property?.propertyType || "",
+    roomsAvailable: property?.roomsAvailable.toString() || "",
+    bathrooms: property?.bathrooms.toString() || "",
+    distanceFromUniversity: property?.distanceFromUniversity.toString() || "",
     availability: property?.availability || false,
     houseAddress: {
-      addressLine1: property?.houseAddress.addressLine1 || '',
-      addressLine2: property?.houseAddress.addressLine2 || '',
-      townCity: property?.houseAddress.townCity || '',
-      county: property?.houseAddress.county || '',
-      eircode: property?.houseAddress.eircode || '',
+      addressLine1: property?.houseAddress.addressLine1 || "",
+      addressLine2: property?.houseAddress.addressLine2 || "",
+      townCity: property?.houseAddress.townCity || "",
+      county: property?.houseAddress.county || "",
+      eircode: property?.houseAddress.eircode || "",
     },
-    images: property?.images || [],
-  });
+    images: property?.images
+      ? property.images.map((img, index) => ({
+          id: img.id || `${img.uri}-${index}`,
+          uri: img.uri,
+        }))
+      : [],  });
 
   const updateFormData = useCallback((field: string, value: any) => {
     setFormData((prev) => ({
@@ -118,7 +122,7 @@ export default function EditPropertyScreen() {
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
-      
+
       const updatedProperty: Partial<Property> = {
         shortDescription: formData.shortDescription,
         description: formData.description,
@@ -130,19 +134,19 @@ export default function EditPropertyScreen() {
         availability: formData.availability,
         houseAddress: {
           addressLine1: formData.houseAddress.addressLine1,
-          addressLine2: formData.houseAddress.addressLine2 || '',
+          addressLine2: formData.houseAddress.addressLine2 || "",
           townCity: formData.houseAddress.townCity,
           county: formData.houseAddress.county,
           eircode: formData.houseAddress.eircode,
         },
         images: formData.images,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       };
 
       await updateProperty(id as string, updatedProperty);
       router.back();
     } catch (error) {
-      console.error('Failed to update property:', error);
+      console.error("Failed to update property:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -205,7 +209,9 @@ export default function EditPropertyScreen() {
                 <PageInput
                   label="Distance from University (km)"
                   value={formData.distanceFromUniversity}
-                  onChangeText={(text) => updateFormData("distanceFromUniversity", text)}
+                  onChangeText={(text) =>
+                    updateFormData("distanceFromUniversity", text)
+                  }
                   placeholder="Enter distance"
                   keyboardType="numeric"
                 />
@@ -220,7 +226,9 @@ export default function EditPropertyScreen() {
                   </Text>
                   <Select
                     value={formData.propertyType}
-                    onValueChange={(value) => updateFormData("propertyType", value.toLowerCase())}
+                    onValueChange={(value) =>
+                      updateFormData("propertyType", value.toLowerCase())
+                    }
                     disablePreventBodyScroll
                   >
                     <Select.Trigger
@@ -352,7 +360,9 @@ export default function EditPropertyScreen() {
                 <PageInput
                   label="Bedrooms"
                   value={formData.roomsAvailable}
-                  onChangeText={(text) => updateFormData("roomsAvailable", text)}
+                  onChangeText={(text) =>
+                    updateFormData("roomsAvailable", text)
+                  }
                   placeholder="Enter number"
                   keyboardType="numeric"
                 />
@@ -391,7 +401,9 @@ export default function EditPropertyScreen() {
                 />
                 <Input
                   value={formData.shortDescription}
-                  onChangeText={(text) => updateFormData("shortDescription", text)}
+                  onChangeText={(text) =>
+                    updateFormData("shortDescription", text)
+                  }
                   placeholder="Short Description"
                   borderColor={rentalAppTheme.border}
                   borderWidth={1}
@@ -413,14 +425,14 @@ export default function EditPropertyScreen() {
                 Photos
               </Heading>
               <XStack flexWrap="wrap" gap="$4">
-                {formData.images.map((img) => (
+                {formData.images.map((img, index) => (
                   <YStack key={img.id} position="relative">
-                    <Image
-                      source={{ uri: img.uri }}
-                      width={150}
-                      height={150}
-                      borderRadius="$4"
-                    />
+                  <Image
+                    source={{ uri: img.uri }}
+                    width={150}
+                    height={150}
+                    borderRadius="$4"
+                  />
                     <Button
                       size="$3"
                       circular
@@ -433,6 +445,7 @@ export default function EditPropertyScreen() {
                     />
                   </YStack>
                 ))}
+
                 <Button
                   width={150}
                   height={150}
@@ -445,7 +458,11 @@ export default function EditPropertyScreen() {
                   justifyContent="center"
                   alignItems="center"
                 >
-                  <Feather name="plus" size={24} color={rentalAppTheme.text.secondary} />
+                  <Feather
+                    name="plus"
+                    size={24}
+                    color={rentalAppTheme.text.secondary}
+                  />
                   <Text color={rentalAppTheme.text.secondary} marginTop="$2">
                     Add Photos
                   </Text>
@@ -507,7 +524,7 @@ export default function EditPropertyScreen() {
               <XStack alignItems="center" space="$2">
                 <Feather name="save" size={20} color="white" />
                 <Text color="white" fontSize={16} fontWeight="bold">
-                  {isSubmitting ? 'Saving...' : 'Save Changes'}
+                  {isSubmitting ? "Saving..." : "Save Changes"}
                 </Text>
               </XStack>
             </Button>

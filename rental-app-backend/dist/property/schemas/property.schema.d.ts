@@ -25,9 +25,9 @@ export declare class Property {
 export declare const PropertySchema: MongooseSchema<Property, import("mongoose").Model<Property, any, any, any, Document<unknown, any, Property> & Property & {
     _id: import("mongoose").Types.ObjectId;
 } & {
-    __v?: number;
+    __v: number;
 }, any>, {}, {}, {}, {}, import("mongoose").DefaultSchemaOptions, Property, Document<unknown, {}, import("mongoose").FlatRecord<Property>> & import("mongoose").FlatRecord<Property> & {
     _id: import("mongoose").Types.ObjectId;
 } & {
-    __v?: number;
+    __v: number;
 }>;

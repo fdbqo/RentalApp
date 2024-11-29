@@ -1,3 +1,8 @@
+interface Image {
+  id: string;
+  uri: string;
+}
+
 export interface Property {
   _id?: string;
   price: number;
@@ -8,10 +13,7 @@ export interface Property {
   roomsAvailable: number;
   bathrooms: number;
   distanceFromUniversity: number;
-  images: {
-    id: string;
-    uri: string;
-  }[];
+  images: Image[];
   houseAddress: {
     addressLine1: string;
     addressLine2: string;
@@ -21,5 +23,4 @@ export interface Property {
   };
   lenderId: string;
   lastUpdated?: string;
-
 }
