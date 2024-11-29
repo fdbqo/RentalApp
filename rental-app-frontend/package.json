@@ -43,6 +43,7 @@
     "react-native-svg": "15.6.0",
     "react-native-web": "^0.19.12",
     "tamagui": "^1.115.5",
+    "yarn": "^1.22.22",
     "zustand": "^5.0.0"
   },
   "devDependencies": {

@@ -3,7 +3,7 @@ import LandlordDashboardScreen from "@/app/screens/LandlordDashboardScreen";
 import ListingsScreen from "@/app/screens/ListingsScreen";
 
 // Hardcoded user type for now: "landlord" or "tenant"
-const userType: "landlord" | "tenant" = "landlord";
+const userType: "landlord" | "tenant" = "tenant";
 
 export default function Home() {
   if (userType === "landlord") {

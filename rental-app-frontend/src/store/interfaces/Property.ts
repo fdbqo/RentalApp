@@ -4,7 +4,7 @@ export interface Property {
     description: string;
     image: string;
     availability: string;
-    propertyType: 'room' | 'whole house';
+    propertyType: 'room' | 'whole house' | 'apartment';
     rooms: number;
     bathrooms: number;
     distanceFromUniversity: number;
