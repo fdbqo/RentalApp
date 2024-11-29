@@ -68,6 +68,10 @@ __decorate([
     (0, mongoose_1.Prop)({ type: address_schema_1.AddressSchema }),
     __metadata("design:type", Address)
 ], User.prototype, "address", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], User.prototype, "licenseNumber", void 0);
 exports.User = User = __decorate([
     (0, mongoose_1.Schema)({ collection: "users", versionKey: false })
 ], User);

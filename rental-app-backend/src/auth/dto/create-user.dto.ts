@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  ValidateIf,
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
@@ -44,7 +45,16 @@ export class CreateUserDto {
   })
   userType: "landlord" | "tenant";
 
+  @IsOptional()
+  @IsString()
   phone?: string;
+
+  @ValidateIf((o) => o.userType === "landlord")
+  @IsNotEmpty({
+    message: "License number is required for landlords",
+  })
+  @IsString()
+  licenseNumber?: string;
 
   @ValidateNested()
   @Type(() => AddressDto)

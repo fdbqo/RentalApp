@@ -1,12 +1,13 @@
 import React from "react";
-import LandlordDashboardScreen from "@/app/screens/LandlordDashboardScreen";
+import { useUserStore } from "@/store/user.store";
 import ListingsScreen from "@/app/screens/ListingsScreen";
-
-// Hardcoded user type for now: "landlord" or "tenant"
-const userType: "landlord" | "tenant" = "landlord";
+import LandlordDashboardScreen from "@/app/screens/LandlordDashboardScreen";
 
 export default function Home() {
-  if (userType === "landlord") {
+  const userType = useUserStore((state) => state.user?.userType);
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
+
+  if (isAuthenticated && userType === "landlord") {
     return <LandlordDashboardScreen />;
   } else {
     return <ListingsScreen />;

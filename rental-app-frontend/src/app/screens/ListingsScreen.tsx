@@ -4,7 +4,8 @@ import { Feather } from "@expo/vector-icons";
 import PropertyCard from "../../components/PropertyCard";
 import { YStack, XStack, Text, Input, Button, Theme } from "tamagui";
 import { router } from "expo-router";
-import { rentalAppTheme } from '../../constants/Colors';
+import { rentalAppTheme } from "../../constants/Colors";
+import { useUserStore } from "@/store/user.store";
 
 const propertyData = [
   {
@@ -60,10 +61,13 @@ const propertyData = [
     distanceFromUniversity: 0.8,
   },
 ];
+
 export default function ListingsScreen() {
   const [filteredData, setFilteredData] = useState(propertyData);
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
+
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
 
   return (
     <Theme name="light">
@@ -81,9 +85,29 @@ export default function ListingsScreen() {
           <Text fontSize={24} fontWeight="bold" color="black">
             Listings
           </Text>
-          <Button variant="outlined" padding="$2" borderWidth={0}>
-            <Feather name="bell" size={24} color="black" />
-          </Button>
+          {isAuthenticated ? (
+            <Button variant="outlined" padding="$2" borderWidth={0}>
+              <Feather name="bell" size={24} color="black" />
+            </Button>
+          ) : (
+            <Button
+              onPress={() => router.push("/screens/LoginScreen")}
+              backgroundColor={rentalAppTheme.primaryDark}
+              padding="$2"
+              borderRadius="$4"
+              flexDirection="row"
+              alignItems="center"
+            >
+              <Feather
+                name="log-in"
+                size={20}
+                color="white"
+              />
+              <Text color="white" fontWeight="bold" fontSize={16}>
+                Login
+              </Text>
+            </Button>
+          )}
         </XStack>
 
         {/* Search Bar */}
@@ -118,7 +142,10 @@ export default function ListingsScreen() {
                 item={item}
                 isWeb={isWeb}
                 onPress={() =>
-                  router.push({ pathname: "/screens/PropertyDetailScreen", params: item })
+                  router.push({
+                    pathname: "/screens/PropertyDetailScreen",
+                    params: item,
+                  })
                 }
               />
             </YStack>

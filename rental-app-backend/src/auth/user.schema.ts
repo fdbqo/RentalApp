@@ -46,6 +46,9 @@ export class User {
 
   @Prop({ type: AddressSchema })
   address?: Address;
+
+  @Prop()
+  licenseNumber?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

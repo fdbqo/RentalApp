@@ -1,25 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import {
-  YStack,
-  XStack,
-  Text,
-  Button,
-  Input,
-  Theme,
-} from "tamagui";
-import { rentalAppTheme } from '../../constants/Colors';
+import { YStack, XStack, Text, Button, Input, Theme } from "tamagui";
+import { rentalAppTheme } from "../../constants/Colors";
+import { useUserStore } from "@/store/user.store";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const login = useUserStore((state) => state.login);
+  const error = useUserStore((state) => state.error);
+  const userType = useUserStore((state) => state.user?.userType);
 
-  const handleLogin = () => {
-    // Login logic here
-    router.replace("/(tabs)");
-};
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      await login(email, password);
+    } catch (err) {
+      console.error("Login failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Theme name="light">
@@ -45,6 +50,12 @@ export default function LoginScreen() {
           >
             Please sign in to continue
           </Text>
+
+          {error && (
+            <Text color="red" textAlign="center">
+              {error}
+            </Text>
+          )}
 
           <Input
             placeholder="Email"
@@ -73,6 +84,7 @@ export default function LoginScreen() {
             pressStyle={{ backgroundColor: rentalAppTheme.primaryLight }}
             borderRadius="$4"
             marginTop="$2"
+            disabled={loading}
           >
             <Text
               color="white"
@@ -80,7 +92,7 @@ export default function LoginScreen() {
               fontWeight="bold"
               textAlign="center"
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </Text>
           </Button>
 
@@ -99,6 +111,25 @@ export default function LoginScreen() {
               textAlign="center"
             >
               Create an Account
+            </Text>
+          </Button>
+
+          {/* Back to Listings Button */}
+          <Button
+            variant="outlined"
+            borderColor={rentalAppTheme.border}
+            borderWidth={0}
+            borderRadius="$4"
+            marginTop="$4"
+            onPress={() => router.replace("/(tabs)")}
+          >
+            <Text
+              color={rentalAppTheme.textDark}
+              fontSize={16}
+              fontWeight="bold"
+              textAlign="center"
+            >
+              Back to Listings
             </Text>
           </Button>
         </YStack>
