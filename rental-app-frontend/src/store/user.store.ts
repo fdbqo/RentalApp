@@ -25,9 +25,9 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   login: async (email: string, password: string) => {
     try {
-      console.log("Sending login request:", { email, password });
+      console.log("Sending login request:", { email: email.toLowerCase(), password });
       const response = await axios.post(`${API_URL}/auth/login`, {
-        email,
+        email: email.toLowerCase(),
         password,
       });
       const { user, access_token } = response.data;
@@ -81,7 +81,12 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   register: async (userData: any) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/register`, userData);
+      const normalizedUserData = {
+        ...userData,
+        email: userData.email.toLowerCase(),
+      };
+      
+      const response = await axios.post(`${API_URL}/auth/register`, normalizedUserData);
 
       if (response.status === 201 || response.status === 200) {
         set({ error: null });

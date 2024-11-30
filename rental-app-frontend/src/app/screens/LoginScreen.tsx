@@ -60,7 +60,7 @@ export default function LoginScreen() {
           <Input
             placeholder="Email"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => setEmail(text.toLowerCase())}
             keyboardType="email-address"
             borderColor={rentalAppTheme.border}
             borderWidth={1}
