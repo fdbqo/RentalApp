@@ -1,4 +1,4 @@
-import { Property } from './Property';
+import { Property } from "./Property";
 
 interface Image {
   id: string;
@@ -21,11 +21,11 @@ export interface PropertyState {
     propertyType: string;
     roomsAvailable: number | null;
     bathrooms: number | null;
-    distanceFromUniversity: number | null;
+    distanceFromUniversity?: number | null;
     images: Image[];
     houseAddress: {
       addressLine1: string;
-      addressLine2: string;
+      addressLine2?: string;
       townCity: string;
       county: string;
       eircode: string;
@@ -49,7 +49,12 @@ export interface PropertyState {
   setBathrooms: (bathrooms: number | null) => void;
   setDistanceFromUniversity: (distance: number | null) => void;
   setImages: (images: Image[]) => void;
-  setHouseAddress: (address: Partial<PropertyState['formData']['houseAddress']>) => void;
-  updateProperty: (id: string, propertyData: Partial<Property>) => Promise<Property>;
+  setHouseAddress: (
+    address: Partial<PropertyState["formData"]["houseAddress"]>
+  ) => void;
+  updateProperty: (
+    id: string,
+    propertyData: Partial<Property>
+  ) => Promise<Property>;
   deleteProperty: (id: string) => Promise<void>;
 }

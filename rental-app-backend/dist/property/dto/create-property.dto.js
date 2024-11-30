@@ -21,6 +21,7 @@ __decorate([
 ], HouseAddressDto.prototype, "addressLine1", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], HouseAddressDto.prototype, "addressLine2", void 0);
 __decorate([
@@ -81,6 +82,7 @@ __decorate([
 ], CreatePropertyDto.prototype, "bathrooms", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], CreatePropertyDto.prototype, "distanceFromUniversity", void 0);
 __decorate([

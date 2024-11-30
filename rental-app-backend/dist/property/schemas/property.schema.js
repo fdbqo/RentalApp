@@ -44,7 +44,7 @@ __decorate([
     __metadata("design:type", Number)
 ], Property.prototype, "bathrooms", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ required: false }),
     __metadata("design:type", Number)
 ], Property.prototype, "distanceFromUniversity", void 0);
 __decorate([
@@ -60,7 +60,7 @@ __decorate([
     __metadata("design:type", mongoose_2.Schema.Types.ObjectId)
 ], Property.prototype, "lenderId", void 0);
 exports.Property = Property = __decorate([
-    (0, mongoose_1.Schema)({ collection: 'listings' })
+    (0, mongoose_1.Schema)({ collection: "listings" })
 ], Property);
 exports.PropertySchema = mongoose_1.SchemaFactory.createForClass(Property);
 //# sourceMappingURL=property.schema.js.map

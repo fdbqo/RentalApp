@@ -12,11 +12,11 @@ export interface Property {
   propertyType: string;
   roomsAvailable: number;
   bathrooms: number;
-  distanceFromUniversity: number;
+  distanceFromUniversity?: number;
   images: Image[];
   houseAddress: {
     addressLine1: string;
-    addressLine2: string;
+    addressLine2?: string;
     townCity: string;
     county: string;
     eircode: string;

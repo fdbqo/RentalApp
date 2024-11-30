@@ -1,4 +1,4 @@
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document, Schema as MongooseSchema } from "mongoose";
 export type PropertyDocument = Property & Document;
 export declare class Property {
     price: number;
@@ -8,14 +8,14 @@ export declare class Property {
     propertyType: string;
     roomsAvailable: number;
     bathrooms: number;
-    distanceFromUniversity: number;
+    distanceFromUniversity?: number;
     images: {
         _id: MongooseSchema.Types.ObjectId;
         uri: string;
     }[];
     houseAddress: {
         addressLine1: string;
-        addressLine2: string;
+        addressLine2?: string;
         townCity: string;
         county: string;
         eircode: string;

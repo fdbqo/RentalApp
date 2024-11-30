@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { IsNumber, IsBoolean, IsString, IsArray, IsObject, ValidateNested, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsBoolean, IsString, IsArray, IsObject, ValidateNested, IsNotEmpty, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class HouseAddressDto {
@@ -8,7 +8,8 @@ class HouseAddressDto {
   addressLine1: string;
 
   @IsString()
-  addressLine2: string;
+  @IsOptional()
+  addressLine2?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -55,7 +56,8 @@ export class CreatePropertyDto {
   bathrooms: number;
 
   @IsNumber()
-  distanceFromUniversity: number;
+  @IsOptional()
+  distanceFromUniversity?: number;
 
   @IsArray()
   @ValidateNested({ each: true })
