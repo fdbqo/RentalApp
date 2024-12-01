@@ -24,7 +24,7 @@ export class PropertyService {
   });
 
   //Function for random name generation
-  randomImageName = (bytes = 32) => crypto.randomBytes(bytes).toString('hex');
+  randomImageName = (bytes = 8) => crypto.randomBytes(bytes).toString('hex');
 
   constructor(
     @InjectModel(Property.name) private propertyModel: Model<PropertyDocument>,
@@ -66,6 +66,7 @@ export class PropertyService {
   async s3_upload(file, bucket, name, mimetype){
 
     const targetLocation = String(name);
+    console.log('Target Location:', targetLocation);
     const params = {
       Bucket: bucket,
       Key: targetLocation,
@@ -86,19 +87,44 @@ export class PropertyService {
     }
   }
   
-  async create(createPropertyDto: CreatePropertyDto, image): Promise<Property> {
-    try {
+  async create(createPropertyDto: CreatePropertyDto, images: any[]): Promise<Property> {
+    
       //Uploads the image to the S3 bucket
-      const s3Response = await this.uploadImage(image);  
+      //const s3Response = await this.uploadImage(image);  
 
+      //First attempt at uploading images to S3
+      /*const uploadedImages = await Promise.all(
+        images.map(async (image) => {
+          const s3Response = await this.uploadImage(image);
+          console.log('S3 Response:', s3Response);
+          if(!s3Response || !s3Response.Key){
+            throw new Error('Error uploading image to S3');
+          }
+          return {
+            _id: new Types.ObjectId(),
+            uri: s3Response.Key
+          };
+        })*/
+    
+      const uploadedImages = [];
+
+      for(let i = 0; i < images.length; i++){
+        const image = images[i];
+        const s3Response = await this.uploadImage(image);
+        if(!s3Response || !s3Response.Key){
+          throw new Error('Error uploading image to S3');
+        }
+        uploadedImages.push({
+          _id: new Types.ObjectId(),
+          uri: s3Response.Key
+        });
+      }
+    
 
       const propertyData = {
         ...createPropertyDto,
         lenderId: new Types.ObjectId(createPropertyDto.lenderId),
-        image: createPropertyDto.images.map(img => ({
-          _id: new Types.ObjectId(),
-          uri: img.uri
-        }))
+        images: uploadedImages
       };
       
       const createdProperty = new this.propertyModel(propertyData);
@@ -107,7 +133,6 @@ export class PropertyService {
       console.error('Error creating property:', error);
       throw error;
     }
-  }
 
   async findById(id: string): Promise<Property> {
     try {

@@ -1,11 +1,11 @@
 
 
-import { Controller, Get, Post, Body, Param, Delete, Put, UseInterceptors, UploadedFile, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, UseInterceptors, UploadedFile, UploadedFiles, Query } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Property } from './schemas/property.schema';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor, FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Expr } from 'aws-sdk/clients/cloudsearchdomain';
 
 @Controller('listings')
@@ -18,10 +18,16 @@ export class PropertyController {
   }
 
   @Post()
+  @UseInterceptors(FilesInterceptor('images', 8))
   async create(
     @Body() createPropertyDto: CreatePropertyDto,
-    @UploadedFile() image: Express.Multer.File){
-    return this.propertyService.create(createPropertyDto, image);
+    @UploadedFiles() images: Express.Multer.File[])
+    {
+      console.log(images);
+      console.log(createPropertyDto);
+      console.log(Body);
+      console.log(UploadedFile);
+    return this.propertyService.create(createPropertyDto, images);
   }
   
 
