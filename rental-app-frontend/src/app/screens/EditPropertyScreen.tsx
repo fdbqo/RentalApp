@@ -220,9 +220,11 @@ export default function EditPropertyScreen() {
     description: "",
     price: "",
     propertyType: "",
-    roomsAvailable: "",
+    singleBedrooms: "",
+    doubleBedrooms: "",
     bathrooms: "",
     availability: "",
+    availableFrom: "",
     houseAddress: {
       addressLine1: "",
       addressLine2: "",
@@ -242,11 +244,15 @@ export default function EditPropertyScreen() {
         description: property.description || "",
         price: property.price ? property.price.toString() : "",
         propertyType: property.propertyType || "",
-        roomsAvailable: property.roomsAvailable
-          ? property.roomsAvailable.toString()
+        singleBedrooms: property.singleBedrooms
+          ? property.singleBedrooms.toString()
+          : "",
+        doubleBedrooms: property.doubleBedrooms
+          ? property.doubleBedrooms.toString()
           : "",
         bathrooms: property.bathrooms ? property.bathrooms.toString() : "",
-        availability: property.availability ? "available" : "not available",
+        availability: property.availability || "",
+        availableFrom: property.availableFrom || "",
         houseAddress: {
           addressLine1: property.houseAddress.addressLine1 || "",
           addressLine2: property.houseAddress.addressLine2 || "",
@@ -296,10 +302,6 @@ export default function EditPropertyScreen() {
       newErrors.availability = "Please select availability";
     }
 
-    if (!formData.roomsAvailable || isNaN(Number(formData.roomsAvailable))) {
-      newErrors.roomsAvailable = "Please enter number of bedrooms";
-    }
-
     if (!formData.bathrooms || isNaN(Number(formData.bathrooms))) {
       newErrors.bathrooms = "Please enter number of bathrooms";
     }
@@ -314,6 +316,18 @@ export default function EditPropertyScreen() {
 
     if (formData.images.length === 0) {
       newErrors.images = "Please add at least one photo";
+    }
+
+    if (!formData.singleBedrooms || isNaN(Number(formData.singleBedrooms))) {
+      newErrors.singleBedrooms = "Please enter number of single bedrooms";
+    }
+
+    if (!formData.doubleBedrooms || isNaN(Number(formData.doubleBedrooms))) {
+      newErrors.doubleBedrooms = "Please enter number of double bedrooms";
+    }
+
+    if (formData.availability === "available_from" && !formData.availableFrom) {
+      newErrors.availableFrom = "Please select an availability date";
     }
 
     if (!formData.houseAddress.addressLine1) {
@@ -387,9 +401,11 @@ export default function EditPropertyScreen() {
         description: formData.description,
         price: Number(formData.price),
         propertyType: formData.propertyType,
-        roomsAvailable: Number(formData.roomsAvailable),
+        singleBedrooms: Number(formData.singleBedrooms),
+        doubleBedrooms: Number(formData.doubleBedrooms),
         bathrooms: Number(formData.bathrooms),
-        availability: formData.availability === "available",
+        availability: formData.availability,
+        availableFrom: formData.availableFrom,
         houseAddress: {
           addressLine1: formData.houseAddress.addressLine1,
           addressLine2: formData.houseAddress.addressLine2 || "",
@@ -589,17 +605,41 @@ export default function EditPropertyScreen() {
                       {errors.availability}
                     </Text>
                   )}
+
+                  {formData.availability === "available_from" && (
+                    <PageInput
+                      label="Available From"
+                      value={formData.availableFrom}
+                      onChangeText={(text) =>
+                        updateFormData("availableFrom", text)
+                      }
+                      placeholder="Select date"
+                      keyboardType="default"
+                      error={errors.availableFrom}
+                    />
+                  )}
                 </YStack>
 
                 <PageInput
-                  label="Bedrooms"
-                  value={formData.roomsAvailable}
+                  label="Single Bedrooms"
+                  value={formData.singleBedrooms}
                   onChangeText={(text) =>
-                    updateFormData("roomsAvailable", text)
+                    updateFormData("singleBedrooms", text)
                   }
-                  placeholder="Enter number"
+                  placeholder="Enter number of single bedrooms"
                   keyboardType="numeric"
-                  error={errors.roomsAvailable}
+                  error={errors.singleBedrooms}
+                />
+
+                <PageInput
+                  label="Double Bedrooms"
+                  value={formData.doubleBedrooms}
+                  onChangeText={(text) =>
+                    updateFormData("doubleBedrooms", text)
+                  }
+                  placeholder="Enter number of double bedrooms"
+                  keyboardType="numeric"
+                  error={errors.doubleBedrooms}
                 />
 
                 <PageInput

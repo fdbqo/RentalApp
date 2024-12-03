@@ -2,13 +2,16 @@ import { Document, Schema as MongooseSchema } from "mongoose";
 export type PropertyDocument = Property & Document;
 export declare class Property {
     price: number;
-    availability: boolean;
+    isRented: boolean;
+    availability: 'immediately' | 'available_from';
+    availableFrom?: string;
     description: string;
     shortDescription: string;
     propertyType: string;
-    roomsAvailable: number;
-    bathrooms: number;
-    distanceFromUniversity?: number;
+    singleBedrooms: number | null;
+    doubleBedrooms: number | null;
+    bathrooms: number | null;
+    distanceFromUniversity?: number | null;
     images: {
         _id: MongooseSchema.Types.ObjectId;
         uri: string;

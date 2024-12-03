@@ -15,11 +15,14 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
 
   formData: {
     price: "",
-    availability: true,
+    isRented: true,
+    availability: "immediately",
+    availableFrom: null as string | null,
     description: "",
     shortDescription: "",
     propertyType: "shared living",
-    roomsAvailable: null,
+    singleBedrooms: null,
+    doubleBedrooms: null,
     bathrooms: null,
     distanceFromUniversity: null,
     images: [],
@@ -72,7 +75,15 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       const { formData } = get();
       const propertyData = {
         ...formData,
-        price: parseFloat(formData.price.toString()),
+        price: parseFloat(formData.price),
+        isRented: formData.isRented,
+        availability: formData.availability,
+        availableFrom:
+          formData.availability === "available_from"
+            ? formData.availableFrom
+            : undefined,
+        singleBedrooms: formData.singleBedrooms ?? 0,
+        doubleBedrooms: formData.doubleBedrooms ?? 0,
         lenderId: userId,
         lastUpdated: new Date().toISOString(),
         images: formData.images.map((img) => ({
@@ -102,11 +113,14 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     set({
       formData: {
         price: "",
-        availability: true,
+        isRented: false,
+        availability: "",
+        availableFrom: null,
         description: "",
         shortDescription: "",
         propertyType: "shared living",
-        roomsAvailable: null,
+        singleBedrooms: null,
+        doubleBedrooms: null,
         bathrooms: null,
         distanceFromUniversity: null,
         images: [],
@@ -143,9 +157,19 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       formData: { ...state.formData, price },
     })),
 
+  setIsRented: (isRented) =>
+    set((state) => ({
+      formData: { ...state.formData, isRented },
+    })),
+
   setAvailability: (availability) =>
     set((state) => ({
       formData: { ...state.formData, availability },
+    })),
+
+  setAvailableFrom: (availableFrom) =>
+    set((state) => ({
+      formData: { ...state.formData, availableFrom },
     })),
 
   setDescription: (description) =>
@@ -163,9 +187,14 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       formData: { ...state.formData, propertyType },
     })),
 
-  setRoomsAvailable: (roomsAvailable) =>
+  setSingleBedrooms: (singleBedrooms) =>
     set((state) => ({
-      formData: { ...state.formData, roomsAvailable },
+      formData: { ...state.formData, singleBedrooms },
+    })),
+
+  setDoubleBedrooms: (doubleBedrooms) =>
+    set((state) => ({
+      formData: { ...state.formData, doubleBedrooms },
     })),
 
   setBathrooms: (bathrooms) =>

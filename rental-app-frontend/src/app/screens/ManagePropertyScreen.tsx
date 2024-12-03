@@ -150,13 +150,20 @@ export default function ManagePropertyScreen() {
                   {`${
                     property.propertyType.charAt(0).toUpperCase() +
                     property.propertyType.slice(1)
-                  } • ${property.roomsAvailable} ${
-                    property.roomsAvailable === 1 ? "bedroom" : "bedrooms"
+                  } • ${property.singleBedrooms} ${
+                    property.singleBedrooms === 1
+                      ? "single bedroom"
+                      : "single bedrooms"
+                  } • ${property.doubleBedrooms} ${
+                    property.doubleBedrooms === 1
+                      ? "double bedroom"
+                      : "double bedrooms"
                   } • ${property.bathrooms} ${
                     property.bathrooms === 1 ? "bathroom" : "bathrooms"
                   }`}
                 </Text>
               </XStack>
+
               <XStack space="$2" alignItems="center">
                 <Feather
                   name="check-circle"

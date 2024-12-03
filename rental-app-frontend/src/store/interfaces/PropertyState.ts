@@ -6,23 +6,19 @@ interface Image {
 }
 
 export interface PropertyState {
-  // List of properties
-  properties: Property[];
-  selectedProperty: Property | null;
-  isLoading: boolean;
-  error: string | null;
-
-  // Form state for creating/editing property
   formData: {
     price: string;
-    availability: boolean;
+    isRented: boolean;
+    availability: string;
+    availableFrom?: string | null;
     description: string;
     shortDescription: string;
     propertyType: string;
-    roomsAvailable: number | null;
+    singleBedrooms: number | null;
+    doubleBedrooms: number | null;
     bathrooms: number | null;
     distanceFromUniversity?: number | null;
-    images: Image[];
+    images: { id: string; uri: string }[];
     houseAddress: {
       addressLine1: string;
       addressLine2?: string;
@@ -31,30 +27,33 @@ export interface PropertyState {
       eircode: string;
     };
   };
+  properties: Property[]; // Added for list of properties
+  selectedProperty: Property | null; // Added for currently selected property
+  isLoading: boolean; // Added to track loading state
+  error: string | null; // Added for error handling
 
   // Actions
   fetchLandlordProperties: () => Promise<void>;
-  fetchPropertyById: (id: string) => Promise<void>;
   createProperty: () => Promise<void>;
   resetForm: () => void;
-  setSelectedProperty: (property: Property | null) => void;
+  fetchPropertyById: (id: string) => Promise<void>;
+  updateProperty: (id: string, propertyData: Partial<Property>) => Promise<void>;
+  deleteProperty: (id: string) => Promise<void>;
 
   // Form setters
   setPrice: (price: string) => void;
-  setAvailability: (availability: boolean) => void;
+  setIsRented: (isRented: boolean) => void;
+  setAvailability: (availability: string) => void;
+  setAvailableFrom: (availableFrom: string | null) => void;
   setDescription: (description: string) => void;
   setShortDescription: (shortDescription: string) => void;
   setPropertyType: (propertyType: string) => void;
-  setRoomsAvailable: (rooms: number | null) => void;
+  setSingleBedrooms: (singleBedrooms: number | null) => void;
+  setDoubleBedrooms: (doubleBedrooms: number | null) => void;
   setBathrooms: (bathrooms: number | null) => void;
-  setDistanceFromUniversity: (distance: number | null) => void;
-  setImages: (images: Image[]) => void;
+  setDistanceFromUniversity: (distanceFromUniversity: number | null) => void;
+  setImages: (images: { id: string; uri: string }[]) => void;
   setHouseAddress: (
     address: Partial<PropertyState["formData"]["houseAddress"]>
   ) => void;
-  updateProperty: (
-    id: string,
-    propertyData: Partial<Property>
-  ) => Promise<Property>;
-  deleteProperty: (id: string) => Promise<void>;
 }
