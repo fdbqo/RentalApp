@@ -12,6 +12,7 @@ dotenv.config();
 const common_1 = require("@nestjs/common");
 const property_module_1 = require("./property/property.module");
 const mongoose_1 = require("@nestjs/mongoose");
+const auth_module_1 = require("./auth/auth.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -20,6 +21,7 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             property_module_1.PropertyModule,
             mongoose_1.MongooseModule.forRoot(process.env.MONGO_URI),
+            auth_module_1.AuthModule,
         ]
     })
 ], AppModule);

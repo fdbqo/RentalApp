@@ -16,19 +16,76 @@ exports.PropertyService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
-const property_schema_1 = require("../property/schemas/property.schema");
+const property_schema_1 = require("./schemas/property.schema");
 let PropertyService = class PropertyService {
     constructor(propertyModel) {
         this.propertyModel = propertyModel;
     }
+    async findAll(lenderId) {
+        try {
+            const objectId = new mongoose_2.Types.ObjectId(lenderId);
+            const properties = await this.propertyModel.find({ lenderId: objectId }).exec();
+            return properties;
+        }
+        catch (error) {
+            return [];
+        }
+    }
     async create(createPropertyDto) {
-        const createdProperty = new this.propertyModel(createPropertyDto);
-        return createdProperty.save();
+        try {
+            const propertyData = {
+                ...createPropertyDto,
+                lenderId: new mongoose_2.Types.ObjectId(createPropertyDto.lenderId),
+                images: createPropertyDto.images.map(img => ({
+                    _id: new mongoose_2.Types.ObjectId(),
+                    uri: img.uri
+                }))
+            };
+            const createdProperty = new this.propertyModel(propertyData);
+            return createdProperty.save();
+        }
+        catch (error) {
+            console.error('Error creating property:', error);
+            throw error;
+        }
     }
-    async findAll() {
-        return this.propertyModel.find().exec();
+    async findById(id) {
+        try {
+            const property = await this.propertyModel.findById(id).exec();
+            if (!property) {
+                throw new common_1.NotFoundException(`Property with ID ${id} not found`);
+            }
+            return property;
+        }
+        catch (error) {
+            throw new common_1.NotFoundException(`Property with ID ${id} not found`);
+        }
     }
-    ;
+    async update(id, updatePropertyDto) {
+        try {
+            const updatedProperty = await this.propertyModel
+                .findByIdAndUpdate(id, updatePropertyDto, { new: true })
+                .exec();
+            if (!updatedProperty) {
+                throw new common_1.NotFoundException(`Property with ID ${id} not found`);
+            }
+            return updatedProperty;
+        }
+        catch (error) {
+            throw new common_1.NotFoundException(`Error updating property: ${error.message}`);
+        }
+    }
+    async delete(id) {
+        try {
+            const result = await this.propertyModel.findByIdAndDelete(id).exec();
+            if (!result) {
+                throw new common_1.NotFoundException(`Property with ID ${id} not found`);
+            }
+        }
+        catch (error) {
+            throw new common_1.NotFoundException(`Error deleting property: ${error.message}`);
+        }
+    }
 };
 exports.PropertyService = PropertyService;
 exports.PropertyService = PropertyService = __decorate([

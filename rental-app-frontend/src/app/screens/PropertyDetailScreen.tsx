@@ -1,9 +1,10 @@
-import React, { useState } from "react"
-import { ScrollView, Dimensions, Platform } from "react-native"
-import { useRouter, useLocalSearchParams } from "expo-router"
-import { YStack, XStack, Text, Button, Theme, Separator, Card, H1, H2, Paragraph, Stack, Image, useMedia } from "tamagui"
-import { Bed, Bath, Home, MapPin, Wifi, Flame, Waves, Utensils, ParkingCircle, Mountain, Calendar, Building, Euro, User, ChevronLeft, ChevronRight, ArrowLeft } from '@tamagui/lucide-icons'
-import NavigationHeader from "@/components/NavigationHeader"
+import React, { useState } from "react";
+import { ScrollView, Dimensions, Platform } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { YStack, XStack, Text, Button, Theme, Separator, Card, H1, H2, Paragraph, Stack, Image, useMedia } from "tamagui";
+import { Bed, Bath, Home, MapPin, Wifi, Flame, Waves, Utensils, ParkingCircle, Mountain, Calendar, Building, Euro, User, ChevronLeft, ChevronRight, ArrowLeft } from '@tamagui/lucide-icons';
+import NavigationHeader from "@/components/NavigationHeader";
+import { rentalAppTheme} from '../../constants/Colors';
 
 interface PropertyDetailParams {
   id: string

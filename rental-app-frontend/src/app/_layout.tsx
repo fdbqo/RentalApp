@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { StatusBar, useColorScheme } from "react-native";
 import {
   DarkTheme,
@@ -6,11 +6,11 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { SplashScreen, Stack } from "expo-router";
-import { Provider } from "./Provider";
-import { useTheme, TamaguiProvider } from "tamagui";
+import { SplashScreen, Stack, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme, TamaguiProvider } from "tamagui";
 import tamaguiConfig from "../../tamagui.config";
+import { useUserStore } from "@/store/user.store";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -26,6 +26,12 @@ export default function RootLayout() {
     InterBold: require("@tamagui/font-inter/otf/Inter-Bold.otf"),
   });
 
+  const restoreAuthState = useUserStore((state) => state.restoreAuthState);
+
+  useEffect(() => {
+    restoreAuthState();
+  }, [restoreAuthState]);
+
   useEffect(() => {
     if (interLoaded || interError) {
       SplashScreen.hideAsync();
@@ -37,21 +43,38 @@ export default function RootLayout() {
   }
 
   return (
-    <Providers>
-      <TamaguiProvider config={tamaguiConfig}>
-        <RootLayoutNav />
-      </TamaguiProvider>
-    </Providers>
+    <TamaguiProvider config={tamaguiConfig}>
+      <RootLayoutNav />
+    </TamaguiProvider>
   );
 }
-
-const Providers = ({ children }: { children: React.ReactNode }) => {
-  return <Provider>{children}</Provider>;
-};
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const theme = useTheme();
+
+  const router = useRouter();
+
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
+  const userType = useUserStore((state) => state.user?.userType);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (isAuthenticated !== undefined) {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    router.replace("/(tabs)");
+  }, [isAuthenticated, loading, router]);
+
+  if (loading) {
+    return null; // add loading spinner here
+  }
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
@@ -64,12 +87,9 @@ function RootLayoutNav() {
             headerShown: false,
           }}
         >
-          <Stack.Screen
-            name="(tabs)"
-            options={{
-              headerShown: false,
-            }}
-          />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="screens/LoginScreen" />
+          <Stack.Screen name="screens/RegisterScreen" />
         </Stack>
       </SafeAreaView>
     </ThemeProvider>

@@ -1,5 +1,4 @@
 import React from "react";
-import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import {
@@ -10,36 +9,11 @@ import {
   Card,
   ScrollView,
   Theme,
-  View,
 } from "tamagui";
-
-// Theme definition
-const rentalAppTheme = {
-  primaryDark: "#016180",
-  primaryLight: "#1abc9c",
-  backgroundLight: "#fff",
-  accentDarkRed: "#8B0000",
-  textDark: "#000",
-  textLight: "#666",
-  border: "#e2e8f0",
-} as const;
-
-// Types
-interface Property {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  availability: "Available" | "Rented";
-  description: string;
-  propertyType: "Apartment" | "House" | "Studio" | "Villa" | "Condo";
-  rooms: number;
-  bathrooms: number;
-  distanceFromUniversity: number;
-  location?: string;
-  bedrooms?: number;
-  lastUpdated?: string;
-}
+import { usePropertyStore } from '../../store/property.store';
+import { Property } from '../../store/interfaces/Property';
+import { rentalAppTheme } from '../../constants/Colors';
+import { useUserStore } from "@/store/user.store";
 
 interface StatCardProps {
   title: string;
@@ -54,94 +28,10 @@ interface PropertyItemProps {
   onPress?: () => void;
 }
 
-// Enhanced Sample data
-const hardcodedProperties: Property[] = [
-  {
-    id: "1",
-    name: "Sunny Apartment",
-    price: 1200,
-    image:
-      "https://www.thespruce.com/thmb/BpZG-gG2ReQwYpzrQg302pezLr0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Stocksy_txp3d216bb1tUq300_Medium_4988078-56c96ac19def4bf8ba430cf5063b6b38.jpg",
-    availability: "Available",
-    description:
-      "A bright and spacious apartment located in the heart of the city.",
-    propertyType: "Apartment",
-    rooms: 3,
-    bathrooms: 2,
-    distanceFromUniversity: 1.5,
-    location: "City Center",
-    bedrooms: 2,
-    lastUpdated: "2024-03-15",
-  },
-  {
-    id: "2",
-    name: "Cozy Studio",
-    price: 800,
-    image:
-      "https://www.thespruce.com/thmb/BpZG-gG2ReQwYpzrQg302pezLr0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Stocksy_txp3d216bb1tUq300_Medium_4988078-56c96ac19def4bf8ba430cf5063b6b38.jpg",
-    availability: "Rented",
-    description: "A compact and comfortable studio perfect for singles.",
-    propertyType: "Studio",
-    rooms: 1,
-    bathrooms: 1,
-    distanceFromUniversity: 0.8,
-    location: "West End",
-    bedrooms: 1,
-    lastUpdated: "2024-03-10",
-  },
-  {
-    id: "3",
-    name: "Spacious Villa",
-    price: 2500,
-    image:
-      "https://www.thespruce.com/thmb/BpZG-gG2ReQwYpzrQg302pezLr0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Stocksy_txp3d216bb1tUq300_Medium_4988078-56c96ac19def4bf8ba430cf5063b6b38.jpg",
-    availability: "Available",
-    description: "A luxurious villa with a large garden and modern amenities.",
-    propertyType: "Villa",
-    rooms: 5,
-    bathrooms: 4,
-    distanceFromUniversity: 3.2,
-    location: "Suburbs",
-    bedrooms: 4,
-    lastUpdated: "2024-03-12",
-  },
-  {
-    id: "4",
-    name: "Modern Loft",
-    price: 1500,
-    image:
-      "https://www.thespruce.com/thmb/BpZG-gG2ReQwYpzrQg302pezLr0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Stocksy_txp3d216bb1tUq300_Medium_4988078-56c96ac19def4bf8ba430cf5063b6b38.jpg",
-    availability: "Available",
-    description: "A stylish loft with open spaces and contemporary design.",
-    propertyType: "Apartment",
-    rooms: 3,
-    bathrooms: 2,
-    distanceFromUniversity: 2.0,
-    location: "Downtown",
-    bedrooms: 2,
-    lastUpdated: "2024-03-14",
-  },
-  {
-    id: "5",
-    name: "Beachfront Condo",
-    price: 2000,
-    image:
-      "https://www.thespruce.com/thmb/BpZG-gG2ReQwYpzrQg302pezLr0=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Stocksy_txp3d216bb1tUq300_Medium_4988078-56c96ac19def4bf8ba430cf5063b6b38.jpg",
-    availability: "Rented",
-    description:
-      "A beautiful condo with stunning sea views and modern facilities.",
-    propertyType: "Condo",
-    rooms: 4,
-    bathrooms: 3,
-    distanceFromUniversity: 5.0,
-    location: "Beachside",
-    bedrooms: 3,
-    lastUpdated: "2024-03-11",
-  },
-];
-
 const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
-  const formattedDate = new Date(item.lastUpdated || "").toLocaleDateString();
+  const formattedDate = item.lastUpdated
+    ? new Date(item.lastUpdated).toLocaleDateString()
+    : '';
 
   return (
     <Card
@@ -168,18 +58,18 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
               fontWeight="bold"
               color={rentalAppTheme.textDark}
             >
-              {item.name}
+              {item.houseAddress.addressLine1}
             </Text>
             <Text
               fontSize={14}
               color={
-                item.availability === "Available"
+                item.availability
                   ? rentalAppTheme.primaryLight
                   : rentalAppTheme.accentDarkRed
               }
               fontWeight="500"
             >
-              {item.availability}
+              {item.availability ? 'Available' : 'Rented'}
             </Text>
           </XStack>
 
@@ -190,7 +80,7 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
               color={rentalAppTheme.textLight}
             />
             <Text fontSize={14} color={rentalAppTheme.textLight}>
-              {item.location}
+              {item.houseAddress.townCity}
             </Text>
           </XStack>
 
@@ -205,18 +95,20 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
             <XStack space="$2" alignItems="center">
               <Feather name="home" size={14} color={rentalAppTheme.textLight} />
               <Text fontSize={14} color={rentalAppTheme.textLight}>
-                {item.propertyType} • {item.bedrooms}{" "}
-                {item.bedrooms === 1 ? "bed" : "beds"}
+                {item.propertyType} • {item.roomsAvailable}{" "}
+                {item.roomsAvailable === 1 ? "room" : "rooms"}
               </Text>
             </XStack>
           </XStack>
 
-          <XStack space="$2" alignItems="center">
-            <Feather name="clock" size={12} color={rentalAppTheme.textLight} />
-            <Text fontSize={12} color={rentalAppTheme.textLight}>
-              Last updated: {formattedDate}
-            </Text>
-          </XStack>
+          {formattedDate && (
+            <XStack space="$2" alignItems="center">
+              <Feather name="clock" size={12} color={rentalAppTheme.textLight} />
+              <Text fontSize={12} color={rentalAppTheme.textLight}>
+                Last updated: {formattedDate}
+              </Text>
+            </XStack>
+          )}
         </YStack>
       </XStack>
     </Card>
@@ -271,16 +163,19 @@ const RevenueCard: React.FC<{ totalRevenue: number }> = ({ totalRevenue }) => (
     shadowOpacity={0.1}
     shadowRadius={4}
     marginBottom="$4"
-    alignSelf="center" // Centering the card horizontally
+    alignSelf="center"
     width="100%"
   >
-    <XStack alignItems="center" justifyContent="space-around" space="$5" paddingHorizontal="$6">
+    <XStack
+      alignItems="center"
+      justifyContent="space-around"
+      space="$5"
+      paddingHorizontal="$6"
+    >
       <Feather name="dollar-sign" size={24} color="white" />
-      
       <Text fontSize={16} fontWeight="bold" color="white">
         Total Revenue:
       </Text>
-
       <Text fontSize={16} color="white">
         €{totalRevenue.toLocaleString()}/month
       </Text>
@@ -288,42 +183,52 @@ const RevenueCard: React.FC<{ totalRevenue: number }> = ({ totalRevenue }) => (
   </Card>
 );
 
-
 export default function LandlordDashboardScreen() {
   const router = useRouter();
+  const { properties, isLoading, error, fetchLandlordProperties } = usePropertyStore();
+
+  React.useEffect(() => {
+    fetchLandlordProperties();
+  }, []);
+
+  const totalProperties = properties.length;
+  const availableProperties = properties.filter((p) => p.availability).length;
+  const rentedProperties = properties.filter((p) => !p.availability).length;
+  const totalRevenue = properties
+    .filter((p) => !p.availability)
+    .reduce((sum, p) => sum + p.price, 0);
 
   const stats = {
-    total: hardcodedProperties.length,
-    available: hardcodedProperties.filter((p) => p.availability === "Available")
-      .length,
-    rented: hardcodedProperties.filter((p) => p.availability === "Rented")
-      .length,
-    totalRevenue: hardcodedProperties
-      .filter((p) => p.availability === "Rented")
-      .reduce((sum, p) => sum + p.price, 0),
+    total: totalProperties,
+    available: availableProperties,
+    rented: rentedProperties,
+    totalRevenue: totalRevenue,
   };
 
   const handlePropertyPress = (item: Property) => {
-    // Navigate to property details screen, passing the entire property item as params
     router.push({
-      pathname: "/screens/PropertyDetailScreen",
+      pathname: "/screens/ManagePropertyScreen",
       params: {
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        image: item.image,
-        availability: item.availability,
-        description: item.description,
-        propertyType: item.propertyType,
-        rooms: item.rooms,
-        bathrooms: item.bathrooms,
-        distanceFromUniversity: item.distanceFromUniversity,
-        location: item.location,
-        bedrooms: item.bedrooms,
-        lastUpdated: item.lastUpdated,
+        id: item._id,
       },
     });
   };
+
+  if (isLoading) {
+    return (
+      <YStack flex={1} justifyContent="center" alignItems="center">
+        <Text>Loading...</Text>
+      </YStack>
+    );
+  }
+
+  if (error) {
+    return (
+      <YStack flex={1} justifyContent="center" alignItems="center">
+        <Text color="red">{error}</Text>
+      </YStack>
+    );
+  }
 
   return (
     <Theme name="light">
@@ -332,7 +237,6 @@ export default function LandlordDashboardScreen() {
         backgroundColor={rentalAppTheme.backgroundLight}
         padding="$4"
       >
-        {/* Header */}
         <XStack
           justifyContent="space-between"
           alignItems="center"
@@ -376,7 +280,6 @@ export default function LandlordDashboardScreen() {
             value={stats.rented}
             icon="key"
             color={rentalAppTheme.accentDarkRed}
-            // Removed subtitle to separate Total Revenue
           />
         </XStack>
 
@@ -416,9 +319,9 @@ export default function LandlordDashboardScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}
         >
-          {hardcodedProperties.map((property) => (
+          {properties.map((property) => (
             <PropertyItem
-              key={property.id}
+              key={property._id}
               item={property}
               onPress={() => handlePropertyPress(property)}
             />

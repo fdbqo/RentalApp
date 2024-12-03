@@ -1,36 +1,57 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document, Schema as MongooseSchema } from "mongoose";
 
 export type PropertyDocument = Property & Document;
 
-@Schema({ collection: 'properties', versionKey: false })
+@Schema({ collection: "listings" })
 export class Property {
-  @Prop({ required: true })
-  name: string;
+  @Prop()
+  price: number;
 
-  @Prop({ required: true })
+  @Prop()
+  isRented: boolean;
+
+  @Prop()
+  availability: 'immediately' | 'available_from';
+
+  @Prop()
+  availableFrom?: string;
+
+  @Prop()
   description: string;
 
   @Prop()
-  image: string;
+  shortDescription: string;
 
-  @Prop({ required: true })
-  availability: string;
-
-  @Prop({ required: true })
+  @Prop()
   propertyType: string;
 
-  @Prop({ required: true })
-  rooms: number;
+  @Prop({ required: false })
+  singleBedrooms: number | null;
 
-  @Prop({ required: true })
-  bathrooms: number;
+  @Prop({ required: false })
+  doubleBedrooms: number | null;
 
-  @Prop({ required: true })
-  distanceFromUniversity: number;
+  @Prop({ required: false })
+  bathrooms: number | null;
 
-  @Prop({ required: true })
-  price: number;
+  @Prop({ required: false })
+  distanceFromUniversity?: number | null;
+
+  @Prop({ type: [{ _id: MongooseSchema.Types.ObjectId, uri: String }] })
+  images: { _id: MongooseSchema.Types.ObjectId; uri: string }[];
+
+  @Prop({ type: Object })
+  houseAddress: {
+    addressLine1: string;
+    addressLine2?: string;
+    townCity: string;
+    county: string;
+    eircode: string;
+  };
+
+  @Prop({ type: MongooseSchema.Types.ObjectId })
+  lenderId: MongooseSchema.Types.ObjectId;
 }
 
 export const PropertySchema = SchemaFactory.createForClass(Property);

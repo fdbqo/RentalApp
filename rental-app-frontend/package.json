@@ -18,10 +18,13 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.1.0",
+    "@react-native-community/datetimepicker": "^8.2.0",
     "@react-navigation/native": "^6.1.17",
     "@tamagui/config": "^1.115.5",
     "@tamagui/lucide-icons": "^1.115.5",
     "@tamagui/toast": "^1.115.5",
+    "axios": "^1.7.7",
     "babel-preset-expo": "^11.0.6",
     "burnt": "^0.12.2",
     "expo": "~51.0.32",
@@ -30,6 +33,7 @@
     "expo-image-picker": "~15.0.7",
     "expo-linking": "~6.3.1",
     "expo-router": "~3.5.23",
+    "expo-secure-store": "~13.0.2",
     "expo-splash-screen": "~0.27.5",
     "expo-status-bar": "^1.12.1",
     "expo-system-ui": "~3.0.7",
