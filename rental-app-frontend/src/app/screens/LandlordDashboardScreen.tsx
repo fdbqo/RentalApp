@@ -1,19 +1,10 @@
 import React from "react";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import {
-  YStack,
-  XStack,
-  Text,
-  Button,
-  Card,
-  ScrollView,
-  Theme,
-} from "tamagui";
-import { usePropertyStore } from '../../store/property.store';
-import { Property } from '../../store/interfaces/Property';
-import { rentalAppTheme } from '../../constants/Colors';
-import { useUserStore } from "@/store/user.store";
+import { YStack, XStack, Text, Button, Card, ScrollView, Theme } from "tamagui";
+import { usePropertyStore } from "../../store/property.store";
+import { Property } from "../../store/interfaces/Property";
+import { rentalAppTheme } from "../../constants/Colors";
 
 interface StatCardProps {
   title: string;
@@ -31,7 +22,9 @@ interface PropertyItemProps {
 const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
   const formattedDate = item.lastUpdated
     ? new Date(item.lastUpdated).toLocaleDateString()
-    : '';
+    : "";
+
+  const totalRooms = item.singleBedrooms + item.doubleBedrooms;
 
   return (
     <Card
@@ -63,13 +56,13 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
             <Text
               fontSize={14}
               color={
-                item.availability
+                !item.isRented
                   ? rentalAppTheme.primaryLight
                   : rentalAppTheme.accentDarkRed
               }
               fontWeight="500"
             >
-              {item.availability ? 'Available' : 'Rented'}
+              {item.isRented ? "Rented" : "Available"}
             </Text>
           </XStack>
 
@@ -95,15 +88,19 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
             <XStack space="$2" alignItems="center">
               <Feather name="home" size={14} color={rentalAppTheme.textLight} />
               <Text fontSize={14} color={rentalAppTheme.textLight}>
-                {item.propertyType} • {item.roomsAvailable}{" "}
-                {item.roomsAvailable === 1 ? "room" : "rooms"}
+                {item.propertyType} • {totalRooms}{" "}
+                {totalRooms === 1 ? "room" : "rooms"}
               </Text>
             </XStack>
           </XStack>
 
           {formattedDate && (
             <XStack space="$2" alignItems="center">
-              <Feather name="clock" size={12} color={rentalAppTheme.textLight} />
+              <Feather
+                name="clock"
+                size={12}
+                color={rentalAppTheme.textLight}
+              />
               <Text fontSize={12} color={rentalAppTheme.textLight}>
                 Last updated: {formattedDate}
               </Text>
@@ -185,17 +182,18 @@ const RevenueCard: React.FC<{ totalRevenue: number }> = ({ totalRevenue }) => (
 
 export default function LandlordDashboardScreen() {
   const router = useRouter();
-  const { properties, isLoading, error, fetchLandlordProperties } = usePropertyStore();
+  const { properties, isLoading, error, fetchLandlordProperties } =
+    usePropertyStore();
 
   React.useEffect(() => {
     fetchLandlordProperties();
   }, []);
 
   const totalProperties = properties.length;
-  const availableProperties = properties.filter((p) => p.availability).length;
-  const rentedProperties = properties.filter((p) => !p.availability).length;
+  const availableProperties = properties.filter((p) => !p.isRented).length;
+  const rentedProperties = properties.filter((p) => p.isRented).length;
   const totalRevenue = properties
-    .filter((p) => !p.availability)
+    .filter((p) => p.isRented)
     .reduce((sum, p) => sum + p.price, 0);
 
   const stats = {
@@ -291,48 +289,40 @@ export default function LandlordDashboardScreen() {
           justifyContent="space-between"
           alignItems="center"
           marginBottom="$2"
+          marginTop="$2"
         >
           <Text fontSize={18} fontWeight="600" color={rentalAppTheme.textDark}>
             Your Properties
           </Text>
-          <Button
-            variant="outlined"
-            borderColor={rentalAppTheme.border}
-            borderWidth={1}
-            padding="$2"
-          >
-            <XStack space="$1" alignItems="center">
-              <Text fontSize={14} color={rentalAppTheme.textDark}>
-                Sort
-              </Text>
-              <Feather
-                name="chevron-down"
-                size={16}
-                color={rentalAppTheme.textDark}
-              />
-            </XStack>
-          </Button>
         </XStack>
 
-        {/* Property List */}
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        >
-          {properties.map((property) => (
-            <PropertyItem
-              key={property._id}
-              item={property}
-              onPress={() => handlePropertyPress(property)}
-            />
-          ))}
-        </ScrollView>
+        {/* Check if there are properties */}
+        {totalProperties === 0 ? (
+          <YStack flex={1} justifyContent="center" alignItems="center">
+            <Text fontSize={14} color={rentalAppTheme.textLight}>
+              You have no properties added.
+            </Text>
+          </YStack>
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          >
+            {properties.map((property) => (
+              <PropertyItem
+                key={property._id}
+                item={property}
+                onPress={() => handlePropertyPress(property)}
+              />
+            ))}
+          </ScrollView>
+        )}
 
         {/* Add New Property Button */}
         <Button
           onPress={() => router.push("/screens/ListPropertyScreen")}
           backgroundColor={rentalAppTheme.primaryDark}
-          pressStyle={{ backgroundColor: rentalAppTheme.primaryLight }}
+          pressStyle={{ backgroundColor: rentalAppTheme.primaryDarkPressed }}
           borderRadius="$4"
           marginTop="$4"
         >
