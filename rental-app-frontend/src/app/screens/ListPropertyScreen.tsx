@@ -22,6 +22,7 @@ import { Feather } from "@expo/vector-icons";
 import NavigationHeader from "@/components/NavigationHeader";
 import { usePropertyStore } from "@/store/property.store";
 import { rentalAppTheme } from "../../constants/Colors";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 type PageInputProps = {
   label: string;
@@ -201,13 +202,14 @@ export default function ListPropertyScreen() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     price: "",
-    availability: "",
+    availability: "immediately",
+    availableFrom: null as string | null,
     description: "",
     shortDescription: "",
     propertyType: "",
-    roomsAvailable: "",
+    singleBedrooms: "",
+    doubleBedrooms: "",
     bathrooms: "",
-    distanceFromUniversity: "",
     images: [] as Array<{ id: string; uri: string }>,
     houseAddress: {
       addressLine1: "",
@@ -219,6 +221,7 @@ export default function ListPropertyScreen() {
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const updateFormData = useCallback((field: string, value: any) => {
     setFormData((prev) => ({
@@ -244,16 +247,16 @@ export default function ListPropertyScreen() {
     [updateFormData]
   );
 
-  const handleDistanceChange = useCallback(
+  const handleSingleBedroomsChange = useCallback(
     (text: string) => {
-      updateFormData("distanceFromUniversity", text);
+      updateFormData("singleBedrooms", text);
     },
     [updateFormData]
   );
 
-  const handleRoomsAvailableChange = useCallback(
+  const handleDoubleBedroomsChange = useCallback(
     (text: string) => {
-      updateFormData("roomsAvailable", text);
+      updateFormData("doubleBedrooms", text);
     },
     [updateFormData]
   );
@@ -323,8 +326,8 @@ export default function ListPropertyScreen() {
     { type: "Shared living" },
   ];
   const availabilityOptions = [
-    { type: "Available" },
-    { type: "Not available" },
+    { type: "Available Immediately", value: "immediately" },
+    { type: "Available From", value: "available_from" },
   ];
 
   const availableCities =
@@ -348,8 +351,31 @@ export default function ListPropertyScreen() {
       newErrors.availability = "Please select availability";
     }
 
-    if (!formData.roomsAvailable || isNaN(Number(formData.roomsAvailable))) {
-      newErrors.roomsAvailable = "Please enter number of bedrooms";
+    if (formData.availability === "available_from") {
+      if (!formData.availableFrom) {
+        newErrors.availableFrom = "Please select an availability date";
+      } else {
+        const selectedDate = new Date(formData.availableFrom);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate < today) {
+          newErrors.availableFrom = "Availability date cannot be in the past";
+        }
+      }
+    }
+
+    if (!formData.singleBedrooms && !formData.doubleBedrooms) {
+      newErrors.bedrooms = "Please enter at least one bedroom.";
+    }
+
+    if (formData.singleBedrooms && isNaN(Number(formData.singleBedrooms))) {
+      newErrors.singleBedrooms =
+        "Please enter a valid number of single bedrooms.";
+    }
+
+    if (formData.doubleBedrooms && isNaN(Number(formData.doubleBedrooms))) {
+      newErrors.doubleBedrooms =
+        "Please enter a valid number of double bedrooms.";
     }
 
     if (!formData.bathrooms || isNaN(Number(formData.bathrooms))) {
@@ -498,6 +524,7 @@ export default function ListPropertyScreen() {
                   )}
                 </YStack>
 
+                {/* Availability Section */}
                 <YStack marginBottom="$4">
                   <Text
                     fontSize="$4"
@@ -509,9 +536,14 @@ export default function ListPropertyScreen() {
                   </Text>
                   <Select
                     value={formData.availability}
-                    onValueChange={(value) =>
-                      updateFormData("availability", value)
-                    }
+                    onValueChange={(value) => {
+                      updateFormData("availability", value);
+                      if (value === "available_from") {
+                        setShowDatePicker(true);
+                      } else if (value === "immediately") {
+                        updateFormData("availableFrom", "immediately");
+                      }
+                    }}
                     disablePreventBodyScroll
                   >
                     <Select.Trigger
@@ -556,8 +588,8 @@ export default function ListPropertyScreen() {
                           {availabilityOptions.map((item, i) => (
                             <Select.Item
                               index={i}
-                              key={item.type}
-                              value={item.type.toLowerCase()}
+                              key={item.value}
+                              value={item.value}
                             >
                               <Select.ItemText>{item.type}</Select.ItemText>
                               <Select.ItemIndicator marginLeft="auto">
@@ -574,21 +606,94 @@ export default function ListPropertyScreen() {
                       {errors.availability}
                     </Text>
                   )}
+
+                  {/* Date Picker for "Available From" */}
+                  {formData.availability === "available_from" && (
+                    <YStack space="$2" marginTop="$4">
+                      <Text
+                        fontSize="$4"
+                        fontWeight="500"
+                        color={rentalAppTheme.text.secondary}
+                        marginBottom="$2"
+                      >
+                        Available From
+                      </Text>
+                      <Button
+                        backgroundColor={rentalAppTheme.border}
+                        borderRadius="$4"
+                        padding="$3"
+                        onPress={() => setShowDatePicker(true)}
+                      >
+                        <Text
+                          color={
+                            formData.availableFrom &&
+                            formData.availableFrom !== "immediately"
+                              ? "black"
+                              : rentalAppTheme.text.secondary
+                          }
+                        >
+                          {formData.availableFrom &&
+                          formData.availableFrom !== "immediately"
+                            ? formData.availableFrom
+                            : "Select Date"}
+                        </Text>
+                      </Button>
+                      {showDatePicker && (
+                        <DateTimePicker
+                          value={
+                            formData.availableFrom &&
+                            formData.availableFrom !== "immediately"
+                              ? new Date(formData.availableFrom)
+                              : new Date()
+                          }
+                          mode="date"
+                          display="default"
+                          onChange={(event, selectedDate) => {
+                            setShowDatePicker(false);
+                            if (selectedDate) {
+                              const formattedDate = selectedDate
+                                .toISOString()
+                                .split("T")[0];
+                              updateFormData("availableFrom", formattedDate);
+                            }
+                          }}
+                          minimumDate={new Date()}
+                        />
+                      )}
+                      {errors.availableFrom && (
+                        <Text color={rentalAppTheme.error} fontSize="$2">
+                          {errors.availableFrom}
+                        </Text>
+                      )}
+                    </YStack>
+                  )}
                 </YStack>
 
+                {/* Single Bedrooms Input */}
                 <PageInput
-                  label="Bedrooms"
-                  value={formData.roomsAvailable}
-                  onChangeText={handleRoomsAvailableChange}
-                  placeholder="Enter number"
+                  label="Single Bedrooms"
+                  value={formData.singleBedrooms}
+                  onChangeText={handleSingleBedroomsChange}
+                  placeholder="Enter number of single bedrooms"
                   keyboardType="numeric"
-                  error={errors.roomsAvailable}
+                  error={errors.singleBedrooms}
                 />
+
+                {/* Double Bedrooms Input */}
+                <PageInput
+                  label="Double Bedrooms"
+                  value={formData.doubleBedrooms}
+                  onChangeText={handleDoubleBedroomsChange}
+                  placeholder="Enter number of double bedrooms"
+                  keyboardType="numeric"
+                  error={errors.doubleBedrooms}
+                />
+
                 <PageInput
                   label="Bathrooms"
                   value={formData.bathrooms}
                   onChangeText={handleBathroomsChange}
-                  placeholder="Enter number"
+                  placeholder="Enter number of bathrooms"
                   keyboardType="numeric"
                   error={errors.bathrooms}
                 />
@@ -907,25 +1012,27 @@ export default function ListPropertyScreen() {
                 propertyStore.setImages(formData.images);
                 propertyStore.setPrice(formData.price);
                 propertyStore.setAvailability(
-                  formData.availability === "available"
+                  formData.availability as "immediately" | "available_from"
                 );
+                propertyStore.setIsRented(
+                  formData.availability !== "available_from"
+                );
+                propertyStore.setAvailability(formData.availability);
+                propertyStore.setAvailableFrom(formData.availableFrom ?? "");
                 propertyStore.setDescription(formData.description);
                 propertyStore.setShortDescription(formData.shortDescription);
                 propertyStore.setPropertyType(formData.propertyType);
-                propertyStore.setRoomsAvailable(
-                  formData.roomsAvailable
-                    ? Number(formData.roomsAvailable)
-                    : null
+                propertyStore.setSingleBedrooms(
+                  Number(formData.singleBedrooms) || 0
+                );
+                propertyStore.setDoubleBedrooms(
+                  Number(formData.doubleBedrooms) || 0
                 );
                 propertyStore.setBathrooms(
                   formData.bathrooms ? Number(formData.bathrooms) : null
                 );
-                propertyStore.setDistanceFromUniversity(
-                  formData.distanceFromUniversity
-                    ? Number(formData.distanceFromUniversity)
-                    : null
-                );
                 propertyStore.setHouseAddress(formData.houseAddress);
+                // propertyStore.setDistanceFromUniversity(formData.distanceFromUniversity);
                 try {
                   await propertyStore.createProperty();
                   router.replace("/(tabs)");

@@ -22,7 +22,15 @@ __decorate([
 __decorate([
     (0, mongoose_1.Prop)(),
     __metadata("design:type", Boolean)
+], Property.prototype, "isRented", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
 ], Property.prototype, "availability", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], Property.prototype, "availableFrom", void 0);
 __decorate([
     (0, mongoose_1.Prop)(),
     __metadata("design:type", String)
@@ -36,11 +44,15 @@ __decorate([
     __metadata("design:type", String)
 ], Property.prototype, "propertyType", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ required: false }),
     __metadata("design:type", Number)
-], Property.prototype, "roomsAvailable", void 0);
+], Property.prototype, "singleBedrooms", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ required: false }),
+    __metadata("design:type", Number)
+], Property.prototype, "doubleBedrooms", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ required: false }),
     __metadata("design:type", Number)
 ], Property.prototype, "bathrooms", void 0);
 __decorate([

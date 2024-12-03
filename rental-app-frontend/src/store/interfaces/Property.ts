@@ -6,17 +6,20 @@ interface Image {
 export interface Property {
   _id?: string;
   price: number;
-  availability: boolean;
+  isRented: boolean;
+  availability: string; // "immediately" | "available_from"
+  availableFrom?: string;
   description: string;
   shortDescription: string;
   propertyType: string;
-  roomsAvailable: number;
+  singleBedrooms: number;
+  doubleBedrooms: number;
   bathrooms: number;
-  distanceFromUniversity?: number;
+  distanceFromUniversity: number;
   images: Image[];
   houseAddress: {
     addressLine1: string;
-    addressLine2?: string;
+    addressLine2: string;
     townCity: string;
     county: string;
     eircode: string;

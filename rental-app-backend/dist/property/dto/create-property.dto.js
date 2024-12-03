@@ -55,8 +55,19 @@ __decorate([
 ], CreatePropertyDto.prototype, "price", void 0);
 __decorate([
     (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", Boolean)
+], CreatePropertyDto.prototype, "isRented", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
 ], CreatePropertyDto.prototype, "availability", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreatePropertyDto.prototype, "availableFrom", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
@@ -74,10 +85,17 @@ __decorate([
 ], CreatePropertyDto.prototype, "propertyType", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
-], CreatePropertyDto.prototype, "roomsAvailable", void 0);
+], CreatePropertyDto.prototype, "singleBedrooms", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], CreatePropertyDto.prototype, "doubleBedrooms", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], CreatePropertyDto.prototype, "bathrooms", void 0);
 __decorate([

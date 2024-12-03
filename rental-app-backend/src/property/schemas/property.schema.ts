@@ -9,7 +9,13 @@ export class Property {
   price: number;
 
   @Prop()
-  availability: boolean;
+  isRented: boolean;
+
+  @Prop()
+  availability: 'immediately' | 'available_from';
+
+  @Prop()
+  availableFrom?: string;
 
   @Prop()
   description: string;
@@ -20,14 +26,17 @@ export class Property {
   @Prop()
   propertyType: string;
 
-  @Prop()
-  roomsAvailable: number;
-
-  @Prop()
-  bathrooms: number;
+  @Prop({ required: false })
+  singleBedrooms: number | null;
 
   @Prop({ required: false })
-  distanceFromUniversity?: number;
+  doubleBedrooms: number | null;
+
+  @Prop({ required: false })
+  bathrooms: number | null;
+
+  @Prop({ required: false })
+  distanceFromUniversity?: number | null;
 
   @Prop({ type: [{ _id: MongooseSchema.Types.ObjectId, uri: String }] })
   images: { _id: MongooseSchema.Types.ObjectId; uri: string }[];
