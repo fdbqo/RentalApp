@@ -1,106 +1,96 @@
-import React, { useState } from "react";
-import { Image, Pressable, Platform } from "react-native";
-import { YStack, XStack, Text } from "tamagui";
-import { MaterialIcons } from "@expo/vector-icons";
+import React from 'react'
+import { Image, GestureResponderEvent } from 'react-native'
+import { Card, Text, YStack, XStack, Button, Separator } from 'tamagui'
+import { Home, Bed, Bath, MapPin, Calendar, Euro, Subtitles } from '@tamagui/lucide-icons'
+import { Property } from '@/Types/types'
 
-type PropertyCardProps = {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  availability: string;
-  description: string;
-  propertyType: string;
-  rooms: number;
-  bathrooms: number;
-  distanceFromUniversity: number;
-};
+interface PropertyCardProps {
+  item: Property
+  onPress: () => void
+}
 
-export default function PropertyCard({
-  item,
-  isWeb,
-  onPress,
-}: {
-  item: PropertyCardProps;
-  isWeb: boolean;
-  onPress?: () => void;
-}) {
-  const [isPressed, setIsPressed] = useState(false);
+export default function PropertyCard({ item, onPress }: PropertyCardProps) {
+  const handlePress = (e: GestureResponderEvent) => {
+    if ((e.target as any).closest?.('.filter-dropdown')) {
+      e.stopPropagation()
+      return
+    }
+    onPress()
+  }
 
   return (
-    <Pressable
-      onPressIn={() => setIsPressed(true)}
-      onPressOut={() => setIsPressed(false)}
-      onPress={onPress}
-      style={{
-        transform: [{ scale: isPressed ? 0.98 : 1 }],
-        borderRadius: 12,
-        backgroundColor: "#fff",
-        padding: 16,
-        marginBottom: 16,
-        width: isWeb ? "32%" : "100%",
-        ...Platform.select({
-          ios: {
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.2,
-            shadowRadius: 5,
-          },
-          android: {
-            elevation: 6,
-          },
-          web: {
-            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.15)",
-          },
-        }),
-      }}
+    <Card
+      elevate
+      size="$4"
+      bordered
+      marginBottom="$4"
+      onPress={handlePress}
+      backgroundColor="white"
+      borderRadius={16}
+      overflow="hidden"
     >
       <Image
-        source={{ uri: item.image || "https://example.com/default-image.jpg" }}
-        style={{
-          width: "100%",
-          height: 200,
-          borderRadius: 8,
-        }}
+        source={{ uri: item.images[0].uri }}
+        style={{ width: '100%', height: 200 }}
+        resizeMode="cover"
+        accessibilityLabel={`Image of ${item.shortDescription}`}
       />
-      <YStack paddingTop="$4">
-        <Text fontSize={18} fontWeight="bold" marginBottom="$2">
-          {item.name}
-        </Text>
-        <Text fontSize={14} color="#4a4a4a" marginBottom="$2">
-          {item.description}
-        </Text>
-        <Text fontSize={14} color="#4a4a4a" fontWeight="bold" marginBottom="$2">
-          {item.propertyType}
-        </Text>
-        <Text fontSize={16} color="#4a4a4a" marginBottom="$2">
-          €{item.price}/month
-        </Text>
-        <Text fontSize={14} color="#00a699" marginBottom="$4">
-          {item.availability}
-        </Text>
-
-        <XStack justifyContent="space-between">
-          <XStack alignItems="center">
-            <MaterialIcons name="king-bed" size={16} color="#4a4a4a" />
-            <Text fontSize={12} color="#4a4a4a" marginLeft="$2">
-              {item.rooms} rooms
+      <YStack padding="$4" space="$3">
+        <YStack space="$2">
+          <Text fontSize={16} fontWeight="600" color="$gray12">{item.houseAddress.addressLine1}, {item.houseAddress.addressLine2}, {item.houseAddress.townCity}</Text>
+          <Text fontSize={14} color="$gray10">{item.houseAddress.county}, {item.houseAddress.eircode}</Text>
+          <XStack alignItems="center" space="$2">
+            <Euro size={18} color="$blue9" />
+            <Text fontSize={16} fontWeight="500" color="$blue9">{item.price}/month</Text>
+          </XStack>
+        </YStack>
+        
+        <Separator />
+        
+        <Text fontSize={14} color="$gray11" numberOfLines={2}>{item.shortDescription}</Text>
+        
+        <XStack flexWrap="wrap" justifyContent="space-between">
+          <PropertyFeature icon={Home} text={item.propertyType} />
+          <PropertyFeature icon={Bed} text={`${item.roomsAvailable} ${item.roomsAvailable > 1 ? 'rooms' : 'room'}`} />
+          <PropertyFeature icon={Bath} text={`${item.bathrooms} ${item.bathrooms > 1 ? 'bathrooms' : 'bathroom'}`} />
+          <PropertyFeature icon={MapPin} text={`${item.distanceFromUniversity.toFixed(1)} km from university`} />
+        </XStack>
+        
+        <Separator />
+        
+        <XStack justifyContent="space-between" alignItems="center">
+          <XStack alignItems="center" space="$2">
+            <Calendar size={16} color={item.availability ? "$green9" : "$red9"} />
+            <Text fontSize={14} color={item.availability ? "$green9" : "$red9"} fontWeight="500">
+              {item.availability ? "Available" : "Not Available"}
             </Text>
           </XStack>
-          <XStack alignItems="center">
-            <MaterialIcons name="bathtub" size={16} color="#4a4a4a" />
-            <Text fontSize={12} color="#4a4a4a" marginLeft="$2">
-              {item.bathrooms} bathrooms
-            </Text>
-          </XStack>
-          <XStack alignItems="center">
-            <MaterialIcons name="location-pin" size={16} color="#4a4a4a" />
-            <Text fontSize={12} color="#4a4a4a" marginLeft="$2">
-              {item.distanceFromUniversity} km
-            </Text>
-          </XStack>
+          <Button 
+            size="$3" 
+            theme="active" 
+            onPress={(e: GestureResponderEvent) => {
+              e.stopPropagation()
+              onPress()
+            }} 
+            icon={MapPin} 
+            backgroundColor="$blue8"
+            color="white"
+            pressStyle={{ backgroundColor: '$blue9' }}
+          >
+            View Details
+          </Button>
         </XStack>
       </YStack>
-    </Pressable>
-  );
+    </Card>
+  )
 }
+
+function PropertyFeature({ icon: Icon, text }: { icon: typeof Home; text: string }) {
+  return (
+    <XStack alignItems="center" space="$1" paddingVertical="$1">
+      <Icon size={14} color="$gray10" />
+      <Text fontSize={13} color="$gray10">{text}</Text>
+    </XStack>
+  )
+}
+
