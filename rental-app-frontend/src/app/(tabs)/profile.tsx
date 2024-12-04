@@ -13,6 +13,8 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useUserStore } from "@/store/user.store";
+import { useEffect, useState } from "react";
+import { UserAvatar } from '@/components/UserAvatar';
 
 const rentalAppTheme = {
   primaryDark: "#016180",
@@ -22,26 +24,18 @@ const rentalAppTheme = {
   textDark: "#000",
 };
 
-// Hardcoded user data
-const userData = {
-  name: "Conor Koritor",
-  contactInfo: {
-    email: "conor@example.com",
-    phoneNumber: "+1234567890",
-  },
-  address: {
-    houseNumber: "123",
-    addressLine1: "Main St",
-    addressLine2: "Apt 4B",
-    townCity: "Sligo",
-    county: "Ireland",
-    eircode: "F11 D2345",
-  },
-};
-
 export default function ProfileScreen() {
-  const { name, contactInfo, address } = userData;
+  const user = useUserStore((state) => state.user);
   const logout = useUserStore((state) => state.logout);
+
+  const fullName = user ? `${user.firstName} ${user.lastName}` : '';
+
+  const formattedAddress = user?.address ? {
+    addressLine1: user.address.addressLine1,
+    city: user.address.city,
+    county: user.address.county,
+    eircode: user.address.eircode,
+  } : null;
 
   const handleLogout = () => {
     logout();
@@ -79,16 +73,14 @@ export default function ProfileScreen() {
         >
           {/* Profile Content */}
           <YStack alignItems="center" space={16} marginBottom={24}>
-            {/* Avatar */}
-            <Avatar
-              circular
-              size="$10"
-              backgroundColor={rentalAppTheme.backgroundLight}
-            >
-              <Avatar.Image
-                source={{ uri: "https://via.placeholder.com/150" }}
+            {/* Replace the existing Avatar with UserAvatar */}
+            {user && (
+              <UserAvatar
+                firstName={user.firstName}
+                lastName={user.lastName}
+                size={100}
               />
-            </Avatar>
+            )}
 
             {/* Name & Email */}
             <Text
@@ -96,10 +88,10 @@ export default function ProfileScreen() {
               fontWeight="800"
               color={rentalAppTheme.textDark}
             >
-              {name}
+              {fullName}
             </Text>
             <Text fontSize={18} color="gray">
-              {contactInfo.email}
+              {user?.email}
             </Text>
           </YStack>
 
@@ -114,16 +106,18 @@ export default function ProfileScreen() {
             >
               Contact Information
             </Text>
-            <XStack alignItems="center" space={16}>
-              <Feather name="phone" size={20} color={rentalAppTheme.textDark} />
-              <Text fontSize={16} color={rentalAppTheme.textDark}>
-                {contactInfo.phoneNumber}
-              </Text>
-            </XStack>
+            {user?.phone && (
+              <XStack alignItems="center" space={16}>
+                <Feather name="phone" size={20} color={rentalAppTheme.textDark} />
+                <Text fontSize={16} color={rentalAppTheme.textDark}>
+                  {user.phone}
+                </Text>
+              </XStack>
+            )}
             <XStack alignItems="center" space={16}>
               <Feather name="mail" size={20} color={rentalAppTheme.textDark} />
               <Text fontSize={16} color={rentalAppTheme.textDark}>
-                {contactInfo.email}
+                {user?.email}
               </Text>
             </XStack>
           </YStack>
@@ -131,22 +125,23 @@ export default function ProfileScreen() {
           <Separator marginTop={24} marginBottom={24} />
 
           {/* Address Section */}
-          <YStack space={12}>
-            <Text
-              fontSize={20}
-              fontWeight="600"
-              color={rentalAppTheme.textDark}
-            >
-              Address
-            </Text>
-            <Text fontSize={16} color="gray">
-              {address.houseNumber} {address.addressLine1},{" "}
-              {address.addressLine2}
-            </Text>
-            <Text fontSize={16} color="gray">
-              {address.townCity}, {address.county}, {address.eircode}
-            </Text>
-          </YStack>
+          {formattedAddress && (
+            <YStack space={12}>
+              <Text
+                fontSize={20}
+                fontWeight="600"
+                color={rentalAppTheme.textDark}
+              >
+                Address
+              </Text>
+              <Text fontSize={16} color="gray">
+                {formattedAddress.addressLine1}
+              </Text>
+              <Text fontSize={16} color="gray">
+                {formattedAddress.city}, {formattedAddress.county}, {formattedAddress.eircode}
+              </Text>
+            </YStack>
+          )}
 
           <Spacer flex={1} />
 
