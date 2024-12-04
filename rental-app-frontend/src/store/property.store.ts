@@ -38,8 +38,12 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
   fetchProperties: async (filters) => {
     set({ isLoading: true, error: null });
     try {
+      const cleanFilters = Object.fromEntries(
+        Object.entries(filters).filter(([_, value]) => value !== undefined && value !== '')
+      );
+
       const response = await axios.get(`${API_URL}/listings`, {
-        params: filters,
+        params: cleanFilters,
       });
       set({ properties: response.data, isLoading: false });
     } catch (error) {

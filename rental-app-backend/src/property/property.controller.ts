@@ -9,11 +9,14 @@ export class PropertyController {
   constructor(private readonly propertyService: PropertyService) {}
 
   @Get()
-  async getAllProperties(@Query('lenderId') lenderId?: string): Promise<Property[]> {
+  async getAllProperties(
+    @Query('lenderId') lenderId?: string,
+    @Query() filters?: any
+  ): Promise<Property[]> {
     if (lenderId) {
       return this.propertyService.findByLenderId(lenderId);
     }
-    return this.propertyService.findAllAvailable();
+    return this.propertyService.findAllAvailable(filters);
   }
 
   @Post()

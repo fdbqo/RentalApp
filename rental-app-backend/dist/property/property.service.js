@@ -86,11 +86,39 @@ let PropertyService = class PropertyService {
             throw new common_1.NotFoundException(`Error deleting property: ${error.message}`);
         }
     }
-    async findAllAvailable() {
+    async findAllAvailable(filters) {
         try {
-            return await this.propertyModel.find().exec();
+            const query = {};
+            if (filters?.searchQuery) {
+                query.$or = [
+                    { 'houseAddress.townCity': { $regex: filters.searchQuery, $options: 'i' } },
+                    { 'houseAddress.county': { $regex: filters.searchQuery, $options: 'i' } },
+                    { 'houseAddress.addressLine1': { $regex: filters.searchQuery, $options: 'i' } },
+                    { 'houseAddress.addressLine2': { $regex: filters.searchQuery, $options: 'i' } }
+                ];
+            }
+            if (filters?.minPrice || filters?.maxPrice) {
+                query.price = {};
+                if (filters.minPrice)
+                    query.price.$gte = parseInt(filters.minPrice);
+                if (filters.maxPrice)
+                    query.price.$lte = parseInt(filters.maxPrice);
+            }
+            if (filters?.beds) {
+                const totalBeds = parseInt(filters.beds);
+                query.$expr = {
+                    $gte: [{ $add: ['$singleBedrooms', '$doubleBedrooms'] }, totalBeds]
+                };
+            }
+            if (filters?.distance) {
+                query.distanceFromUniversity = {
+                    $lte: parseInt(filters.distance)
+                };
+            }
+            return await this.propertyModel.find(query).exec();
         }
         catch (error) {
+            console.error('Error finding properties:', error);
             return [];
         }
     }

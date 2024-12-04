@@ -10,6 +10,6 @@ export declare class PropertyService {
     findById(id: string): Promise<Property>;
     update(id: string, updatePropertyDto: UpdatePropertyDto): Promise<Property>;
     delete(id: string): Promise<void>;
-    findAllAvailable(): Promise<Property[]>;
+    findAllAvailable(filters?: any): Promise<Property[]>;
     findByLenderId(lenderId: string): Promise<Property[]>;
 }

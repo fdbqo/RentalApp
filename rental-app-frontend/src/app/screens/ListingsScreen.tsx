@@ -10,14 +10,7 @@ import { useFilters } from "@/hooks/useFilters";
 import { useUserStore } from "@/store/user.store";
 import { usePropertyStore } from "@/store/property.store";
 import { Property } from "@/store/interfaces/Property";
-
-const rentalAppTheme = {
-  primaryDark: "#016180",
-  primaryLight: "#1abc9c",
-  backgroundLight: "#fff",
-  accentDarkRed: "#8B0000",
-  textDark: "#000",
-};
+import { rentalAppTheme } from "@/constants/Colors";
 
 export default function ListingsScreen() {
   const { width } = useWindowDimensions();

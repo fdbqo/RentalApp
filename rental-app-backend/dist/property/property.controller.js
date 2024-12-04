@@ -21,11 +21,11 @@ let PropertyController = class PropertyController {
     constructor(propertyService) {
         this.propertyService = propertyService;
     }
-    async getAllProperties(lenderId) {
+    async getAllProperties(lenderId, filters) {
         if (lenderId) {
             return this.propertyService.findByLenderId(lenderId);
         }
-        return this.propertyService.findAllAvailable();
+        return this.propertyService.findAllAvailable(filters);
     }
     async create(createPropertyDto) {
         return this.propertyService.create(createPropertyDto);
@@ -44,8 +44,9 @@ exports.PropertyController = PropertyController;
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Query)('lenderId')),
+    __param(1, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], PropertyController.prototype, "getAllProperties", null);
 __decorate([

@@ -1,8 +1,9 @@
 import React from 'react'
 import { Image, GestureResponderEvent, Platform } from 'react-native'
 import { Card, Text, YStack, XStack, Button, Separator } from 'tamagui'
-import { Home, Bed, Bath, MapPin, Calendar, Euro, Subtitles } from '@tamagui/lucide-icons'
+import { Home, Bed, Bath, MapPin, Calendar, Euro, Subtitles, Bold } from '@tamagui/lucide-icons'
 import { Property } from '@/store/interfaces/Property'
+import { rentalAppTheme } from '@/constants/Colors'
 
 interface PropertyCardProps {
   item: Property
@@ -29,12 +30,11 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
 
 
   const renderAvailability = () => {
-    let color = "$green9"
+    let color = rentalAppTheme.primaryLight;
     let content
 
     switch (item.availability) {
       case 'available_from':
-        color = "$green9"
         content = isMobile ? (
           <YStack>
             <Text fontSize={12} color={color} fontWeight="500">
@@ -51,7 +51,6 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
         )
         break
       case 'immediately':
-        color = "$blue9"
         content = isMobile? (
           <YStack>
             <Text fontSize={12} color={color} fontWeight="500">
@@ -69,7 +68,6 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
         break
       case 'not_available':
       default:
-        color = "$red9"
         content = (
           <Text fontSize={12} color={color} fontWeight="500">
             Not Available
@@ -101,11 +99,11 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
       bordered
       marginBottom="$4"
       onPress={handlePress}
-      backgroundColor="white"
-      borderRadius={16}
-      overflow="hidden"
-      borderWidth={isRecentlyUpdated() ? 2 : undefined}
-      borderColor={isRecentlyUpdated() ? "$red9" : undefined}
+      shadowColor={rentalAppTheme.textDark}
+      shadowOffset={{ width: 0, height: 2 }}
+      shadowOpacity={0.1}
+      shadowRadius={4}
+      borderRadius="$4"
     >
       <Image
         source={{ uri: item.images[0].uri }}
@@ -117,9 +115,9 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
         <YStack space="$2">
           <Text fontSize={16} fontWeight="600" color="$gray12">{item.houseAddress.addressLine1}, {item.houseAddress.addressLine2 || ''}, {item.houseAddress.townCity}</Text>
           <Text fontSize={14} color="$gray10">{item.houseAddress.county}, {item.houseAddress.eircode}</Text>
-          <XStack alignItems="center" space="$2">
-            <Euro size={16} color="$blue9"/>
-            <Text fontSize={16} fontWeight="500" color="$blue9">{item.price} / month</Text>
+          <XStack alignItems="center">
+            <Euro size={16} color={rentalAppTheme.primaryDark}/>
+            <Text fontSize={16} fontWeight="500" color={rentalAppTheme.primaryDark}>{item.price}/month</Text>
             {isRecentlyUpdated() && (
               <Text fontSize={12} fontWeight="1000" color="$red10" marginLeft="$2">Recently updated!</Text>
             )}
@@ -134,16 +132,16 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
           <PropertyFeature icon={Home} text={capitaliseFirstLetter(item.propertyType)} />
           <PropertyFeature icon={Bed} text={`${item.singleBedrooms + item.doubleBedrooms * 2} ${item.singleBedrooms + item.doubleBedrooms * 2 > 1 ? 'Bedrooms' : 'Bedroom'}`} />
           <PropertyFeature icon={Bath} text={`${item.bathrooms} ${item.bathrooms > 1 ? 'Bathrooms' : 'Bathroom'}`} />
-          <PropertyFeature icon={MapPin} text={`${item.distanceFromUniversity.toFixed(1)} KM from University`} />
         </XStack>
         
         <Separator />
         
         <XStack justifyContent="space-between" alignItems="center">
-          <XStack alignItems="center" space="$2">
+          <XStack alignItems="center" space="$2" >
           {renderAvailability()}
           </XStack>
           <Button 
+            fontWeight="bold"
             size="$3" 
             theme="active" 
             onPress={(e: GestureResponderEvent) => {
@@ -151,9 +149,9 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
               onPress()
             }} 
             icon={MapPin} 
-            backgroundColor="$blue8"
+            backgroundColor = {rentalAppTheme.primaryDark}
             color="white"
-            pressStyle={{ backgroundColor: '$blue9' }}
+            pressStyle={{ backgroundColor: rentalAppTheme.primaryDarkPressed }}
           >
             View Details
           </Button>
