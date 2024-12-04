@@ -81,4 +81,22 @@ export class PropertyService {
       throw new NotFoundException(`Error deleting property: ${error.message}`);
     }
   }
+
+  async findAllAvailable(): Promise<Property[]> {    
+    try {      
+      // You might want to add additional filters here, like isRented: false
+      return await this.propertyModel.find().exec();
+    } catch (error) {
+      return [];
+    }
+  }
+
+  async findByLenderId(lenderId: string): Promise<Property[]> {    
+    try {      
+      const objectId = new Types.ObjectId(lenderId);
+      return await this.propertyModel.find({ lenderId: objectId }).exec();
+    } catch (error) {
+      return [];
+    }
+  }
 }

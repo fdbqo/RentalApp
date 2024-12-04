@@ -1,9 +1,4 @@
-import { Property } from "./Property";
-
-interface Image {
-  id: string;
-  uri: string;
-}
+import { Property, FilterState } from "./Property";
 
 export interface PropertyState {
   formData: {
@@ -27,12 +22,13 @@ export interface PropertyState {
       eircode: string;
     };
   };
-  properties: Property[]; // Added for list of properties
-  selectedProperty: Property | null; // Added for currently selected property
-  isLoading: boolean; // Added to track loading state
-  error: string | null; // Added for error handling
+  properties: Property[];
+  selectedProperty: Property | null;
+  isLoading: boolean;
+  error: string | null;
 
   // Actions
+  fetchProperties: (filters: FilterState) => Promise<void>;
   fetchLandlordProperties: () => Promise<void>;
   createProperty: () => Promise<void>;
   resetForm: () => void;

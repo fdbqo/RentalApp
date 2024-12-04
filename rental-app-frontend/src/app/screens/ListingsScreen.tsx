@@ -1,14 +1,14 @@
-import React, { useMemo } from "react";
-import { FlatList, useWindowDimensions, Platform, Image, Pressable } from "react-native";
+import React, { useMemo, useEffect } from "react";
+import { FlatList, useWindowDimensions, Platform } from "react-native";
 import { YStack, XStack, Text, Button, Theme, ScrollView } from "tamagui";
-import { Bell, AlertTriangle } from "@tamagui/lucide-icons";
+import { Bell } from "@tamagui/lucide-icons";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { FilterSystem } from "@/components/FilterSystem";
 import PropertyCard from "@/components/PropertyCard";
 import { useFilters } from "@/hooks/useFilters";
-import { useProperties } from "@/hooks/useProperties";
 import { useUserStore } from "@/store/user.store";
+import { usePropertyStore } from "@/store/property.store";
 import { Property } from "@/store/interfaces/Property";
 
 const rentalAppTheme = {
@@ -24,8 +24,13 @@ export default function ListingsScreen() {
   const isWeb = Platform.OS === "web";
   const router = useRouter();
   const { filters, updateFilters } = useFilters();
-  const { properties, isLoading, error } = useProperties(filters);
   const isAuthenticated = useUserStore((state) => state.isAuthenticated);
+
+  const { properties, isLoading, error, fetchProperties } = usePropertyStore();
+
+  useEffect(() => {
+    fetchProperties(filters);
+  }, [filters]);
 
   const getNumColumns = useMemo(() => {
     if (!isWeb) return 1;
@@ -40,34 +45,33 @@ export default function ListingsScreen() {
     return `calc(50% - 16px)`;
   }, [isWeb, width]);
 
-  const renderItem = ({ item }: { item: Property }) => (
-    <PropertyCard
-      item={item}
-      onPress={() =>
-        router.push({
-          pathname: "/screens/PropertyDetailScreen",
-          params: {
-            id: item._id,
-            _id: item._id,
-            shortDescription: item.shortDescription,
-            price: item.price.toString(),
-            images: JSON.stringify(item.images),
-            availability: item.availability,
-            availableFrom: item.availableFrom!,
-            description: item.description,
-            propertyType: item.propertyType,
-            singleBedrooms: item.singleBedrooms.toString(),
-            doubleBedrooms: item.doubleBedrooms.toString(),
-            bathrooms: item.bathrooms.toString(),
-            distanceFromUniversity: item.distanceFromUniversity.toString(),
-            houseAddress: JSON.stringify(item.houseAddress),
-            lenderId: item.lenderId,
-          },
-        })
-      }
-      // style={{ width: isWeb ? getCardWidth : '100%' }}
-    />
-  );
+  const renderItem = ({ item }: { item: Property }) => {
+    const roomsAvailable = (item.singleBedrooms ?? 0) + (item.doubleBedrooms ?? 0);
+    return (
+      <PropertyCard
+        item={item}
+        onPress={() =>
+          router.push({
+            pathname: "/screens/PropertyDetailScreen",
+            params: {
+              id: item._id,
+              shortDescription: item.shortDescription ?? '',
+              price: item.price?.toString() ?? '',
+              images: JSON.stringify(item.images) ?? '[]',
+              availability: item.availability ?? '',
+              description: item.description ?? '',
+              propertyType: item.propertyType ?? '',
+              roomsAvailable: roomsAvailable.toString(),
+              bathrooms: item.bathrooms?.toString() ?? '',
+              distanceFromUniversity: item.distanceFromUniversity?.toString() ?? '',
+              houseAddress: JSON.stringify(item.houseAddress) ?? '{}',
+              lenderId: item.lenderId ?? '',
+            },
+          })
+        }
+      />
+    );
+  };
 
   const PropertyList = useMemo(() => {
     if (isLoading) {
@@ -82,63 +86,30 @@ export default function ListingsScreen() {
       return <Text>No properties found.</Text>;
     }
 
-    const isHardcodedProperty = properties.length === 1 && properties[0]._id === "hardcoded1";
-
-    if (!isWeb) {
+    if (isWeb) {
       return (
-        <FlatList
-          ListHeaderComponent={
-            isHardcodedProperty ? (
-              <XStack
-                alignItems="center"
-                marginBottom="$4"
-                backgroundColor="$yellow2"
-                padding="$2"
-                borderRadius="$2"
-              >
-                <AlertTriangle color="$yellow10" size={20} />
-                <Text marginLeft="$2" color="$yellow10">
-                  No properties found. Showing a sample property.
-                </Text>
-              </XStack>
-            ) : null
-          }
-          data={properties}
-          renderItem={renderItem}
-          keyExtractor={(item) => item._id ?? ''}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ padding: 16 }}
-          numColumns={1}
-        />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <XStack flexWrap="wrap" gap="$4">
+            {properties.map((item) => (
+              <YStack key={item._id} width={getCardWidth}>
+                {renderItem({ item })}
+              </YStack>
+            ))}
+          </XStack>
+        </ScrollView>
       );
     }
 
     return (
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {isHardcodedProperty && (
-          <XStack
-            alignItems="center"
-            marginBottom="$4"
-            backgroundColor="$yellow2"
-            padding="$2"
-            borderRadius="$2"
-          >
-            <AlertTriangle color="$yellow10" size={20} />
-            <Text marginLeft="$2" color="$yellow10">
-              No properties found. Showing a sample property.
-            </Text>
-          </XStack>
-        )}
-        <XStack flexWrap="wrap" gap="$4">
-          {properties.map((item) => (
-            <YStack key={item._id} width={getCardWidth}>
-              {renderItem({ item })}
-            </YStack>
-          ))}
-        </XStack>
-      </ScrollView>
+      <FlatList
+        data={properties} 
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ gap: 16, padding: 16 }}
+        numColumns={getNumColumns}
+      />
     );
-  }, [isLoading, error, properties, isWeb, getCardWidth]);
+  }, [isLoading, error, properties, isWeb, getCardWidth, getNumColumns]);
 
   return (
     <Theme name="light">

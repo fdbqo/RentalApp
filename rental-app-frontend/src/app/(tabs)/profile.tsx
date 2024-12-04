@@ -3,45 +3,30 @@ import {
   YStack,
   XStack,
   Text,
-  Avatar,
   Button,
-  Separator,
   Spacer,
   Theme,
   ScrollView,
+  Card,
 } from "tamagui";
 import { Feather } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { useUserStore } from "@/store/user.store";
-
-const rentalAppTheme = {
-  primaryDark: "#016180",
-  primaryLight: "#1abc9c",
-  backgroundLight: "#fff",
-  accentDarkRed: "#8B0000",
-  textDark: "#000",
-};
-
-// Hardcoded user data
-const userData = {
-  name: "Conor Koritor",
-  contactInfo: {
-    email: "conor@example.com",
-    phoneNumber: "+1234567890",
-  },
-  address: {
-    houseNumber: "123",
-    addressLine1: "Main St",
-    addressLine2: "Apt 4B",
-    townCity: "Sligo",
-    county: "Ireland",
-    eircode: "F11 D2345",
-  },
-};
+import { UserAvatar } from '@/components/UserAvatar';
+import { AnimatePresence } from "tamagui";
+import { rentalAppTheme } from "../../constants/Colors";
 
 export default function ProfileScreen() {
-  const { name, contactInfo, address } = userData;
+  const user = useUserStore((state) => state.user);
   const logout = useUserStore((state) => state.logout);
+
+  const fullName = user ? `${user.firstName} ${user.lastName}` : '';
+
+  const formattedAddress = user?.address ? {
+    addressLine1: user.address.addressLine1,
+    city: user.address.city,
+    county: user.address.county,
+    eircode: user.address.eircode,
+  } : null;
 
   const handleLogout = () => {
     logout();
@@ -50,26 +35,6 @@ export default function ProfileScreen() {
   return (
     <Theme name="light">
       <YStack flex={1} backgroundColor={rentalAppTheme.backgroundLight}>
-        {/* Header */}
-        <YStack paddingHorizontal="$4" paddingTop="$4">
-          <XStack
-            justifyContent="space-between"
-            alignItems="center"
-            marginBottom="$1"
-          >
-            <Text
-              fontSize={24}
-              fontWeight="bold"
-              color={rentalAppTheme.textDark}
-            >
-              Profile
-            </Text>
-            <Button variant="outlined" padding="$2" borderWidth={0}>
-              <Feather name="bell" size={24} color={rentalAppTheme.textDark} />
-            </Button>
-          </XStack>
-        </YStack>
-
         <ScrollView
           contentContainerStyle={{
             paddingHorizontal: 16,
@@ -77,106 +42,141 @@ export default function ProfileScreen() {
             flexGrow: 1,
           }}
         >
-          {/* Profile Content */}
-          <YStack alignItems="center" space={16} marginBottom={24}>
-            {/* Avatar */}
-            <Avatar
-              circular
-              size="$10"
-              backgroundColor={rentalAppTheme.backgroundLight}
-            >
-              <Avatar.Image
-                source={{ uri: "https://via.placeholder.com/150" }}
-              />
-            </Avatar>
+          {/* Profile Card */}
+          <Card
+            bordered
+            elevate
+            padding="$4"
+            marginBottom="$4"
+            borderRadius="$4"
+            backgroundColor="white"
+            shadowColor={rentalAppTheme.textDark}
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.1}
+            shadowRadius={4}
+          >
+            <AnimatePresence>
+              <YStack alignItems="center" space={16} marginBottom={24}>
+                {user && (
+                  <UserAvatar
+                    firstName={user.firstName}
+                    lastName={user.lastName}
+                    size={120}
+                  />
+                )}
+                <YStack alignItems="center" space={4}>
+                  <Text
+                    fontSize={28}
+                    fontWeight="800"
+                    color={rentalAppTheme.textDark}
+                  >
+                    {fullName}
+                  </Text>
+                  <Text fontSize={18} color="gray">
+                    {user?.email}
+                  </Text>
+                </YStack>
+              </YStack>
+            </AnimatePresence>
+          </Card>
 
-            {/* Name & Email */}
-            <Text
-              fontSize={24}
-              fontWeight="800"
-              color={rentalAppTheme.textDark}
+          {/* Info Cards */}
+          <YStack space={16} marginTop={24}>
+            {/* Contact Card */}
+            <Card
+              bordered
+              elevate
+              padding="$4"
+              marginBottom="$4"
+              borderRadius="$4"
+              backgroundColor="white"
+              shadowColor={rentalAppTheme.textDark}
+              shadowOffset={{ width: 0, height: 1 }}
+              shadowOpacity={0.05}
+              shadowRadius={4}
             >
-              {name}
-            </Text>
-            <Text fontSize={18} color="gray">
-              {contactInfo.email}
-            </Text>
-          </YStack>
-
-          <Separator />
-
-          {/* Contact Information Section */}
-          <YStack space={12} marginTop={24}>
-            <Text
-              fontSize={20}
-              fontWeight="600"
-              color={rentalAppTheme.textDark}
-            >
-              Contact Information
-            </Text>
-            <XStack alignItems="center" space={16}>
-              <Feather name="phone" size={20} color={rentalAppTheme.textDark} />
-              <Text fontSize={16} color={rentalAppTheme.textDark}>
-                {contactInfo.phoneNumber}
+              <Text
+                fontSize={20}
+                fontWeight="600"
+                color={rentalAppTheme.textDark}
+                marginBottom={16}
+              >
+                Contact Information
               </Text>
-            </XStack>
-            <XStack alignItems="center" space={16}>
-              <Feather name="mail" size={20} color={rentalAppTheme.textDark} />
-              <Text fontSize={16} color={rentalAppTheme.textDark}>
-                {contactInfo.email}
-              </Text>
-            </XStack>
-          </YStack>
+              {user?.phone && (
+                <XStack alignItems="center" space={16} marginBottom={12}>
+                  <Feather name="phone" size={20} color={rentalAppTheme.primaryDark} />
+                  <Text fontSize={16} color={rentalAppTheme.textDark}>
+                    {user.phone}
+                  </Text>
+                </XStack>
+              )}
+              <XStack alignItems="center" space={16}>
+                <Feather name="mail" size={20} color={rentalAppTheme.primaryDark} />
+                <Text fontSize={16} color={rentalAppTheme.textDark}>
+                  {user?.email}
+                </Text>
+              </XStack>
+            </Card>
 
-          <Separator marginTop={24} marginBottom={24} />
-
-          {/* Address Section */}
-          <YStack space={12}>
-            <Text
-              fontSize={20}
-              fontWeight="600"
-              color={rentalAppTheme.textDark}
-            >
-              Address
-            </Text>
-            <Text fontSize={16} color="gray">
-              {address.houseNumber} {address.addressLine1},{" "}
-              {address.addressLine2}
-            </Text>
-            <Text fontSize={16} color="gray">
-              {address.townCity}, {address.county}, {address.eircode}
-            </Text>
+            {/* Address Card */}
+            {formattedAddress && (
+              <Card
+                bordered
+                elevate
+                padding="$4"
+                marginBottom="$4"
+                borderRadius="$4"
+                backgroundColor="white"
+                shadowColor={rentalAppTheme.textDark}
+                shadowOffset={{ width: 0, height: 1 }}
+                shadowOpacity={0.05}
+                shadowRadius={4}
+              >
+                <Text
+                  fontSize={20}
+                  fontWeight="600"
+                  color={rentalAppTheme.textDark}
+                  marginBottom={16}
+                >
+                  Address
+                </Text>
+                <Text fontSize={16} color="gray" marginBottom={8}>
+                  {formattedAddress.addressLine1}
+                </Text>
+                <Text fontSize={16} color="gray">
+                  {formattedAddress.city}, {formattedAddress.county}, {formattedAddress.eircode}
+                </Text>
+              </Card>
+            )}
           </YStack>
 
           <Spacer flex={1} />
 
           {/* Action Buttons */}
-          <YStack space={12} alignItems="center" marginTop={20}>
-            <Button
-              width="70%"
-              backgroundColor={rentalAppTheme.primaryDark}
-              justifyContent="center"
-              alignItems="center"
-              borderRadius={8}
-            >
-              <Feather name="edit" size={18} color="white" />
-              <Text fontWeight="600" fontSize={16} color="white">
-                Edit Profile
-              </Text>
-            </Button>
+          <YStack space={12} alignItems="center" marginTop={32}>
 
             <Button
-              width="70%"
+              width="85%"
+              height={50}
               backgroundColor={rentalAppTheme.accentDarkRed}
+              pressStyle={{ backgroundColor: "#a80000" }}
+              borderRadius="$4"
+              onPress={handleLogout}
               justifyContent="center"
               alignItems="center"
-              borderRadius={8}
-              onPress={handleLogout}
             >
-              <Feather name="log-out" size={18} color="white" />
-              <Text fontWeight="600" fontSize={16} color="white">
-                Log Out
-              </Text>
+              <XStack space={8} alignItems="center">
+                <Feather name="log-out" size={18} color="white" />
+                <Text 
+                  color="white"
+                  fontSize={16}
+                  fontWeight="bold"
+                  textAlign="center"
+                >
+                  Log Out
+                </Text>
+              </XStack>
             </Button>
           </YStack>
         </ScrollView>

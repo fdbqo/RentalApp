@@ -86,6 +86,23 @@ let PropertyService = class PropertyService {
             throw new common_1.NotFoundException(`Error deleting property: ${error.message}`);
         }
     }
+    async findAllAvailable() {
+        try {
+            return await this.propertyModel.find().exec();
+        }
+        catch (error) {
+            return [];
+        }
+    }
+    async findByLenderId(lenderId) {
+        try {
+            const objectId = new mongoose_2.Types.ObjectId(lenderId);
+            return await this.propertyModel.find({ lenderId: objectId }).exec();
+        }
+        catch (error) {
+            return [];
+        }
+    }
 };
 exports.PropertyService = PropertyService;
 exports.PropertyService = PropertyService = __decorate([
