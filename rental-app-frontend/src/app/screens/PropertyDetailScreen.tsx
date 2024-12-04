@@ -434,7 +434,7 @@ export default function PropertyDetailScreen() {
               <PropertyFeature
                 icon={Bed}
                 text={`${
-                  parseInt(params.singleBedrooms || "4") +
+                  parseInt(params.singleBedrooms || "0") +
                   parseInt(params.doubleBedrooms || "0")
                 } Bed`}
               />
