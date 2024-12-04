@@ -22,7 +22,10 @@ let PropertyController = class PropertyController {
         this.propertyService = propertyService;
     }
     async getAllProperties(lenderId) {
-        return this.propertyService.findAll(lenderId);
+        if (lenderId) {
+            return this.propertyService.findByLenderId(lenderId);
+        }
+        return this.propertyService.findAllAvailable();
     }
     async create(createPropertyDto) {
         return this.propertyService.create(createPropertyDto);

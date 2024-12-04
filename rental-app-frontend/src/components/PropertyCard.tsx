@@ -2,7 +2,7 @@ import React from 'react'
 import { Image, GestureResponderEvent } from 'react-native'
 import { Card, Text, YStack, XStack, Button, Separator } from 'tamagui'
 import { Home, Bed, Bath, MapPin, Calendar, Euro, Subtitles } from '@tamagui/lucide-icons'
-import { Property } from '@/Types/types'
+import { Property } from '@/store/interfaces/Property'
 
 interface PropertyCardProps {
   item: Property
@@ -51,9 +51,8 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
         
         <XStack flexWrap="wrap" justifyContent="space-between">
           <PropertyFeature icon={Home} text={item.propertyType} />
-          <PropertyFeature icon={Bed} text={`${item.roomsAvailable} ${item.roomsAvailable > 1 ? 'rooms' : 'room'}`} />
+          <PropertyFeature icon={Bed} text={`${item.singleBedrooms + item.doubleBedrooms} ${item.singleBedrooms + item.doubleBedrooms > 1 ? 'rooms' : 'room'}`} />
           <PropertyFeature icon={Bath} text={`${item.bathrooms} ${item.bathrooms > 1 ? 'bathrooms' : 'bathroom'}`} />
-          <PropertyFeature icon={MapPin} text={`${item.distanceFromUniversity.toFixed(1)} km from university`} />
         </XStack>
         
         <Separator />
