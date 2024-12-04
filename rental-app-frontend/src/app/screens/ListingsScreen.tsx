@@ -40,10 +40,9 @@ export default function ListingsScreen() {
   }, [isWeb, width]);
 
   const getCardWidth = useMemo(() => {
-    if (!isWeb) return "100%";
+    if (!isWeb || width < 768) return "100%";
     if (width >= 1400) return `calc(25% - 16px)`;
-    if (width >= 768) return `calc(50% - 16px)`;
-    return "100%";
+    return `calc(50% - 16px)`;
   }, [isWeb, width]);
 
   const renderItem = ({ item }: { item: Property }) => {
@@ -146,3 +145,4 @@ export default function ListingsScreen() {
     </Theme>
   );
 }
+
