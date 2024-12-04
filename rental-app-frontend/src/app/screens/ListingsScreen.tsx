@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { FlatList, useWindowDimensions, Platform } from "react-native";
+import { FlatList, useWindowDimensions, Platform, Image, Pressable } from "react-native";
 import { YStack, XStack, Text, Button, Theme, ScrollView } from "tamagui";
 import { Bell, AlertTriangle } from "@tamagui/lucide-icons";
 import { Feather } from "@expo/vector-icons";
@@ -9,7 +9,7 @@ import PropertyCard from "@/components/PropertyCard";
 import { useFilters } from "@/hooks/useFilters";
 import { useProperties } from "@/hooks/useProperties";
 import { useUserStore } from "@/store/user.store";
-import { Property } from "@/Types/types";
+import { Property } from "@/store/interfaces/Property";
 
 const rentalAppTheme = {
   primaryDark: "#016180",
@@ -35,10 +35,9 @@ export default function ListingsScreen() {
   }, [isWeb, width]);
 
   const getCardWidth = useMemo(() => {
-    if (!isWeb) return "100%";
+    if (!isWeb || width < 768) return "100%";
     if (width >= 1400) return `calc(25% - 16px)`;
-    if (width >= 768) return `calc(50% - 16px)`;
-    return "100%";
+    return `calc(50% - 16px)`;
   }, [isWeb, width]);
 
   const renderItem = ({ item }: { item: Property }) => (
@@ -48,15 +47,17 @@ export default function ListingsScreen() {
         router.push({
           pathname: "/screens/PropertyDetailScreen",
           params: {
-            id: item.id,
+            id: item._id,
             _id: item._id,
             shortDescription: item.shortDescription,
             price: item.price.toString(),
             images: JSON.stringify(item.images),
-            availability: item.availability.toString(),
+            availability: item.availability,
+            availableFrom: item.availableFrom!,
             description: item.description,
             propertyType: item.propertyType,
-            roomsAvailable: item.roomsAvailable?.toString(),
+            singleBedrooms: item.singleBedrooms.toString(),
+            doubleBedrooms: item.doubleBedrooms.toString(),
             bathrooms: item.bathrooms.toString(),
             distanceFromUniversity: item.distanceFromUniversity.toString(),
             houseAddress: JSON.stringify(item.houseAddress),
@@ -64,6 +65,7 @@ export default function ListingsScreen() {
           },
         })
       }
+      // style={{ width: isWeb ? getCardWidth : '100%' }}
     />
   );
 
@@ -80,63 +82,63 @@ export default function ListingsScreen() {
       return <Text>No properties found.</Text>;
     }
 
-    const isHardcodedProperty = properties.length === 1 && properties[0].id === "hardcoded1";
+    const isHardcodedProperty = properties.length === 1 && properties[0]._id === "hardcoded1";
 
-    if (isWeb) {
+    if (!isWeb) {
       return (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {isHardcodedProperty && (
-            <XStack
-              alignItems="center"
-              marginBottom="$4"
-              backgroundColor="$yellow2"
-              padding="$2"
-              borderRadius="$2"
-            >
-              <AlertTriangle color="$yellow10" size={20} />
-              <Text marginLeft="$2" color="$yellow10">
-                No properties found. Showing a sample property.
-              </Text>
-            </XStack>
-          )}
-          <XStack flexWrap="wrap" gap="$4">
-            {properties.map((item) => (
-              <YStack key={item._id} width={getCardWidth}>
-                {renderItem({ item })}
-              </YStack>
-            ))}
-          </XStack>
-        </ScrollView>
+        <FlatList
+          ListHeaderComponent={
+            isHardcodedProperty ? (
+              <XStack
+                alignItems="center"
+                marginBottom="$4"
+                backgroundColor="$yellow2"
+                padding="$2"
+                borderRadius="$2"
+              >
+                <AlertTriangle color="$yellow10" size={20} />
+                <Text marginLeft="$2" color="$yellow10">
+                  No properties found. Showing a sample property.
+                </Text>
+              </XStack>
+            ) : null
+          }
+          data={properties}
+          renderItem={renderItem}
+          keyExtractor={(item) => item._id ?? ''}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ padding: 16 }}
+          numColumns={1}
+        />
       );
     }
 
     return (
-      <FlatList
-        ListHeaderComponent={
-          isHardcodedProperty ? (
-            <XStack
-              alignItems="center"
-              marginBottom="$4"
-              backgroundColor="$yellow2"
-              padding="$2"
-              borderRadius="$2"
-            >
-              <AlertTriangle color="$yellow10" size={20} />
-              <Text marginLeft="$2" color="$yellow10">
-                No properties found. Showing a sample property.
-              </Text>
-            </XStack>
-          ) : null
-        }
-        data={properties}
-        renderItem={renderItem}
-        keyExtractor={(item) => item._id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ gap: 16, padding: 16 }}
-        numColumns={getNumColumns}
-      />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {isHardcodedProperty && (
+          <XStack
+            alignItems="center"
+            marginBottom="$4"
+            backgroundColor="$yellow2"
+            padding="$2"
+            borderRadius="$2"
+          >
+            <AlertTriangle color="$yellow10" size={20} />
+            <Text marginLeft="$2" color="$yellow10">
+              No properties found. Showing a sample property.
+            </Text>
+          </XStack>
+        )}
+        <XStack flexWrap="wrap" gap="$4">
+          {properties.map((item) => (
+            <YStack key={item._id} width={getCardWidth}>
+              {renderItem({ item })}
+            </YStack>
+          ))}
+        </XStack>
+      </ScrollView>
     );
-  }, [isLoading, error, properties, isWeb, getCardWidth, getNumColumns]);
+  }, [isLoading, error, properties, isWeb, getCardWidth]);
 
   return (
     <Theme name="light">
@@ -172,3 +174,4 @@ export default function ListingsScreen() {
     </Theme>
   );
 }
+
