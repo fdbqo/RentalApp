@@ -5,6 +5,8 @@ const tintColorDark = '#fff';
 export const rentalAppTheme = {
   primaryDark: "#016180",
   primaryLight: "#1abc9c",
+  primaryDarkPressed: "#01394c",
+  primaryLightPressed: "#159d82",
   backgroundLight: "#fff",
   accentDarkRed: "#8B0000",
   textDark: "#000",

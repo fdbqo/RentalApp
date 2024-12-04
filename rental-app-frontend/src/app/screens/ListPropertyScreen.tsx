@@ -382,9 +382,9 @@ export default function ListPropertyScreen() {
       newErrors.bathrooms = "Please enter number of bathrooms";
     }
 
-    if (!formData.shortDescription || formData.shortDescription.length > 15) {
+    if (!formData.shortDescription || formData.shortDescription.length > 20) {
       newErrors.shortDescription =
-        "Brief overview must be 15 characters or less";
+        "Brief overview must be 20 characters or less";
     }
 
     if (!formData.description) {
@@ -998,10 +998,9 @@ export default function ListPropertyScreen() {
             <Button
               backgroundColor={rentalAppTheme.primaryDark}
               pressStyle={{
-                backgroundColor: rentalAppTheme.primaryLight,
+                backgroundColor: rentalAppTheme.primaryDarkPressed,
               }}
               borderRadius="$4"
-              marginTop="$4"
               onPress={async () => {
                 if (!validateForm()) {
                   return;
@@ -1032,7 +1031,6 @@ export default function ListPropertyScreen() {
                   formData.bathrooms ? Number(formData.bathrooms) : null
                 );
                 propertyStore.setHouseAddress(formData.houseAddress);
-                // propertyStore.setDistanceFromUniversity(formData.distanceFromUniversity);
                 try {
                   await propertyStore.createProperty();
                   router.replace("/(tabs)");
@@ -1043,7 +1041,7 @@ export default function ListPropertyScreen() {
             >
               <Text
                 color="white"
-                fontSize="$4"
+                fontSize={16}
                 fontWeight="bold"
                 textAlign="center"
               >

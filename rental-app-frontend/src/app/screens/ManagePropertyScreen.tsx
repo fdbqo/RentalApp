@@ -12,6 +12,7 @@ export default function ManagePropertyScreen() {
   const { id } = useLocalSearchParams();
   const { properties, deleteProperty } = usePropertyStore();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const property = properties.find((p) => p._id === id);
 
@@ -28,6 +29,27 @@ export default function ManagePropertyScreen() {
       pathname: "/screens/EditPropertyScreen",
       params: { id: id as string },
     });
+  };
+
+  const handleDeleteConfirmation = async () => {
+    setShowConfirmDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteProperty(id as string);
+      router.back();
+    } catch (error) {
+      console.error("Failed to delete property:", error);
+    } finally {
+      setIsDeleting(false);
+      setShowConfirmDialog(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmDialog(false);
   };
 
   const handleDelete = async () => {
@@ -173,12 +195,12 @@ export default function ManagePropertyScreen() {
                 <Text
                   fontSize={16}
                   color={
-                    property.availability
-                      ? rentalAppTheme.primaryLight
-                      : rentalAppTheme.accentDarkRed
+                    property.isRented
+                      ? rentalAppTheme.accentDarkRed
+                      : rentalAppTheme.primaryLight
                   }
                 >
-                  {property.availability ? "Available" : "Not Available"}
+                  {property.availability ? "Rented" : "Available"}
                 </Text>
               </XStack>
             </YStack>
@@ -213,9 +235,12 @@ export default function ManagePropertyScreen() {
 
           {/* Action Buttons */}
           <YStack space="$3" marginBottom="$12">
+            {/* Edit Button */}
             <Button
               backgroundColor={rentalAppTheme.primaryDark}
-              pressStyle={{ backgroundColor: rentalAppTheme.primaryLight }}
+              pressStyle={{
+                backgroundColor: rentalAppTheme.primaryDarkPressed,
+              }}
               borderRadius="$4"
               onPress={handleEdit}
             >
@@ -227,24 +252,81 @@ export default function ManagePropertyScreen() {
               </XStack>
             </Button>
 
-            <Button
-              backgroundColor={rentalAppTheme.accentDarkRed}
-              pressStyle={{ backgroundColor: "#a80000" }}
-              borderRadius="$4"
-              onPress={handleDelete}
-              disabled={isDeleting}
-            >
-              <XStack alignItems="center" space="$2">
-                <Feather name="trash-2" size={20} color="white" />
-                <Text color="white" fontSize={16} fontWeight="bold">
-                  {isDeleting ? "Deleting..." : "Delete Property"}
-                </Text>
-              </XStack>
-            </Button>
+            {/* Confirmation Dialog */}
+            {showConfirmDialog && (
+              <Card
+                bordered
+                elevate
+                padding="$4"
+                borderRadius="$4"
+                backgroundColor="white"
+                shadowColor={rentalAppTheme.textDark}
+                shadowOffset={{ width: 0, height: 2 }}
+                shadowOpacity={0.1}
+                shadowRadius={4}
+                marginBottom="$4"
+              >
+                <YStack space="$3" alignItems="center">
+                  <Text
+                    fontSize={18}
+                    fontWeight="bold"
+                    textAlign="center"
+                    color={rentalAppTheme.textDark}
+                  >
+                    Are you sure you want to delete this property?
+                  </Text>
+                  <XStack space="$3" alignItems="center">
+                    <Button
+                      backgroundColor={rentalAppTheme.accentDarkRed}
+                      pressStyle={{ backgroundColor: "#a80000" }}
+                      borderRadius="$4"
+                      onPress={confirmDelete}
+                    >
+                      <Text color="white" fontSize={16} fontWeight="bold">
+                        Yes, Delete
+                      </Text>
+                    </Button>
+                    <Button
+                      backgroundColor={rentalAppTheme.primaryDark}
+                      pressStyle={{
+                        backgroundColor: rentalAppTheme.primaryDarkPressed,
+                      }}
+                      borderRadius="$4"
+                      onPress={cancelDelete}
+                    >
+                      <Text color="white" fontSize={16} fontWeight="bold">
+                        Cancel
+                      </Text>
+                    </Button>
+                  </XStack>
+                </YStack>
+              </Card>
+            )}
 
+            {/* Delete Button */}
+            {!showConfirmDialog && (
+              <Button
+                backgroundColor={rentalAppTheme.accentDarkRed}
+                pressStyle={{ backgroundColor: "#a80000" }}
+                borderRadius="$4"
+                onPress={handleDeleteConfirmation}
+                disabled={isDeleting}
+              >
+                <XStack alignItems="center" space="$2">
+                  <Feather name="trash-2" size={20} color="white" />
+                  <Text color="white" fontSize={16} fontWeight="bold">
+                    Delete Property
+                  </Text>
+                </XStack>
+              </Button>
+            )}
+
+            {/* View Applications Button */}
             <Button
               backgroundColor={rentalAppTheme.primaryLight}
-              pressStyle={{ backgroundColor: rentalAppTheme.primaryDark }}
+              pressStyle={{
+                backgroundColor: rentalAppTheme.primaryLightPressed,
+              }}
               borderRadius="$4"
               onPress={handleViewApplications}
             >
