@@ -31,6 +31,7 @@ import {
 import NavigationHeader from "@/components/NavigationHeader";
 import { rentalAppTheme } from "@/constants/Colors";
 import { Property, Image } from "@/store/interfaces/Property";
+import { usePropertyStore } from "@/store/property.store";
 
 type PropertyParams = {
   [K in keyof Property]: string;
@@ -38,15 +39,19 @@ type PropertyParams = {
 
 export default function PropertyDetailScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<PropertyParams>();
+  const params = useLocalSearchParams<{ id: string }>();
   const [activeIndex, setActiveIndex] = useState(0);
   const media = useMedia();
   const isMobile = !media.gtXs;
-
-  const images: Image[] = JSON.parse(params.images || "[]");
-  const houseAddress = JSON.parse(params.houseAddress || "{}");
-
   const { width } = useWindowDimensions();
+
+  const { selectedProperty, isLoading, error, fetchPropertyById } = usePropertyStore();
+
+  useEffect(() => {
+    if (params.id) {
+      fetchPropertyById(params.id);
+    }
+  }, [params.id]);
 
   const capitaliseFirstLetter = (string: string) => {
     return string ? string.charAt(0).toUpperCase() + string.slice(1) : "";
@@ -61,6 +66,42 @@ export default function PropertyDetailScreen() {
       ? `${formattedDate.slice(0, 8)}...`
       : formattedDate;
   };
+
+  if (isLoading) {
+    return (
+      <Theme name="blue">
+        <NavigationHeader title="Property Details" />
+        <Stack flex={1} alignItems="center" justifyContent="center">
+          <Text>Loading...</Text>
+        </Stack>
+      </Theme>
+    );
+  }
+
+  if (error) {
+    return (
+      <Theme name="blue">
+        <NavigationHeader title="Property Details" />
+        <Stack flex={1} alignItems="center" justifyContent="center">
+          <Text color="$red10">{error}</Text>
+        </Stack>
+      </Theme>
+    );
+  }
+
+  if (!selectedProperty) {
+    return (
+      <Theme name="blue">
+        <NavigationHeader title="Property Details" />
+        <Stack flex={1} alignItems="center" justifyContent="center">
+          <Text>Property not found</Text>
+        </Stack>
+      </Theme>
+    );
+  }
+
+  const images = selectedProperty.images;
+  const houseAddress = selectedProperty.houseAddress;
 
   const ImageCarousel = () => (
     <Stack
@@ -412,12 +453,12 @@ export default function PropertyDetailScreen() {
                 ellipsizeMode="tail"
                 paddingLeft="$2"
               >
-                {params.shortDescription || "No title available"}
+                {selectedProperty.shortDescription || "No title available"}
               </H1>
               <XStack alignItems="center" paddingLeft="$2">
                 <Euro size={30} color={rentalAppTheme.primaryDark} />
                 <H2 size="$9" color={rentalAppTheme.primaryDark}>
-                  {`${params.price || "N/A"}/month`}
+                  {`${selectedProperty.price || "N/A"}/month`}
                 </H2>
               </XStack>
             </YStack>
@@ -434,21 +475,21 @@ export default function PropertyDetailScreen() {
               <PropertyFeature
                 icon={Bed}
                 text={`${
-                  parseInt(params.singleBedrooms || "0") +
-                  parseInt(params.doubleBedrooms || "0")
-                } Bed`}
+                  selectedProperty.singleBedrooms || "0" +
+                  selectedProperty.doubleBedrooms || "0"
+                } Bed`} 
               />
               <PropertyFeature
                 icon={Bath}
-                text={`${params.bathrooms || "N/A"} Bath`}
+                text={`${selectedProperty.bathrooms || "N/A"} Bath`}
               />
               <PropertyFeature
                 icon={MapPin}
-                text={`${params.distanceFromUniversity || "5"} km from Uni`}
+                text={`${selectedProperty.distanceFromUniversity || "5"} km from Uni`}
               />
               <PropertyFeature
                 icon={Home}
-                text={capitaliseFirstLetter(params.propertyType) || "N/A"}
+                text={capitaliseFirstLetter(selectedProperty.propertyType) || "N/A"}
               />
             </XStack>
 
@@ -456,8 +497,8 @@ export default function PropertyDetailScreen() {
 
             {/* Detailed Sections */}
             <AddressSection />
-            <DescriptionSection description={params.description} />
-            <PropertyDetailsSection params={params} />
+            <DescriptionSection description={selectedProperty.description} />
+            <PropertyDetailsSection params={selectedProperty} />
           </YStack>
         </YStack>
       </ScrollView>
