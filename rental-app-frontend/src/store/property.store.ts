@@ -7,7 +7,6 @@ import { useUserStore } from "./user.store";
 const API_URL = "http://localhost:3000";
 
 export const usePropertyStore = create<PropertyState>((set, get) => ({
-  // State
   properties: [],
   selectedProperty: null,
   isLoading: false,
@@ -36,30 +35,49 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
   },
 
   // Actions
-  fetchLandlordProperties: async () => {
+  fetchProperties: async (filters) => {
     set({ isLoading: true, error: null });
-
-    const userId = useUserStore.getState().user?._id;
-
-    if (!userId) {
-      set({ isLoading: false, error: "User not logged in" });
-      return;
-    }
-
     try {
-      const response = await axios.get(`${API_URL}/listings`, {
-        params: { lenderId: userId },
-      });
+      const cleanFilters = Object.fromEntries(
+        Object.entries(filters).filter(([_, value]) => value !== undefined && value !== '')
+      );
 
+      const response = await axios.get(`${API_URL}/listings`, {
+        params: cleanFilters,
+      });
       set({ properties: response.data, isLoading: false });
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to fetch properties",
+        error: error instanceof Error ? error.message : "Failed to fetch properties",
         isLoading: false,
       });
     }
   },
+
+  fetchLandlordProperties: async () => {
+    set({ isLoading: true, error: null });
+  
+    const userId = useUserStore.getState().user?._id;
+  
+    if (!userId) {
+      set({ isLoading: false, error: "User not logged in" });
+      return;
+    }
+  
+    try {
+      const response = await axios.get(`${API_URL}/listings`, {
+        params: { lenderId: userId },
+      });
+  
+      set({ properties: response.data, isLoading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "Failed to fetch properties",
+        isLoading: false,
+      });
+    }
+  },
+  
 
   createProperty: async () => {
     set({ isLoading: true, error: null });

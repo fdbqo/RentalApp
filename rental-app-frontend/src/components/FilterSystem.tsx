@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import { XStack, YStack, Button, Text, useMedia, Sheet, ScrollView } from 'tamagui'
 import { ChevronDown, Menu } from '@tamagui/lucide-icons'
-import { FilterState } from '@/Types/types'
+import { FilterState } from '@/store/interfaces/Property'
 import { SearchInput } from './SearchInput'
 import { FilterSelect } from './FilterSelect'
 import { PriceRangeFilter } from './PriceRangeFilter'

@@ -1,4 +1,4 @@
-interface Image {
+export interface Image {
   id: string;
   uri: string;
 }
@@ -26,4 +26,13 @@ export interface Property {
   };
   lenderId: string;
   lastUpdated?: string;
+}
+
+export interface FilterState {
+  searchQuery?: string;
+  distance?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  beds?: string;
+  propertyType?: string;
 }

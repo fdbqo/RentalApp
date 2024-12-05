@@ -5,7 +5,7 @@ import { Property } from './schemas/property.schema';
 export declare class PropertyController {
     private readonly propertyService;
     constructor(propertyService: PropertyService);
-    getAllProperties(lenderId: string): Promise<Property[]>;
+    getAllProperties(lenderId?: string, filters?: any): Promise<Property[]>;
     create(createPropertyDto: CreatePropertyDto): Promise<Property>;
     getPropertyById(id: string): Promise<Property>;
     updateProperty(id: string, updatePropertyDto: UpdatePropertyDto): Promise<Property>;
