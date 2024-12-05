@@ -74,7 +74,7 @@ export default function ListPropertyScreen() {
     roomsAvailable: "",
     bathrooms: "",
     distanceFromUniversity: "",
-    images: [] as Array<{ id: string; uri: string }>,
+    images: [] as Array<{ id: string; uri: string; name: string; type: string; }>,
     houseAddress: {
       addressLine1: "",
       addressLine2: "",
@@ -174,9 +174,17 @@ export default function ListPropertyScreen() {
 
     if (!result.canceled) {
       const newImages = result.assets.map((asset) => ({
-        id: Date.now().toString(),
+        id: asset.assetId,
         uri: asset.uri,
+        name: asset.fileName,
+        type: asset.mimeType
       }));
+      
+      /*const newImages = result.assets.map((asset) => ({
+        id: asset.assetId,
+        uri: asset.uri,
+        Image: asset
+      }));*/
       updateFormData("images", [...formData.images, ...newImages]);
     }
   };

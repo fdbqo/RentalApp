@@ -11,6 +11,8 @@ export interface Property {
   images: {
     id: string;
     uri: string;
+    name: string;
+    type: string;
   }[];
   houseAddress: {
     addressLine1: string;

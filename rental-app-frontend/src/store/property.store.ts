@@ -34,7 +34,8 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     roomsAvailable: null,
     bathrooms: null,
     distanceFromUniversity: null,
-    images: [],
+    //images: [],
+    images: [] as Array<{ id: string; uri: string; name: string; type: string; }>,
     houseAddress: {
       addressLine1: '',
       addressLine2: '',
@@ -77,13 +78,19 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         lastUpdated: new Date().toISOString(),
         images: formData.images.map(img => ({
           id: img.id,
-          uri: img.uri
+          uri: img.uri,
+          name: img.name,
+          type: img.type
         }))
       };
       
       console.log('About to send property data:', propertyData);
       
-      const response = await axios.post(`${API_URL}/listings`, propertyData);
+      const response = await axios.post(`${API_URL}/listings`, propertyData, {
+        headers: {
+          'content-Type': 'multipart/form-data'
+        }
+      });
       console.log('Response from server:', response.data);
       
       await get().fetchLandlordProperties();
@@ -112,7 +119,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         roomsAvailable: null,
         bathrooms: null,
         distanceFromUniversity: null,
-        images: [],
+        images: [] as Array<{ id: string; uri: string; name: string; type: string; }>,
         houseAddress: {
           addressLine1: '',
           addressLine2: '',

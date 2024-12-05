@@ -75,7 +75,6 @@ let PropertyService = PropertyService_1 = class PropertyService {
         for (let i = 0; i < images.length; i++) {
             const image = images[i];
             const s3Response = await this.uploadImage(image);
-            console.log('S3 Response:', s3Response);
             if (!s3Response || !s3Response.Key) {
                 throw new Error('Error uploading image to S3');
             }
