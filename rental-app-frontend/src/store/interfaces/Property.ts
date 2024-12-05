@@ -1,6 +1,8 @@
 export interface Image {
   id: string;
   uri: string;
+  name: string;
+  type: string;
 }
 
 export interface Property {

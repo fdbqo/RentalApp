@@ -17,9 +17,20 @@ const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 const property_schema_1 = require("./schemas/property.schema");
+const AWS = require("aws-sdk");
+const crypto_1 = require("crypto");
+const config_1 = require("@nestjs/config");
 let PropertyService = class PropertyService {
-    constructor(propertyModel) {
+    constructor(propertyModel, configService) {
         this.propertyModel = propertyModel;
+        this.configService = configService;
+        this.AWS_S3_BUCKET_NAME = this.configService.get('S3_BUCKET_NAME');
+        this.s3 = new AWS.S3({
+            region: this.configService.get('S3_REGION'),
+            accessKeyId: this.configService.get('S3_ACCESS_KEY'),
+            secretAccessKey: this.configService.get('S3_SECRET_ACCESS_KEY')
+        });
+        this.randomImageName = (bytes = 8) => crypto_1.default.randomBytes(bytes).toString('hex');
     }
     async findAll(lenderId) {
         try {
@@ -31,15 +42,27 @@ let PropertyService = class PropertyService {
             return [];
         }
     }
-    async create(createPropertyDto) {
+    async create(createPropertyDto, images) {
         try {
+            const uploadedImages = [];
+            for (let i = 0; i < images.length; i++) {
+                const image = images[i];
+                const s3Response = await this.uploadImage(image);
+                if (!s3Response || !s3Response.Key) {
+                    throw new Error('Error uploading image to S3');
+                }
+                uploadedImages.push({
+                    _id: new mongoose_2.Types.ObjectId(),
+                    key: s3Response.Key,
+                    name: image.originalname,
+                    type: image.mimetype,
+                    uri: image.uri
+                });
+            }
             const propertyData = {
                 ...createPropertyDto,
                 lenderId: new mongoose_2.Types.ObjectId(createPropertyDto.lenderId),
-                images: createPropertyDto.images.map(img => ({
-                    _id: new mongoose_2.Types.ObjectId(),
-                    uri: img.uri
-                }))
+                images: uploadedImages
             };
             const createdProperty = new this.propertyModel(propertyData);
             return createdProperty.save();
@@ -47,6 +70,30 @@ let PropertyService = class PropertyService {
         catch (error) {
             console.error('Error creating property:', error);
             throw error;
+        }
+    }
+    async uploadImage(image) {
+        return await this.s3_upload(image.buffer, this.AWS_S3_BUCKET_NAME, this.randomImageName(), image.mimetype);
+    }
+    async s3_upload(file, bucket, name, mimetype) {
+        const targetLocation = String(name);
+        console.log('Target Location:', targetLocation);
+        const params = {
+            Bucket: bucket,
+            Key: targetLocation,
+            Body: file,
+            ContentType: mimetype,
+            ContentDisposition: 'inline',
+            CreateBucketConfiguration: {
+                LocationConstraint: process.env.S3_REGION
+            }
+        };
+        try {
+            let s3Response = await this.s3.upload(params).promise();
+            return s3Response;
+        }
+        catch (e) {
+            console.log(e);
         }
     }
     async findById(id) {
@@ -136,6 +183,7 @@ exports.PropertyService = PropertyService;
 exports.PropertyService = PropertyService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(property_schema_1.Property.name)),
-    __metadata("design:paramtypes", [mongoose_2.Model])
+    __metadata("design:paramtypes", [mongoose_2.Model,
+        config_1.ConfigService])
 ], PropertyService);
 //# sourceMappingURL=property.service.js.map

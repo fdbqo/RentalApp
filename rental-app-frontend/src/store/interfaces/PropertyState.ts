@@ -13,7 +13,7 @@ export interface PropertyState {
     doubleBedrooms: number | null;
     bathrooms: number | null;
     distanceFromUniversity?: number | null;
-    images: { id: string; uri: string }[];
+    images: { id: string; uri: string; name: string; type: string; }[];
     houseAddress: {
       addressLine1: string;
       addressLine2?: string;
@@ -48,7 +48,7 @@ export interface PropertyState {
   setDoubleBedrooms: (doubleBedrooms: number | null) => void;
   setBathrooms: (bathrooms: number | null) => void;
   setDistanceFromUniversity: (distanceFromUniversity: number | null) => void;
-  setImages: (images: { id: string; uri: string }[]) => void;
+  setImages: (images: { id: string; uri: string; name: string; type: string;}[]) => void;
   setHouseAddress: (
     address: Partial<PropertyState["formData"]["houseAddress"]>
   ) => void;

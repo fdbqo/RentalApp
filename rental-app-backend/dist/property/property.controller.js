@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const property_service_1 = require("./property.service");
 const create_property_dto_1 = require("./dto/create-property.dto");
 const update_property_dto_1 = require("./dto/update-property.dto");
+const platform_express_1 = require("@nestjs/platform-express");
 let PropertyController = class PropertyController {
     constructor(propertyService) {
         this.propertyService = propertyService;
@@ -27,8 +28,8 @@ let PropertyController = class PropertyController {
         }
         return this.propertyService.findAllAvailable(filters);
     }
-    async create(createPropertyDto) {
-        return this.propertyService.create(createPropertyDto);
+    async create(createPropertyDto, images) {
+        return this.propertyService.create(createPropertyDto, images);
     }
     async getPropertyById(id) {
         return this.propertyService.findById(id);
@@ -51,9 +52,11 @@ __decorate([
 ], PropertyController.prototype, "getAllProperties", null);
 __decorate([
     (0, common_1.Post)(),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('images', 8)),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.UploadedFiles)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_property_dto_1.CreatePropertyDto]),
+    __metadata("design:paramtypes", [create_property_dto_1.CreatePropertyDto, Array]),
     __metadata("design:returntype", Promise)
 ], PropertyController.prototype, "create", null);
 __decorate([

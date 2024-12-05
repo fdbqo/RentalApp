@@ -54,8 +54,9 @@ export class PropertyService {
         uploadedImages.push({
           _id: new Types.ObjectId(),
           key: s3Response.Key,
+          name: image.originalname,
           type: image.mimetype,
-          name: image.originalname
+          uri: image.uri
         });
       }
 

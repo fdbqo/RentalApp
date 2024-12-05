@@ -14,7 +14,10 @@ export declare class Property {
     distanceFromUniversity?: number | null;
     images: {
         _id: MongooseSchema.Types.ObjectId;
-        uri: string;
+        key: String;
+        name: String;
+        type: String;
+        uri: String;
     }[];
     houseAddress: {
         addressLine1: string;

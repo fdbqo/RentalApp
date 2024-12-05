@@ -26,12 +26,13 @@ class HouseAddressDto {
 class ImageDto {
   @IsString()
   key: string;
+  
+  @IsString()
+  name: string;
 
   @IsString()
   type: string;
 
-  @IsString()
-  name: string;
 }
 
 export class CreatePropertyDto {

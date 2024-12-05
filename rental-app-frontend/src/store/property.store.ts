@@ -107,10 +107,16 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         images: formData.images.map((img) => ({
           id: img.id,
           uri: img.uri,
+          name: img.name,
+          type: img.type,
         })),
       };
 
-      const response = await axios.post(`${API_URL}/listings`, propertyData);
+      const response = await axios.post(`${API_URL}/listings`, propertyData, {
+        headers: {
+          "content-Type": "multipart/form-data",
+        },
+      });
 
       await get().fetchLandlordProperties();
       get().resetForm();

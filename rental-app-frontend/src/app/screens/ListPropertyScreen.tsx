@@ -546,7 +546,7 @@ export default function ListPropertyScreen() {
     singleBedrooms: "",
     doubleBedrooms: "",
     bathrooms: "",
-    images: [] as Array<{ id: string; uri: string }>,
+    images: [] as Array<{ id: string; uri: string; name: string; type: string; }>,
     houseAddress: {
       addressLine1: "",
       addressLine2: "",
@@ -644,6 +644,8 @@ export default function ListPropertyScreen() {
       const newImages = result.assets.map((asset) => ({
         id: Date.now().toString() + Math.random().toString(),
         uri: asset.uri,
+        name: asset.uri.split("/").pop() || "image.jpg",
+        type: asset.mimeType
       }));
       updateFormData("images", [...formData.images, ...newImages]);
     }
