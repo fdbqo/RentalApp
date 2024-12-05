@@ -38,8 +38,8 @@ export class Property {
   @Prop({ required: false })
   distanceFromUniversity?: number | null;
 
-  @Prop({ type: [{ _id: MongooseSchema.Types.ObjectId, uri: String }] })
-  images: { _id: MongooseSchema.Types.ObjectId; uri: string }[];
+  @Prop({ type: [{ _id: MongooseSchema.Types.ObjectId, key: String, type: String }] })
+  images: { _id: MongooseSchema.Types.ObjectId; key: String; type: String }[];
 
   @Prop({ type: Object })
   houseAddress: {

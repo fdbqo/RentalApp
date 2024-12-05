@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { Property } from './schemas/property.schema';
 
 @Controller('listings')
@@ -20,8 +21,10 @@ export class PropertyController {
   }
 
   @Post()
-  async create(@Body() createPropertyDto: CreatePropertyDto) {
-    return this.propertyService.create(createPropertyDto);
+  @UseInterceptors(FilesInterceptor('images', 8))
+  async create(@Body() createPropertyDto: CreatePropertyDto,
+    @UploadedFiles() images: Express.Multer.File[]) {
+    return this.propertyService.create(createPropertyDto, images);
   }
 
   @Get(':id')

@@ -25,7 +25,13 @@ class HouseAddressDto {
 
 class ImageDto {
   @IsString()
-  uri: string;
+  key: string;
+
+  @IsString()
+  type: string;
+
+  @IsString()
+  name: string;
 }
 
 export class CreatePropertyDto {
