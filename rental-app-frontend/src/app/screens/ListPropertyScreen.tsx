@@ -1349,9 +1349,7 @@ export default function ListPropertyScreen() {
                 propertyStore.setAvailability(
                   formData.availability as "immediately" | "available_from"
                 );
-                propertyStore.setIsRented(
-                  formData.availability !== "available_from"
-                );
+                propertyStore.setIsRented(false);
                 propertyStore.setAvailability(formData.availability);
                 propertyStore.setAvailableFrom(formData.availableFrom ?? "");
                 propertyStore.setDescription(formData.description);

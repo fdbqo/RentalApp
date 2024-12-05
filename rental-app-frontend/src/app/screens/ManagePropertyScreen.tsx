@@ -138,6 +138,23 @@ export default function ManagePropertyScreen() {
               </Text>
               <XStack space="$2" alignItems="center">
                 <Feather
+                  name="check-circle"
+                  size={16}
+                  color={rentalAppTheme.textLight}
+                />
+                <Text
+                  fontSize={16}
+                  color={
+                    property.isRented
+                      ? rentalAppTheme.accentDarkRed
+                      : rentalAppTheme.primaryLight
+                  }
+                >
+                  {property.isRented ? "Rented" : "Available"}
+                </Text>
+              </XStack>
+              <XStack space="$2" alignItems="center">
+                <Feather
                   name="map-pin"
                   size={16}
                   color={rentalAppTheme.textLight}
@@ -188,19 +205,15 @@ export default function ManagePropertyScreen() {
 
               <XStack space="$2" alignItems="center">
                 <Feather
-                  name="check-circle"
+                  name="calendar"
                   size={16}
                   color={rentalAppTheme.textLight}
                 />
-                <Text
-                  fontSize={16}
-                  color={
-                    property.isRented
-                      ? rentalAppTheme.accentDarkRed
-                      : rentalAppTheme.primaryLight
-                  }
-                >
-                  {property.availability ? "Rented" : "Available"}
+                <Text fontSize={16} color={rentalAppTheme.textDark}>
+                  {property.availability === "available_from" &&
+                  property.availableFrom
+                    ? `Available from ${property.availableFrom}`
+                    : "Available immediately"}
                 </Text>
               </XStack>
             </YStack>

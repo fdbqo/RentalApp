@@ -45,7 +45,8 @@ export default function PropertyDetailScreen() {
   const isMobile = !media.gtXs;
   const { width } = useWindowDimensions();
 
-  const { selectedProperty, isLoading, error, fetchPropertyById } = usePropertyStore();
+  const { selectedProperty, isLoading, error, fetchPropertyById } =
+    usePropertyStore();
 
   useEffect(() => {
     if (params.id) {
@@ -475,21 +476,23 @@ export default function PropertyDetailScreen() {
               <PropertyFeature
                 icon={Bed}
                 text={`${
-                  selectedProperty.singleBedrooms || "0" +
-                  selectedProperty.doubleBedrooms || "0"
-                } Bed`} 
+                  (selectedProperty.singleBedrooms || 0) +
+                  (selectedProperty.doubleBedrooms || 0)
+                } Bed`}
               />
               <PropertyFeature
                 icon={Bath}
                 text={`${selectedProperty.bathrooms || "N/A"} Bath`}
               />
-              <PropertyFeature
+              {/* <PropertyFeature
                 icon={MapPin}
                 text={`${selectedProperty.distanceFromUniversity || "5"} km from Uni`}
-              />
+              /> */}
               <PropertyFeature
                 icon={Home}
-                text={capitaliseFirstLetter(selectedProperty.propertyType) || "N/A"}
+                text={
+                  capitaliseFirstLetter(selectedProperty.propertyType) || "N/A"
+                }
               />
             </XStack>
 
