@@ -21,15 +21,33 @@ let ChatsGateway = class ChatsGateway {
     constructor(chatsService) {
         this.chatsService = chatsService;
     }
+    afterInit() {
+        console.log('✅ WebSocket gateway initialized');
+    }
+    handleConnection(client) {
+        console.log(`🔵 Client connected: ${client.id}`);
+        client.on('error', (err) => {
+            console.error(`🚨 Socket Error (Client: ${client.id}):`, err);
+        });
+        client.on('disconnect', (reason) => {
+            console.log(`🔴 Client disconnected: ${client.id}, Reason: ${reason}`);
+        });
+    }
+    handleDisconnect(client) {
+        console.log(`🔴 Client disconnected: ${client.id}`);
+    }
     async handleMessage(createChatDto) {
+        console.log(`📩 Message received from ${createChatDto.senderId}: ${createChatDto.content}`);
         const chat = await this.chatsService.create(createChatDto);
-        this.server.emit(`chat:${createChatDto.propertyId}`, chat);
+        this.server.to(`chat:${createChatDto.propertyId}`).emit('message', chat);
         return chat;
     }
     handleJoinRoom(client, propertyId) {
+        console.log(`✅ Client ${client.id} joined room: chat:${propertyId}`);
         client.join(`chat:${propertyId}`);
     }
     handleLeaveRoom(client, propertyId) {
+        console.log(`🚪 Client ${client.id} left room: chat:${propertyId}`);
         client.leave(`chat:${propertyId}`);
     }
 };
@@ -48,20 +66,24 @@ __decorate([
 __decorate([
     (0, websockets_1.SubscribeMessage)('joinRoom'),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [socket_io_1.Socket, String]),
     __metadata("design:returntype", void 0)
 ], ChatsGateway.prototype, "handleJoinRoom", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('leaveRoom'),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [socket_io_1.Socket, String]),
     __metadata("design:returntype", void 0)
 ], ChatsGateway.prototype, "handleLeaveRoom", null);
 exports.ChatsGateway = ChatsGateway = __decorate([
-    (0, websockets_1.WebSocketGateway)(3001, {
+    (0, websockets_1.WebSocketGateway)({
         cors: {
             origin: '*',
+            methods: ['GET', 'POST'],
+            allowedHeaders: ['Authorization'],
+            credentials: true
         },
+        transports: ['websocket']
     }),
     __metadata("design:paramtypes", [chats_service_1.ChatsService])
 ], ChatsGateway);

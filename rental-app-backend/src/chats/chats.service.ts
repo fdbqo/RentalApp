@@ -1,34 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Chat, ChatDocument } from './schemas/chat.schema';
 import { CreateChatDto } from './dto/create-chat.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Chat, ChatDocument } from './schemas/chat.schemas';
+import { Model } from 'mongoose';
 import { GetChatDto } from './dto/get-chat.dto';
 
 @Injectable()
 export class ChatsService {
-    constructor(
-        @InjectModel(Chat.name) private chatModel: Model<ChatDocument>,
-    ) {}
 
-    async create(createChatDto: CreateChatDto): Promise<Chat> {
-        const createdChat = new this.chatModel(createChatDto);
-        return createdChat.save();
+  constructor(
+    @InjectModel(Chat.name) private chatModel: Model<ChatDocument>,
+  ) { }
+
+  async create(senderId: string, createChatDto: CreateChatDto) {
+    const createdChat = new this.chatModel({
+      ...createChatDto,
+      sender_id: senderId,
+    });
+    return createdChat.save();
+  }
+
+  async findAll(roomId: string, getChatDto: GetChatDto) {
+    const query = {
+      room_id: roomId,
+    };
+
+    if (getChatDto.last_id) {
+      query['_id'] = { $lt: getChatDto.last_id };
     }
 
-    async findByProperty(propertyId: string, getChatDto: GetChatDto): Promise<Chat[]> {
-        const query: any = { propertyId };
-
-        if (getChatDto.lastId) {
-            query._id = { $lt: getChatDto.lastId };
-        }
-
-        return this.chatModel
-            .find(query)
-            .sort({ createdAt: -1 })
-            .limit(getChatDto.limit)
-            .populate('senderId', 'firstName lastName')
-            .populate('receiverId', 'firstName lastName')
-            .exec();
-    }
+    return this.chatModel.find(query).sort({ createdAt: -1 }).limit(getChatDto.limit);
+  }
 }

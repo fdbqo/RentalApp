@@ -1,16 +1,19 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { ChatsService } from './chats.service';
 import { ChatsGateway } from './chats.gateway';
-import { Chat, ChatSchema } from './schemas/chat.schema';
-import { ChatsController } from './chats.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Chat, ChatSchema } from './schemas/chat.schemas';
 
 @Module({
-    imports: [
-        MongooseModule.forFeature([{ name: Chat.name, schema: ChatSchema }])
-    ],
-    providers: [ChatsService, ChatsGateway],
-    exports: [ChatsService],
-    controllers: [ChatsController]
+  imports: [
+    MongooseModule.forFeature([{ name: Chat.name, schema: ChatSchema }]),
+  ],
+  providers: [
+    ChatsGateway,
+    ChatsService,
+  ],
+  exports: [
+    ChatsService,
+  ],
 })
-export class ChatsModule {}
+export class ChatsModule { }

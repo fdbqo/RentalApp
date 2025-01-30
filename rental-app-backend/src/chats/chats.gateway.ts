@@ -1,33 +1,24 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets';
 import { ChatsService } from './chats.service';
 import { CreateChatDto } from './dto/create-chat.dto';
+import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway(3001, {
-    cors: {
-        origin: '*',
-    },
+@WebSocketGateway(800, {
+  namespace: '/chats',
 })
 export class ChatsGateway {
-    @WebSocketServer()
-    server: Server;
+  constructor(private readonly chatsService: ChatsService) {}
+  
+  @WebSocketServer()
+  private server: Server;
 
-    constructor(private readonly chatsService: ChatsService) {}
-
-    @SubscribeMessage('sendMessage')
-    async handleMessage(@MessageBody() createChatDto: CreateChatDto) {
-        const chat = await this.chatsService.create(createChatDto);
-        this.server.emit(`chat:${createChatDto.propertyId}`, chat);
-        return chat;
-    }
-
-    @SubscribeMessage('joinRoom')
-    handleJoinRoom(client: any, propertyId: string) {
-        client.join(`chat:${propertyId}`);
-    }
-
-    @SubscribeMessage('leaveRoom')
-    handleLeaveRoom(client: any, propertyId: string) {
-        client.leave(`chat:${propertyId}`);
-    }
+  @SubscribeMessage('create')
+  async create(
+    @ConnectedSocket() client,
+    @MessageBody() createChatDto: CreateChatDto
+  ) {
+    const senderId = client.handshake.user._id.toString();
+    const chat = await this.chatsService.create(senderId, createChatDto);
+    this.server.emit('new-chat', chat);
+  }
 }

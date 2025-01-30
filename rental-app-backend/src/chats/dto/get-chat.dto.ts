@@ -1,10 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class GetChatDto {
+
     @ApiProperty({
         required: false,
     })
-    readonly lastId: string;
+    readonly last_id: string;
 
     @ApiProperty({
         required: false,

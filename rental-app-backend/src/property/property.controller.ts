@@ -43,11 +43,4 @@ export class PropertyController {
   async deleteProperty(@Param('id') id: string): Promise<void> {
     return this.propertyService.delete(id);
   }
-  @Get(':id/chats')
-  async getPropertyChats(
-    @Param('id') id: string,
-    @Query() getChatDto: GetChatDto
-  ) {
-    return this.chatsService.findByProperty(id, new GetChatDto(getChatDto));
-  }
 }

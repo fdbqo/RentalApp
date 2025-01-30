@@ -14,6 +14,9 @@ const chats_gateway_1 = require("./chats.gateway");
 const chat_schema_1 = require("./schemas/chat.schema");
 const chats_controller_1 = require("./chats.controller");
 let ChatsModule = class ChatsModule {
+    onModuleInit() {
+        console.log('ChatsModule initialized ');
+    }
 };
 exports.ChatsModule = ChatsModule;
 exports.ChatsModule = ChatsModule = __decorate([
