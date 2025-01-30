@@ -3,10 +3,12 @@ import { PropertyService } from './property.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Property } from './schemas/property.schema';
+import { GetChatDto } from 'src/chats/dto/get-chat.dto';
+import { ChatsService } from 'src/chats/chats.service';
 
 @Controller('listings')
 export class PropertyController {
-  constructor(private readonly propertyService: PropertyService) {}
+  constructor(private readonly propertyService: PropertyService, private readonly chatsService:ChatsService) {}
 
   @Get()
   async getAllProperties(
@@ -40,5 +42,12 @@ export class PropertyController {
   @Delete(':id')
   async deleteProperty(@Param('id') id: string): Promise<void> {
     return this.propertyService.delete(id);
+  }
+  @Get(':id/chats')
+  async getPropertyChats(
+    @Param('id') id: string,
+    @Query() getChatDto: GetChatDto
+  ) {
+    return this.chatsService.findByProperty(id, new GetChatDto(getChatDto));
   }
 }

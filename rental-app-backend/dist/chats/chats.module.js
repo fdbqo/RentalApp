@@ -6,25 +6,24 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = void 0;
-const dotenv = require("dotenv");
-dotenv.config();
+exports.ChatsModule = void 0;
 const common_1 = require("@nestjs/common");
-const property_module_1 = require("./property/property.module");
 const mongoose_1 = require("@nestjs/mongoose");
-const auth_module_1 = require("./auth/auth.module");
-const chats_module_1 = require("./chats/chats.module");
-let AppModule = class AppModule {
+const chats_service_1 = require("./chats.service");
+const chats_gateway_1 = require("./chats.gateway");
+const chat_schema_1 = require("./schemas/chat.schema");
+const chats_controller_1 = require("./chats.controller");
+let ChatsModule = class ChatsModule {
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
+exports.ChatsModule = ChatsModule;
+exports.ChatsModule = ChatsModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            property_module_1.PropertyModule,
-            mongoose_1.MongooseModule.forRoot(process.env.MONGO_URI),
-            auth_module_1.AuthModule,
-            chats_module_1.ChatsModule,
-        ]
+            mongoose_1.MongooseModule.forFeature([{ name: chat_schema_1.Chat.name, schema: chat_schema_1.ChatSchema }])
+        ],
+        providers: [chats_service_1.ChatsService, chats_gateway_1.ChatsGateway],
+        exports: [chats_service_1.ChatsService],
+        controllers: [chats_controller_1.ChatsController]
     })
-], AppModule);
-//# sourceMappingURL=app.module.js.map
+], ChatsModule);
+//# sourceMappingURL=chats.module.js.map

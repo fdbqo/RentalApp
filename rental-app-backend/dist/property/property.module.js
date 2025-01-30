@@ -12,6 +12,7 @@ const mongoose_1 = require("@nestjs/mongoose");
 const property_controller_1 = require("./property.controller");
 const property_service_1 = require("./property.service");
 const property_schema_1 = require("./schemas/property.schema");
+const chats_module_1 = require("../chats/chats.module");
 let PropertyModule = class PropertyModule {
 };
 exports.PropertyModule = PropertyModule;
@@ -21,6 +22,7 @@ exports.PropertyModule = PropertyModule = __decorate([
             mongoose_1.MongooseModule.forFeature([
                 { name: property_schema_1.Property.name, schema: property_schema_1.PropertySchema, collection: 'listings' }
             ]),
+            chats_module_1.ChatsModule
         ],
         controllers: [property_controller_1.PropertyController],
         providers: [property_service_1.PropertyService],
