@@ -8,44 +8,136 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
+var ChatsGateway_1;
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatsGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
 const chats_service_1 = require("./chats.service");
-const create_chat_dto_1 = require("./dto/create-chat.dto");
-const socket_io_1 = require("socket.io");
-let ChatsGateway = class ChatsGateway {
-    constructor(chatsService) {
+const ws_1 = require("ws");
+const jwt_1 = require("@nestjs/jwt");
+const common_1 = require("@nestjs/common");
+let ChatsGateway = ChatsGateway_1 = class ChatsGateway {
+    constructor(chatsService, jwtService) {
         this.chatsService = chatsService;
+        this.jwtService = jwtService;
+        this.logger = new common_1.Logger(ChatsGateway_1.name);
+        this.connectedClients = new Map();
     }
-    async create(client, createChatDto) {
-        const senderId = client.handshake.user._id.toString();
-        const chat = await this.chatsService.create(senderId, createChatDto);
-        this.server.emit('new-chat', chat);
+    async handleConnection(client, request) {
+        try {
+            const token = request.headers['authorization'];
+            if (!token) {
+                client.close(1008, 'No token provided');
+                return;
+            }
+            const jwtToken = token.replace('Bearer ', '');
+            const payload = await this.jwtService.verifyAsync(jwtToken, {
+                secret: 'jwt_secret_key'
+            });
+            this.connectedClients.set(client, {
+                user: payload,
+                rooms: new Set()
+            });
+            client.on('message', async (data) => {
+                try {
+                    const message = JSON.parse(data.toString());
+                    await this.handleMessage(client, message);
+                }
+                catch (error) {
+                    this.logger.error(`Error handling message: ${error.message}`);
+                    client.send(JSON.stringify({
+                        event: 'error',
+                        data: 'Invalid message format'
+                    }));
+                }
+            });
+            client.send(JSON.stringify({
+                event: 'connected',
+                data: 'Successfully connected'
+            }));
+            this.logger.log(`Client connected: ${payload.sub}`);
+        }
+        catch (error) {
+            this.logger.error(`Connection error: ${error.message}`);
+            client.close(1008, 'Authentication failed');
+        }
     }
-    afterInit(client) { }
-    ;
+    handleDisconnect(client) {
+        this.connectedClients.delete(client);
+        this.logger.log('Client disconnected');
+    }
+    async handleMessage(client, message) {
+        const { event, data } = message;
+        const userData = this.connectedClients.get(client);
+        if (!userData) {
+            throw new common_1.UnauthorizedException('User not authenticated');
+        }
+        switch (event) {
+            case 'join':
+                await this.handleJoinRoom(client, data);
+                break;
+            case 'create':
+                await this.handleCreateMessage(client, data);
+                break;
+            case 'leave':
+                await this.handleLeaveRoom(client, data);
+                break;
+            default:
+                client.send(JSON.stringify({
+                    event: 'error',
+                    data: `Unknown event: ${event}`
+                }));
+        }
+    }
+    async handleJoinRoom(client, roomId) {
+        const userData = this.connectedClients.get(client);
+        userData.rooms.add(roomId);
+        this.logger.log(`User ${userData.user.sub} joined room ${roomId}`);
+        client.send(JSON.stringify({
+            event: 'joined',
+            data: `Successfully joined room ${roomId}`
+        }));
+    }
+    async handleCreateMessage(client, data) {
+        const userData = this.connectedClients.get(client);
+        const chat = await this.chatsService.create(userData.user.sub, data);
+        this.broadcast(data.room_id, {
+            event: 'new-chat',
+            data: chat
+        });
+        client.send(JSON.stringify({
+            event: 'created',
+            data: chat
+        }));
+    }
+    async handleLeaveRoom(client, roomId) {
+        const userData = this.connectedClients.get(client);
+        userData.rooms.delete(roomId);
+        client.send(JSON.stringify({
+            event: 'left',
+            data: `Successfully left room ${roomId}`
+        }));
+    }
+    broadcast(roomId, message) {
+        const messageString = JSON.stringify(message);
+        this.connectedClients.forEach((userData, client) => {
+            if (userData.rooms.has(roomId)) {
+                client.send(messageString);
+            }
+        });
+    }
 };
 exports.ChatsGateway = ChatsGateway;
 __decorate([
     (0, websockets_1.WebSocketServer)(),
-    __metadata("design:type", socket_io_1.Server)
+    __metadata("design:type", typeof (_a = typeof ws_1.Server !== "undefined" && ws_1.Server) === "function" ? _a : Object)
 ], ChatsGateway.prototype, "server", void 0);
-__decorate([
-    (0, websockets_1.SubscribeMessage)('create'),
-    __param(0, (0, websockets_1.ConnectedSocket)()),
-    __param(1, (0, websockets_1.MessageBody)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, create_chat_dto_1.CreateChatDto]),
-    __metadata("design:returntype", Promise)
-], ChatsGateway.prototype, "create", null);
-exports.ChatsGateway = ChatsGateway = __decorate([
+exports.ChatsGateway = ChatsGateway = ChatsGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)({
-        cors: { origin: '*' },
+        cors: true
     }),
-    __metadata("design:paramtypes", [chats_service_1.ChatsService])
+    __metadata("design:paramtypes", [chats_service_1.ChatsService,
+        jwt_1.JwtService])
 ], ChatsGateway);
 //# sourceMappingURL=chats.gateway.js.map

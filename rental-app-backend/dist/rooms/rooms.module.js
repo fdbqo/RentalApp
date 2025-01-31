@@ -13,6 +13,7 @@ const rooms_controller_1 = require("./rooms.controller");
 const mongoose_1 = require("@nestjs/mongoose");
 const room_schemas_1 = require("./schemas/room.schemas");
 const chats_module_1 = require("../chats/chats.module");
+const auth_module_1 = require("../auth/auth.module");
 let RoomsModule = class RoomsModule {
 };
 exports.RoomsModule = RoomsModule;
@@ -21,6 +22,7 @@ exports.RoomsModule = RoomsModule = __decorate([
         imports: [
             mongoose_1.MongooseModule.forFeature([{ name: room_schemas_1.Room.name, schema: room_schemas_1.RoomSchema }]),
             chats_module_1.ChatsModule,
+            auth_module_1.AuthModule,
         ],
         controllers: [rooms_controller_1.RoomsController],
         providers: [rooms_service_1.RoomsService],

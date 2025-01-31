@@ -4,23 +4,24 @@ import { CreateRoomDto } from './dto/create-room.dto';
 import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { GetChatDto } from 'src/chats/dto/get-chat.dto';
 import { ChatsService } from 'src/chats/chats.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('rooms')
 export class RoomsController {
-
   constructor(
     private readonly roomsService: RoomsService,
     private readonly chatsService: ChatsService,
   ) { }
 
   @Post()
-  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   create(@Request() req, @Body() createRoomDto: CreateRoomDto) {
+    console.log('User creating room:', req.user); // Add this for debugging
     return this.roomsService.create(req.user._id.toString(), createRoomDto);
   }
 
   @Get()
-  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt')) // Add this guard
   getByRequest(@Request() req) {
     return this.roomsService.getByRequest(req.user._id.toString());
   }

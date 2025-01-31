@@ -4,11 +4,16 @@ import { ChatsGateway } from './chats.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Chat, ChatSchema } from './schemas/chat.schemas';
 import { AuthModule } from 'src/auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Chat.name, schema: ChatSchema }]),
-    AuthModule
+    AuthModule,
+    JwtModule.register({
+      secret: 'jwt_secret_key',
+      signOptions: { expiresIn: '1h' },
+    }),
   ],
   providers: [
     ChatsGateway,
@@ -18,4 +23,4 @@ import { AuthModule } from 'src/auth/auth.module';
     ChatsService,
   ],
 })
-export class ChatsModule { }
+export class ChatsModule {}

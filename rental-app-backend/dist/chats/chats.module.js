@@ -13,6 +13,7 @@ const chats_gateway_1 = require("./chats.gateway");
 const mongoose_1 = require("@nestjs/mongoose");
 const chat_schemas_1 = require("./schemas/chat.schemas");
 const auth_module_1 = require("../auth/auth.module");
+const jwt_1 = require("@nestjs/jwt");
 let ChatsModule = class ChatsModule {
 };
 exports.ChatsModule = ChatsModule;
@@ -20,7 +21,11 @@ exports.ChatsModule = ChatsModule = __decorate([
     (0, common_1.Module)({
         imports: [
             mongoose_1.MongooseModule.forFeature([{ name: chat_schemas_1.Chat.name, schema: chat_schemas_1.ChatSchema }]),
-            auth_module_1.AuthModule
+            auth_module_1.AuthModule,
+            jwt_1.JwtModule.register({
+                secret: 'jwt_secret_key',
+                signOptions: { expiresIn: '1h' },
+            }),
         ],
         providers: [
             chats_gateway_1.ChatsGateway,

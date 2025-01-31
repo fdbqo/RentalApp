@@ -19,12 +19,14 @@ const create_room_dto_1 = require("./dto/create-room.dto");
 const swagger_1 = require("@nestjs/swagger");
 const get_chat_dto_1 = require("../chats/dto/get-chat.dto");
 const chats_service_1 = require("../chats/chats.service");
+const passport_1 = require("@nestjs/passport");
 let RoomsController = class RoomsController {
     constructor(roomsService, chatsService) {
         this.roomsService = roomsService;
         this.chatsService = chatsService;
     }
     create(req, createRoomDto) {
+        console.log('User creating room:', req.user);
         return this.roomsService.create(req.user._id.toString(), createRoomDto);
     }
     getByRequest(req) {
@@ -37,7 +39,7 @@ let RoomsController = class RoomsController {
 exports.RoomsController = RoomsController;
 __decorate([
     (0, common_1.Post)(),
-    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -46,7 +48,7 @@ __decorate([
 ], RoomsController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),

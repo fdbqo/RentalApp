@@ -10,7 +10,7 @@ async function bootstrap() {
     app.enableCors();
     app.useWebSocketAdapter(new platform_ws_1.WsAdapter(app));
     await app.listen(3000);
-    console.log('рџљЂ Server running on http://localhost:3000');
+    console.log('🚀 Server running on http://localhost:3000');
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
