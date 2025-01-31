@@ -17,7 +17,6 @@ const common_1 = require("@nestjs/common");
 const property_service_1 = require("./property.service");
 const create_property_dto_1 = require("./dto/create-property.dto");
 const update_property_dto_1 = require("./dto/update-property.dto");
-const get_chat_dto_1 = require("../chats/dto/get-chat.dto");
 const chats_service_1 = require("../chats/chats.service");
 let PropertyController = class PropertyController {
     constructor(propertyService, chatsService) {
@@ -41,9 +40,6 @@ let PropertyController = class PropertyController {
     }
     async deleteProperty(id) {
         return this.propertyService.delete(id);
-    }
-    async getPropertyChats(id, getChatDto) {
-        return this.chatsService.findByProperty(id, new get_chat_dto_1.GetChatDto(getChatDto));
     }
 };
 exports.PropertyController = PropertyController;
@@ -84,14 +80,6 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], PropertyController.prototype, "deleteProperty", null);
-__decorate([
-    (0, common_1.Get)(':id/chats'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Query)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, get_chat_dto_1.GetChatDto]),
-    __metadata("design:returntype", Promise)
-], PropertyController.prototype, "getPropertyChats", null);
 exports.PropertyController = PropertyController = __decorate([
     (0, common_1.Controller)('listings'),
     __metadata("design:paramtypes", [property_service_1.PropertyService, chats_service_1.ChatsService])

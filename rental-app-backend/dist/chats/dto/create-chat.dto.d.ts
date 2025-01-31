@@ -1,6 +1,4 @@
 export declare class CreateChatDto {
+    readonly room_id: string;
     readonly content: string;
-    readonly propertyId: string;
-    readonly senderId: string;
-    readonly receiverId: string;
 }

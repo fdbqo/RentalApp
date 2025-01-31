@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Room } from './schemas/room.schemas';
 import { CreateRoomDto } from './dto/create-room.dto';
 
@@ -12,13 +12,21 @@ export class RoomsService {
     ) { }
 
     async create(userId: string, createRoomDto: CreateRoomDto) {
-        createRoomDto.members.push(userId);
+        const members = [
+          ...createRoomDto.members.map(id => new Types.ObjectId(id)),
+          new Types.ObjectId(userId)
+        ];
+        
+        const createdRoom = new this.roomModel({
+          ...createRoomDto,
+          members,
+        });
+        return createdRoom.save();
+      }
 
-        const createdRoom = new this.roomModel(createRoomDto);
-        return await createdRoom.save();
-    }
-
-    async getByRequest(userId: string) {
-        return await this.roomModel.find({ members: userId }).exec();
-    }
+      async getByRequest(userId: string) {
+        return this.roomModel.find({ members: userId })
+          .populate('members', 'firstName email')
+          .exec();
+      }
 }

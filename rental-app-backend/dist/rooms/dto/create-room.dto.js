@@ -9,17 +9,29 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateChatDto = void 0;
+exports.CreateRoomDto = void 0;
+const swagger_1 = require("@nestjs/swagger");
+const room_type_enum_1 = require("../enums/room-type.enum");
 const class_validator_1 = require("class-validator");
-class CreateChatDto {
+class CreateRoomDto {
 }
-exports.CreateChatDto = CreateChatDto;
+exports.CreateRoomDto = CreateRoomDto;
 __decorate([
+    (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.ValidateIf)(o => o.type != room_type_enum_1.RoomType.PERSONAL),
     __metadata("design:type", String)
-], CreateChatDto.prototype, "room_id", void 0);
+], CreateRoomDto.prototype, "name", void 0);
 __decorate([
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, swagger_1.ApiProperty)({ required: true }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ArrayNotEmpty)(),
+    __metadata("design:type", Array)
+], CreateRoomDto.prototype, "members", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ required: true, default: room_type_enum_1.RoomType.PERSONAL }),
+    (0, class_validator_1.IsEnum)(room_type_enum_1.RoomType),
+    (0, class_validator_1.ValidateIf)(o => o.type),
     __metadata("design:type", String)
-], CreateChatDto.prototype, "content", void 0);
-//# sourceMappingURL=create-chat.dto.js.map
+], CreateRoomDto.prototype, "type", void 0);
+//# sourceMappingURL=create-room.dto.js.map

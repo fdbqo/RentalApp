@@ -12,36 +12,36 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChatsService = void 0;
+exports.RoomsService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
-const chat_schemas_1 = require("./schemas/chat.schemas");
 const mongoose_2 = require("mongoose");
-let ChatsService = class ChatsService {
-    constructor(chatModel) {
-        this.chatModel = chatModel;
+const room_schemas_1 = require("./schemas/room.schemas");
+let RoomsService = class RoomsService {
+    constructor(roomModel) {
+        this.roomModel = roomModel;
     }
-    async create(senderId, createChatDto) {
-        const createdChat = new this.chatModel({
-            ...createChatDto,
-            sender_id: new mongoose_2.Types.ObjectId(senderId),
+    async create(userId, createRoomDto) {
+        const members = [
+            ...createRoomDto.members.map(id => new mongoose_2.Types.ObjectId(id)),
+            new mongoose_2.Types.ObjectId(userId)
+        ];
+        const createdRoom = new this.roomModel({
+            ...createRoomDto,
+            members,
         });
-        return createdChat.save();
+        return createdRoom.save();
     }
-    async findAll(roomId, getChatDto) {
-        const query = {
-            room_id: roomId,
-        };
-        if (getChatDto.last_id) {
-            query['_id'] = { $lt: getChatDto.last_id };
-        }
-        return this.chatModel.find(query).sort({ createdAt: -1 }).limit(getChatDto.limit);
+    async getByRequest(userId) {
+        return this.roomModel.find({ members: userId })
+            .populate('members', 'firstName email')
+            .exec();
     }
 };
-exports.ChatsService = ChatsService;
-exports.ChatsService = ChatsService = __decorate([
+exports.RoomsService = RoomsService;
+exports.RoomsService = RoomsService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, mongoose_1.InjectModel)(chat_schemas_1.Chat.name)),
+    __param(0, (0, mongoose_1.InjectModel)(room_schemas_1.Room.name)),
     __metadata("design:paramtypes", [mongoose_2.Model])
-], ChatsService);
-//# sourceMappingURL=chats.service.js.map
+], RoomsService);
+//# sourceMappingURL=rooms.service.js.map

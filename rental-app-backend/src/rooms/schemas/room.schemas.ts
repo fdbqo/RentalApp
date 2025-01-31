@@ -10,6 +10,7 @@ import { User } from 'src/auth/user.schema';
         transform(_, ret, __) {
             return new RoomDocument(ret);
         },
+        virtuals: true
     })
 })
 export class Room {
@@ -20,8 +21,12 @@ export class Room {
     @Prop({ enum: RoomType, default: RoomType.PERSONAL })
     type: RoomType;
 
-    @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: User.name, autopopulate: true }])
-    members: User[];
+    @Prop([{ 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User',
+        autopopulate: { select: 'firstName lastName email' } 
+      }])
+      members: User[];
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);

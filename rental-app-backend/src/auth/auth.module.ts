@@ -17,5 +17,6 @@ import { PassportModule } from '@nestjs/passport';
   ],
   providers: [AuthService],
   controllers: [AuthController],
+  exports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])]
 })
 export class AuthModule {}

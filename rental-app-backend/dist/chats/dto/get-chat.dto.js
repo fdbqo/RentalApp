@@ -23,7 +23,7 @@ __decorate([
         required: false,
     }),
     __metadata("design:type", String)
-], GetChatDto.prototype, "lastId", void 0);
+], GetChatDto.prototype, "last_id", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         required: false,

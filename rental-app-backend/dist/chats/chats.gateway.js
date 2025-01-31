@@ -14,42 +14,20 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatsGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
-const socket_io_1 = require("socket.io");
 const chats_service_1 = require("./chats.service");
 const create_chat_dto_1 = require("./dto/create-chat.dto");
+const socket_io_1 = require("socket.io");
 let ChatsGateway = class ChatsGateway {
     constructor(chatsService) {
         this.chatsService = chatsService;
     }
-    afterInit() {
-        console.log('✅ WebSocket gateway initialized');
+    async create(client, createChatDto) {
+        const senderId = client.handshake.user._id.toString();
+        const chat = await this.chatsService.create(senderId, createChatDto);
+        this.server.emit('new-chat', chat);
     }
-    handleConnection(client) {
-        console.log(`🔵 Client connected: ${client.id}`);
-        client.on('error', (err) => {
-            console.error(`🚨 Socket Error (Client: ${client.id}):`, err);
-        });
-        client.on('disconnect', (reason) => {
-            console.log(`🔴 Client disconnected: ${client.id}, Reason: ${reason}`);
-        });
-    }
-    handleDisconnect(client) {
-        console.log(`🔴 Client disconnected: ${client.id}`);
-    }
-    async handleMessage(createChatDto) {
-        console.log(`📩 Message received from ${createChatDto.senderId}: ${createChatDto.content}`);
-        const chat = await this.chatsService.create(createChatDto);
-        this.server.to(`chat:${createChatDto.propertyId}`).emit('message', chat);
-        return chat;
-    }
-    handleJoinRoom(client, propertyId) {
-        console.log(`✅ Client ${client.id} joined room: chat:${propertyId}`);
-        client.join(`chat:${propertyId}`);
-    }
-    handleLeaveRoom(client, propertyId) {
-        console.log(`🚪 Client ${client.id} left room: chat:${propertyId}`);
-        client.leave(`chat:${propertyId}`);
-    }
+    afterInit(client) { }
+    ;
 };
 exports.ChatsGateway = ChatsGateway;
 __decorate([
@@ -57,33 +35,16 @@ __decorate([
     __metadata("design:type", socket_io_1.Server)
 ], ChatsGateway.prototype, "server", void 0);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('sendMessage'),
-    __param(0, (0, websockets_1.MessageBody)()),
+    (0, websockets_1.SubscribeMessage)('create'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __param(1, (0, websockets_1.MessageBody)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_chat_dto_1.CreateChatDto]),
+    __metadata("design:paramtypes", [Object, create_chat_dto_1.CreateChatDto]),
     __metadata("design:returntype", Promise)
-], ChatsGateway.prototype, "handleMessage", null);
-__decorate([
-    (0, websockets_1.SubscribeMessage)('joinRoom'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [socket_io_1.Socket, String]),
-    __metadata("design:returntype", void 0)
-], ChatsGateway.prototype, "handleJoinRoom", null);
-__decorate([
-    (0, websockets_1.SubscribeMessage)('leaveRoom'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [socket_io_1.Socket, String]),
-    __metadata("design:returntype", void 0)
-], ChatsGateway.prototype, "handleLeaveRoom", null);
+], ChatsGateway.prototype, "create", null);
 exports.ChatsGateway = ChatsGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
-        cors: {
-            origin: '*',
-            methods: ['GET', 'POST'],
-            allowedHeaders: ['Authorization'],
-            credentials: true
-        },
-        transports: ['websocket']
+        cors: { origin: '*' },
     }),
     __metadata("design:paramtypes", [chats_service_1.ChatsService])
 ], ChatsGateway);

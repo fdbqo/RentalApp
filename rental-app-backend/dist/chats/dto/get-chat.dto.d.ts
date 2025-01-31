@@ -1,5 +1,5 @@
 export declare class GetChatDto {
-    readonly lastId: string;
+    readonly last_id: string;
     readonly limit: number;
     constructor(data: any);
 }

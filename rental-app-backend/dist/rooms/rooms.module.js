@@ -6,27 +6,24 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = void 0;
-const dotenv = require("dotenv");
-dotenv.config();
+exports.RoomsModule = void 0;
 const common_1 = require("@nestjs/common");
-const property_module_1 = require("./property/property.module");
+const rooms_service_1 = require("./rooms.service");
+const rooms_controller_1 = require("./rooms.controller");
 const mongoose_1 = require("@nestjs/mongoose");
-const auth_module_1 = require("./auth/auth.module");
-const chats_module_1 = require("./chats/chats.module");
-const rooms_module_1 = require("./rooms/rooms.module");
-let AppModule = class AppModule {
+const room_schemas_1 = require("./schemas/room.schemas");
+const chats_module_1 = require("../chats/chats.module");
+let RoomsModule = class RoomsModule {
 };
-exports.AppModule = AppModule;
-exports.AppModule = AppModule = __decorate([
+exports.RoomsModule = RoomsModule;
+exports.RoomsModule = RoomsModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            property_module_1.PropertyModule,
-            mongoose_1.MongooseModule.forRoot(process.env.MONGO_URI),
-            auth_module_1.AuthModule,
+            mongoose_1.MongooseModule.forFeature([{ name: room_schemas_1.Room.name, schema: room_schemas_1.RoomSchema }]),
             chats_module_1.ChatsModule,
-            rooms_module_1.RoomsModule
-        ]
+        ],
+        controllers: [rooms_controller_1.RoomsController],
+        providers: [rooms_service_1.RoomsService],
     })
-], AppModule);
-//# sourceMappingURL=app.module.js.map
+], RoomsModule);
+//# sourceMappingURL=rooms.module.js.map
