@@ -73,11 +73,19 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(client: WebSocket) {
+    const userData = this.connectedClients.get(client);
+    if (userData) {
+      userData.rooms.clear();
+    }
     this.connectedClients.delete(client);
     this.logger.log('Client disconnected');
   }
 
   private async handleMessage(client: WebSocket, message: any) {
+    if (!message || !message.event || !message.data) {
+      throw new Error('Invalid message format');
+    }
+
     const { event, data } = message;
     const userData = this.connectedClients.get(client);
 
