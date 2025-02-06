@@ -64,10 +64,17 @@ let ChatsGateway = ChatsGateway_1 = class ChatsGateway {
         }
     }
     handleDisconnect(client) {
+        const userData = this.connectedClients.get(client);
+        if (userData) {
+            userData.rooms.clear();
+        }
         this.connectedClients.delete(client);
         this.logger.log('Client disconnected');
     }
     async handleMessage(client, message) {
+        if (!message || !message.event || !message.data) {
+            throw new Error('Invalid message format');
+        }
         const { event, data } = message;
         const userData = this.connectedClients.get(client);
         if (!userData) {

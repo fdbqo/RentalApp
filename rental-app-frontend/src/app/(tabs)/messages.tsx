@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import { FlatList, useWindowDimensions, Platform } from "react-native";
+import React, { useEffect } from "react";
+import { FlatList, useWindowDimensions, Platform, Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import {
   YStack,
-  XStack,
+  XStack, 
   Text,
   Avatar,
   Input,
@@ -11,6 +12,9 @@ import {
   Theme,
   Separator,
 } from "tamagui";
+import { useChat } from "../../hooks/useChat";
+import { formatDistanceToNow } from 'date-fns';
+import { Link } from 'expo-router';
 
 const rentalAppTheme = {
   primaryDark: "#016180",
@@ -20,34 +24,18 @@ const rentalAppTheme = {
   textDark: "#000",
 };
 
-// Hardcoded messages
-const messages = [
-  {
-    id: "1",
-    sender: "John Doe",
-    message: "Hey, is the room still available?",
-    avatar: "https://i.pravatar.cc/150?img=11",
-    timestamp: "2 hrs ago",
-  },
-  {
-    id: "2",
-    sender: "Jane Smith",
-    message: "I’m interested in the apartment.",
-    avatar: "https://i.pravatar.cc/150?img=5",
-    timestamp: "3 hrs ago",
-  },
-  {
-    id: "3",
-    sender: "Michael Johnson",
-    message: "Can we schedule a viewing?",
-    avatar: "https://i.pravatar.cc/150?img=7",
-    timestamp: "1 day ago",
-  },
-];
-
 export default function MessagesScreen() {
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
+  const router = useRouter();
+  const { rooms, isLoading } = useChat();
+
+  const handleRoomPress = (roomId: string) => {
+    router.push({
+      pathname: "../screens/ChatRoomScreen/[roomId]",
+      params: { roomId }
+    });
+  };
 
   return (
     <Theme name="light">
@@ -95,66 +83,74 @@ export default function MessagesScreen() {
 
         {/* Messages List */}
         <FlatList
-          data={messages}
-          keyExtractor={(item) => item.id}
+          data={rooms}
+          keyExtractor={(item) => item._id}
           ItemSeparatorComponent={() => <Separator />}
           renderItem={({ item }) => (
-            <YStack
-              borderRadius={12}
-              backgroundColor="#fff"
-              padding={16}
-              marginBottom={16}
-              style={{
-                width: isWeb ? "32%" : "100%",
-                ...Platform.select({
-                  ios: {
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 5,
-                  },
-                  android: {
-                    elevation: 6,
-                  },
-                  web: {
-                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.15)",
-                  },
-                }),
-              }}
-            >
-              <XStack space="$3" alignItems="center">
-                {/* Avatar */}
-                <Avatar circular size="$5">
-                  <Avatar.Image source={{ uri: item.avatar }} />
-                </Avatar>
+            <Pressable onPress={() => handleRoomPress(item._id)}>
+              <YStack
+                borderRadius={12}
+                backgroundColor="#fff"
+                padding={16}
+                marginBottom={16}
+                style={{
+                  width: isWeb ? "32%" : "100%",
+                  ...Platform.select({
+                    ios: {
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 5,
+                    },
+                    android: {
+                      elevation: 6,
+                    },
+                    web: {
+                      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.15)",
+                    },
+                  }),
+                }}
+              >
+                <XStack space="$3" alignItems="center">
+                  {/* Avatar */}
+                  <Avatar circular size="$5">
+                    <Avatar.Image 
+                      source={{ 
+                        uri: `https://i.pravatar.cc/150?u=${item.members[0]._id}` 
+                      }} 
+                    />
+                  </Avatar>
 
-                {/* Message Details */}
-                <YStack flex={1}>
-                  <XStack justifyContent="space-between" alignItems="center">
+                  {/* Message Details */}
+                  <YStack flex={1}>
+                    <XStack justifyContent="space-between" alignItems="center">
+                      <Text
+                        fontSize={16}
+                        fontWeight="bold"
+                        color={rentalAppTheme.textDark}
+                      >
+                        {item.name}
+                      </Text>
+                      {item.lastMessage && (
+                        <Text fontSize={12} color="gray">
+                          {formatDistanceToNow(new Date(item.lastMessage.createdAt), { addSuffix: true })}
+                        </Text>
+                      )}
+                    </XStack>
                     <Text
-                      fontSize={16}
-                      fontWeight="bold"
+                      fontSize={14}
                       color={rentalAppTheme.textDark}
+                      marginTop="$1"
                     >
-                      {item.sender}
+                      {item.lastMessage?.content || 'No messages yet'}
                     </Text>
-                    <Text fontSize={12} color="gray">
-                      {item.timestamp}
-                    </Text>
-                  </XStack>
-                  <Text
-                    fontSize={14}
-                    color={rentalAppTheme.textDark}
-                    marginTop="$1"
-                  >
-                    {item.message}
-                  </Text>
-                </YStack>
+                  </YStack>
 
-                {/* Message Icon */}
-                <Feather name="chevron-right" size={20} color="gray" />
-              </XStack>
-            </YStack>
+                  {/* Message Icon */}
+                  <Feather name="chevron-right" size={20} color="gray" />
+                </XStack>
+              </YStack>
+            </Pressable>
           )}
           numColumns={isWeb ? 3 : 1}
           columnWrapperStyle={
