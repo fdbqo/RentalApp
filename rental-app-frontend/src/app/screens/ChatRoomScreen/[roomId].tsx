@@ -21,6 +21,15 @@ const ChatRoomScreen = () => {
     }
   }, [roomId]);
 
+  const handleSendMessage = (content: string) => {
+    if (roomId) {
+      sendMessage({
+        content,
+        room_id: roomId as string
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <YStack flex={1} justifyContent="center" alignItems="center">
@@ -60,7 +69,7 @@ const ChatRoomScreen = () => {
           onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
         />
 
-        <MessageInput onSend={(content) => sendMessage({ content, room_id: String(roomId) })} />
+        <MessageInput onSend={handleSendMessage} />
       </KeyboardAvoidingView>
     </YStack>
   );

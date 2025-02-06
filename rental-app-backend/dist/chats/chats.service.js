@@ -11,22 +11,34 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var ChatsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatsService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const chat_schemas_1 = require("./schemas/chat.schemas");
 const mongoose_2 = require("mongoose");
-let ChatsService = class ChatsService {
+let ChatsService = ChatsService_1 = class ChatsService {
     constructor(chatModel) {
         this.chatModel = chatModel;
+        this.logger = new common_1.Logger(ChatsService_1.name);
     }
-    async create(senderId, createChatDto) {
-        const createdChat = new this.chatModel({
-            ...createChatDto,
-            sender_id: new mongoose_2.Types.ObjectId(senderId),
-        });
-        return createdChat.save();
+    async create(data) {
+        try {
+            this.logger.log(`Creating chat:`, data);
+            const newChat = new this.chatModel({
+                content: data.content,
+                sender_id: new mongoose_2.Types.ObjectId(data.senderId),
+                room_id: data.room_id
+            });
+            const savedChat = await newChat.save();
+            this.logger.log(`Chat created: ${savedChat._id}`);
+            return savedChat;
+        }
+        catch (error) {
+            this.logger.error(`Failed to create chat: ${error.message}`);
+            throw error;
+        }
     }
     async findAll(roomId, getChatDto) {
         const query = {
@@ -39,7 +51,7 @@ let ChatsService = class ChatsService {
     }
 };
 exports.ChatsService = ChatsService;
-exports.ChatsService = ChatsService = __decorate([
+exports.ChatsService = ChatsService = ChatsService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(chat_schemas_1.Chat.name)),
     __metadata("design:paramtypes", [mongoose_2.Model])

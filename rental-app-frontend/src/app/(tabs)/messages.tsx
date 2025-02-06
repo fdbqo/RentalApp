@@ -28,7 +28,11 @@ export default function MessagesScreen() {
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === "web";
   const router = useRouter();
-  const { rooms, isLoading } = useChat();
+  const { rooms, isLoading, fetchRooms } = useChat();
+
+  useEffect(() => {
+    fetchRooms();
+  }, []);
 
   const handleRoomPress = (roomId: string) => {
     router.push({

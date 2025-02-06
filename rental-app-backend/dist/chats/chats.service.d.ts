@@ -4,8 +4,11 @@ import { Model, Types } from 'mongoose';
 import { GetChatDto } from './dto/get-chat.dto';
 export declare class ChatsService {
     private chatModel;
+    private readonly logger;
     constructor(chatModel: Model<ChatDocument>);
-    create(senderId: string, createChatDto: CreateChatDto): Promise<import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Chat> & Chat & {
+    create(data: {
+        senderId: string;
+    } & CreateChatDto): Promise<import("mongoose").Document<unknown, {}, import("mongoose").Document<unknown, {}, Chat> & Chat & {
         _id: Types.ObjectId;
     } & {
         __v: number;

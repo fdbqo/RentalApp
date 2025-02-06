@@ -1,142 +1,133 @@
+import { EventEmitter } from 'events';
 import { Message } from '../store/interfaces/Chat';
 import { useChatStore } from '../store/chat.store';
 
-class WebSocketService {
+class WebSocketService extends EventEmitter {
+  emit(event: string | symbol, ...args: any[]): boolean {
+    return super.emit(event, ...args);
+  }
   private socket: WebSocket | null = null;
-  private readonly url = 'ws://localhost:3000'; // Update with your WebSocket URL
-  private connectionAttempts = 0;
+  private readonly url = 'ws://localhost:3000';
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private reconnectTimeout = 5000;
   private isAuthenticated = false;
 
-  connect(token: string) {
-    const timestamp = new Date().toISOString();
-    
-    // Add token validation logging
-    console.log(`[${timestamp}] Token received:`, {
-      hasToken: !!token,
-      tokenLength: token?.length,
-      tokenPrefix: token?.substring(0, 10) + '...',
-    });
-    
+  constructor() {
+    super();
+  }
+
+  public connect(token: string): void {
     if (!token) {
-      console.error(`[${timestamp}] Connection attempt failed: Token is ${token === null ? 'null' : 'undefined'}`);
+      this.emit('error', new Error('No token provided'));
       return;
     }
 
     if (this.socket?.readyState === WebSocket.OPEN) {
-      console.log(`[${timestamp}] WebSocket already connected, skipping connection`);
       return;
     }
 
-    this.connectionAttempts++;
-    console.log(`[${timestamp}] Attempting WebSocket connection #${this.connectionAttempts} with token validation`);
-    console.log(`[${timestamp}] Previous socket state:`, this.socket?.readyState);
-
     this.socket = new WebSocket(this.url);
-    
+    this.setupSocketListeners(token);
+  }
+
+  private setupSocketListeners(token: string): void {
+    if (!this.socket) return;
+
     this.socket.onopen = () => {
-      console.log(`[${timestamp}] WebSocket Connected - Attempt #${this.connectionAttempts}`);
-      if (this.socket) {
-        const authPayload = {
-          event: 'auth',
-          data: { token }
-        };
-        console.log(`[${timestamp}] Sending auth payload:`, authPayload);
-        this.socket.send(JSON.stringify(authPayload));
-      }
+      console.log('[WebSocket] Connection opened');
+      this.authenticate(token);
+      this.emit('connected');
     };
 
     this.socket.onmessage = (event) => {
+      console.log('[WebSocket] Received message:', event.data);
       const data = JSON.parse(event.data);
-      console.log(`[${timestamp}] Received WebSocket message:`, data);
-      this.handleMessage(data);
+      this.handleSocketMessage(data);
     };
 
     this.socket.onerror = (error) => {
-      console.error(`[${timestamp}] WebSocket Error:`, error);
-      console.error(`[${timestamp}] Socket state:`, this.socket?.readyState);
+      console.error('[WebSocket] Error:', error);
+      this.emit('error', error);
       useChatStore.getState().setError('WebSocket connection error');
     };
 
-    this.socket.onclose = (event) => {
-      console.log(`[${timestamp}] WebSocket Disconnected - Code:`, event.code);
-      console.log(`[${timestamp}] Clean close:`, event.wasClean);
-      console.log(`[${timestamp}] Close reason:`, event.reason);
-      console.log(`[${timestamp}] Authentication status:`, this.isAuthenticated);
-      console.log(`[${timestamp}] Current token status:`, {
-        hasToken: !!token,
-        tokenValid: token?.length > 0
-      });
-      
-      if (!this.isAuthenticated) {
-        console.log(`[${timestamp}] Reconnecting due to no authentication...`);
-        setTimeout(() => this.connect(token), 5000);
-      }
+    this.socket.onclose = () => {
+      console.log('[WebSocket] Connection closed');
+      this.handleDisconnect(token);
     };
   }
 
-  private handleMessage(data: any) {
-    const timestamp = new Date().toISOString();
-    const { event, data: payload } = data;
+  private authenticate(token: string): void {
+    this.send('auth', { token });
+  }
 
-    console.log(`[${timestamp}] Handling WebSocket event:`, event);
+  private handleSocketMessage(data: any): void {
+    console.log('[WebSocket] Handling message:', data);
+    const { event, data: payload } = data;
 
     switch (event) {
       case 'new-chat':
-        console.log(`[${timestamp}] New chat message received`);
+        console.log('[WebSocket] New chat received:', payload);
         useChatStore.getState().addMessage(payload as Message);
         break;
       case 'joined':
-        console.log(`[${timestamp}] Successfully joined room:`, payload);
+        this.emit('joined', payload);
         break;
       case 'auth_success':
-        console.log(`[${timestamp}] Authentication successful with token validation`);
-        console.log(`[${timestamp}] Server response:`, payload);
         this.isAuthenticated = true;
+        this.emit('auth_success', payload);
         break;
       case 'auth_error':
-        console.error(`[${timestamp}] Authentication failed - Server response:`, payload);
-        console.error(`[${timestamp}] Current connection attempt:`, this.connectionAttempts);
         this.isAuthenticated = false;
+        useChatStore.getState().setError('Authentication failed');
         break;
       case 'error':
-        console.error(`[${timestamp}] WebSocket error event:`, payload);
         useChatStore.getState().setError(payload);
         break;
-      default:
-        console.log(`[${timestamp}] Unhandled event:`, event);
     }
   }
 
-  joinRoom(roomId: string) {
+  private handleDisconnect(token: string): void {
+    this.isAuthenticated = false;
+    
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      setTimeout(() => this.connect(token), this.reconnectTimeout);
+    } else {
+      this.emit('max_reconnect_attempts');
+    }
+  }
+
+  public joinRoom(roomId: string): void {
+    this.send('join', roomId);
+  }
+
+  public sendMessage(content: string, roomId: string): void {
+    console.log('[WebSocket] Sending message:', { content, roomId });
+    if (this.socket?.readyState !== WebSocket.OPEN) {
+      console.error('[WebSocket] Cannot send message - socket not open');
+      return;
+    }
+    this.send('create', { room_id: roomId, content });
+  }
+
+  private send(event: string, data: any): void {
     if (this.socket?.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify({
-        event: 'join',
-        data: roomId
-      }));
+      const payload = JSON.stringify({ event, data });
+      console.log('[WebSocket] Sending payload:', payload);
+      this.socket.send(payload);
+    } else {
+      console.error('[WebSocket] Cannot send - socket not open. ReadyState:', this.socket?.readyState);
     }
   }
 
-  sendMessage(content: string, roomId: string) {
-    if (this.socket?.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify({
-        event: 'create',
-        data: {
-          room_id: roomId,
-          content
-        }
-      }));
-    }
-  }
-
-  disconnect() {
-    const timestamp = new Date().toISOString();
+  public disconnect(): void {
     if (this.socket) {
-      console.log(`[${timestamp}] Initiating WebSocket disconnect`);
-      this.isAuthenticated = false;
-      this.connectionAttempts = 0;
       this.socket.close();
       this.socket = null;
-      console.log(`[${timestamp}] WebSocket disconnected and cleaned up`);
+      this.isAuthenticated = false;
+      this.reconnectAttempts = 0;
     }
   }
 }

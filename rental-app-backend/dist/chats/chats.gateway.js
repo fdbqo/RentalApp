@@ -26,41 +26,54 @@ let ChatsGateway = ChatsGateway_1 = class ChatsGateway {
     }
     async handleConnection(client, request) {
         try {
-            const token = request.headers['authorization'];
-            if (!token) {
-                client.close(1008, 'No token provided');
-                return;
-            }
-            const jwtToken = token.replace('Bearer ', '');
-            const payload = await this.jwtService.verifyAsync(jwtToken, {
-                secret: 'jwt_secret_key'
-            });
-            this.connectedClients.set(client, {
-                user: payload,
-                rooms: new Set()
-            });
             client.on('message', async (data) => {
                 try {
                     const message = JSON.parse(data.toString());
-                    await this.handleMessage(client, message);
+                    console.log('[Gateway] Received message:', message);
+                    if (!this.connectedClients.has(client) && message.event !== 'auth') {
+                        client.close(1008, 'Authentication required');
+                        return;
+                    }
+                    if (message.event === 'auth') {
+                        if (!message.data.token) {
+                            client.close(1008, 'Authentication required');
+                            return;
+                        }
+                        const jwtToken = message.data.token;
+                        const payload = await this.jwtService.verifyAsync(jwtToken, {
+                            secret: 'jwt_secret_key'
+                        });
+                        this.connectedClients.set(client, {
+                            user: payload,
+                            rooms: new Set()
+                        });
+                        client.send(JSON.stringify({
+                            event: 'authenticated',
+                            data: 'Successfully authenticated'
+                        }));
+                        this.logger.log(`Client authenticated: ${payload.sub}`);
+                    }
+                    else {
+                        await this.handleMessage(client, message);
+                    }
                 }
                 catch (error) {
-                    this.logger.error(`Error handling message: ${error.message}`);
+                    this.logger.error(`Message handling error: ${error.message}`);
                     client.send(JSON.stringify({
                         event: 'error',
-                        data: 'Invalid message format'
+                        data: error.message
                     }));
                 }
             });
-            client.send(JSON.stringify({
-                event: 'connected',
-                data: 'Successfully connected'
-            }));
-            this.logger.log(`Client connected: ${payload.sub}`);
+            setTimeout(() => {
+                if (!this.connectedClients.has(client)) {
+                    client.close(1008, 'Authentication timeout');
+                }
+            }, 5000);
         }
         catch (error) {
             this.logger.error(`Connection error: ${error.message}`);
-            client.close(1008, 'Authentication failed');
+            client.close(1008, 'Connection failed');
         }
     }
     handleDisconnect(client) {
@@ -107,16 +120,35 @@ let ChatsGateway = ChatsGateway_1 = class ChatsGateway {
         }));
     }
     async handleCreateMessage(client, data) {
-        const userData = this.connectedClients.get(client);
-        const chat = await this.chatsService.create(userData.user.sub, data);
-        this.broadcast(data.room_id, {
-            event: 'new-chat',
-            data: chat
-        });
-        client.send(JSON.stringify({
-            event: 'created',
-            data: chat
-        }));
+        try {
+            const userData = this.connectedClients.get(client);
+            console.log('[Gateway] Creating message:', {
+                content: data.content,
+                room_id: data.room_id,
+                senderId: userData.user.sub
+            });
+            const chat = await this.chatsService.create({
+                senderId: userData.user.sub,
+                content: data.content,
+                room_id: data.room_id
+            });
+            console.log('[Gateway] Created chat:', chat);
+            this.broadcast(data.room_id, {
+                event: 'new-chat',
+                data: chat
+            });
+            client.send(JSON.stringify({
+                event: 'created',
+                data: chat
+            }));
+        }
+        catch (error) {
+            this.logger.error(`Error creating message: ${error.message}`);
+            client.send(JSON.stringify({
+                event: 'error',
+                data: 'Failed to create message'
+            }));
+        }
     }
     async handleLeaveRoom(client, roomId) {
         const userData = this.connectedClients.get(client);
@@ -142,7 +174,10 @@ __decorate([
 ], ChatsGateway.prototype, "server", void 0);
 exports.ChatsGateway = ChatsGateway = ChatsGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)({
-        cors: true
+        cors: {
+            origin: '*',
+            credentials: true
+        }
     }),
     __metadata("design:paramtypes", [chats_service_1.ChatsService,
         jwt_1.JwtService])
