@@ -10,13 +10,25 @@ class WebSocketService {
   connect(token: string) {
     const timestamp = new Date().toISOString();
     
+    // Add token validation logging
+    console.log(`[${timestamp}] Token received:`, {
+      hasToken: !!token,
+      tokenLength: token?.length,
+      tokenPrefix: token?.substring(0, 10) + '...',
+    });
+    
+    if (!token) {
+      console.error(`[${timestamp}] Connection attempt failed: Token is ${token === null ? 'null' : 'undefined'}`);
+      return;
+    }
+
     if (this.socket?.readyState === WebSocket.OPEN) {
       console.log(`[${timestamp}] WebSocket already connected, skipping connection`);
       return;
     }
 
     this.connectionAttempts++;
-    console.log(`[${timestamp}] Attempting WebSocket connection #${this.connectionAttempts}`);
+    console.log(`[${timestamp}] Attempting WebSocket connection #${this.connectionAttempts} with token validation`);
     console.log(`[${timestamp}] Previous socket state:`, this.socket?.readyState);
 
     this.socket = new WebSocket(this.url);
@@ -24,11 +36,12 @@ class WebSocketService {
     this.socket.onopen = () => {
       console.log(`[${timestamp}] WebSocket Connected - Attempt #${this.connectionAttempts}`);
       if (this.socket) {
-        console.log(`[${timestamp}] Sending authentication token`);
-        this.socket.send(JSON.stringify({
+        const authPayload = {
           event: 'auth',
           data: { token }
-        }));
+        };
+        console.log(`[${timestamp}] Sending auth payload:`, authPayload);
+        this.socket.send(JSON.stringify(authPayload));
       }
     };
 
@@ -48,6 +61,11 @@ class WebSocketService {
       console.log(`[${timestamp}] WebSocket Disconnected - Code:`, event.code);
       console.log(`[${timestamp}] Clean close:`, event.wasClean);
       console.log(`[${timestamp}] Close reason:`, event.reason);
+      console.log(`[${timestamp}] Authentication status:`, this.isAuthenticated);
+      console.log(`[${timestamp}] Current token status:`, {
+        hasToken: !!token,
+        tokenValid: token?.length > 0
+      });
       
       if (!this.isAuthenticated) {
         console.log(`[${timestamp}] Reconnecting due to no authentication...`);
@@ -71,11 +89,13 @@ class WebSocketService {
         console.log(`[${timestamp}] Successfully joined room:`, payload);
         break;
       case 'auth_success':
-        console.log(`[${timestamp}] Authentication successful`);
+        console.log(`[${timestamp}] Authentication successful with token validation`);
+        console.log(`[${timestamp}] Server response:`, payload);
         this.isAuthenticated = true;
         break;
       case 'auth_error':
-        console.error(`[${timestamp}] Authentication failed:`, payload);
+        console.error(`[${timestamp}] Authentication failed - Server response:`, payload);
+        console.error(`[${timestamp}] Current connection attempt:`, this.connectionAttempts);
         this.isAuthenticated = false;
         break;
       case 'error':
