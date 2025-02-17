@@ -4,11 +4,13 @@ import { Model, Types } from 'mongoose';
 import { Property, PropertyDocument } from './schemas/property.schema';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { DistanceService } from 'src/google/google.service';
 
 @Injectable()
 export class PropertyService {
   constructor(
     @InjectModel(Property.name) private propertyModel: Model<PropertyDocument>,
+    private distanceService: DistanceService
   ) {}
 
   async findAll(lenderId: string): Promise<Property[]> {    
@@ -35,6 +37,9 @@ export class PropertyService {
       };
       
       const createdProperty = new this.propertyModel(propertyData);
+
+      await this.distanceService.setDistanceFromUniversity(createdProperty);
+
       return createdProperty.save();
     } catch (error) {
       console.error('Error creating property:', error);
