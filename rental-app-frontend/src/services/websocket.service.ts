@@ -36,6 +36,7 @@ class WebSocketService extends EventEmitter {
 
     this.socket.onopen = () => {
       console.log('[WebSocket] Connection opened');
+      this.reconnectAttempts = 0;
       this.authenticate(token);
       this.emit('connected');
     };
@@ -87,19 +88,61 @@ class WebSocketService extends EventEmitter {
         break;
     }
   }
-
   private handleDisconnect(token: string): void {
     this.isAuthenticated = false;
     
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      setTimeout(() => this.connect(token), this.reconnectTimeout);
-    } else {
-      this.emit('max_reconnect_attempts');
+    if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
+      if (this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.reconnectAttempts++;
+        console.log(`[WebSocket] Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+        setTimeout(() => this.connect(token), this.reconnectTimeout);
+      } else {
+        this.emit('max_reconnect_attempts');
+        useChatStore.getState().setError('Maximum reconnection attempts reached');
+      }
     }
   }
+  // A helper method to check if the socket is in OPEN state
+  private isSocketReady(): boolean {
+    return this.socket?.readyState === WebSocket.OPEN;
+  }
+  // A method that waits for the socket to be ready with a timeout
+  private async waitForConnection(timeout: number = 5000): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (this.isSocketReady()) {
+        resolve(true);
+        return;
+      }
 
-  public joinRoom(roomId: string): void {
+      const checkInterval = 100;
+      let totalWait = 0;
+      
+      const interval = setInterval(() => {
+        if (this.isSocketReady()) {
+          clearInterval(interval);
+          resolve(true);
+          return;
+        }
+
+        totalWait += checkInterval;
+        if (totalWait >= timeout) {
+          clearInterval(interval);
+          resolve(false);
+        }
+      }, checkInterval);
+    });
+  }
+
+  public async joinRoom(roomId: string): Promise<void> {
+    if (!this.isSocketReady()) {
+      const isConnected = await this.waitForConnection();
+      if (!isConnected) {
+        console.error('[WebSocket] Failed to join room - connection timeout');
+        useChatStore.getState().setError('Failed to join room - connection timeout');
+        return;
+      }
+    }
+    
     this.send('join', roomId);
   }
 
