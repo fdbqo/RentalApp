@@ -68,7 +68,9 @@ export class PropertyService {
       if (!updatedProperty) {
         throw new NotFoundException(`Property with ID ${id} not found`);
       }
-      
+
+      await this.distanceService.setDistanceFromUniversity(updatedProperty);
+
       return updatedProperty;
     } catch (error) {
       throw new NotFoundException(`Error updating property: ${error.message}`);

@@ -183,6 +183,11 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
               item.bathrooms > 1 ? "Bathrooms" : "Bathroom"
             }`}
           />
+
+          <PropertyFeature
+            icon={Bath}
+            text={`${item.distanceFromUniversity}`}
+          />
         </XStack>
 
         <Separator />
