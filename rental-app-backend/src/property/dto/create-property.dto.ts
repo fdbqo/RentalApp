@@ -28,6 +28,22 @@ class ImageDto {
   uri: string;
 }
 
+class NearestUniversityDto {
+  @IsString()
+  name: string;
+
+  @IsObject()
+  @ValidateNested()
+  @Type(() => HouseAddressDto)
+  address: HouseAddressDto;
+
+  @IsNumber()
+  distance: number;
+
+  @IsNumber()
+  avgTimeByCar: number;
+}
+
 export class CreatePropertyDto {
   @IsNumber()
   @IsNotEmpty()
@@ -69,14 +85,16 @@ export class CreatePropertyDto {
   @IsOptional()
   bathrooms: number | null;
 
-  @IsNumber()
-  @IsOptional()
-  distanceFromUniversity?: number | null;
-
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ImageDto)
   images: ImageDto[];
+
+  @IsObject()
+  @ValidateNested()
+  @IsOptional()
+  @Type(() => NearestUniversityDto)
+  nearestUniversity?: NearestUniversityDto;
 
   @IsObject()
   @ValidateNested()

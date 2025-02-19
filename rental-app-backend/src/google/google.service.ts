@@ -25,59 +25,61 @@ export class DistanceService {
 
     private async geocodeAddress(addressString: string): Promise<{ lat: number; lng: number } | null> {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressString)}&key=${this.GOOGLE_API_KEY}`;
+
         try {
             const { data } = await axios.get(url);
             return data.results?.length ? data.results[0].geometry.location : null;
         } catch (error) {
             console.error(`[ERROR] Geocode API failed: ${error.message}`);
+            return null;
         }
-        return null;
     }
 
     private async findNearbyUniversities(lat: number, lng: number, radius = 5000): Promise<any[]> {
         const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${radius}&type=university&key=${this.GOOGLE_API_KEY}`;
+
         try {
             const { data } = await axios.get(url);
-            return data.results?.filter(place =>
+            if (!data.results) return [];
+
+            const universities = data.results.filter(place =>
                 place.types.includes("university") &&
-                !place.name.toLowerCase().includes("academy") &&
-                !place.name.toLowerCase().includes("sports") &&
-                !place.name.toLowerCase().includes("school") &&
-                place.user_ratings_total > 10
-            ) || [];
+                place.name.toLowerCase().includes("university")
+            );
+
+            return universities.length ? universities : data.results.filter(place => place.types.includes("university"));
         } catch (error) {
-            console.error(`[ERROR] Google Places API failed: ${error.message}`);
+            console.error(`[ERROR] Places API failed: ${error.message}`);
             return [];
         }
     }
 
     private async getDistanceMatrix(origin: { lat: number; lng: number }, destinations: { lat: number; lng: number }[]): Promise<any> {
         if (!destinations.length) return null;
+
         const destString = destinations.map(d => `${d.lat},${d.lng}`).join('|');
         const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin.lat},${origin.lng}&destinations=${destString}&key=${this.GOOGLE_API_KEY}`;
+
         try {
             const { data } = await axios.get(url);
             return data;
         } catch (error) {
             console.error(`[ERROR] Distance Matrix API failed: ${error.message}`);
+            return null;
         }
-        return null;
     }
 
-    private async computeClosestUniversityDistance(addressString: string): Promise<number | null> {
+    public async getNearestUniversityDetails(property: Property): Promise<any> {
+        if (!property?.houseAddress) return null;
+
+        const addressString = this.formatAddressString(property.houseAddress);
         const coords = await this.geocodeAddress(addressString);
         if (!coords) return null;
 
         const institutions = await this.findNearbyUniversities(coords.lat, coords.lng, 5000);
         if (!institutions.length) return null;
 
-        const universities = institutions.filter(i => i.types.includes("university") && i.name.toLowerCase().includes("university"));
-        const colleges = institutions.filter(i => i.types.includes("university") && !i.name.toLowerCase().includes("university"));
-
-        const preferredInstitutions = universities.length ? universities : colleges;
-        if (!preferredInstitutions.length) return null;
-
-        const destinations = preferredInstitutions.map(i => ({
+        const destinations = institutions.map(i => ({
             lat: i.geometry.location.lat,
             lng: i.geometry.location.lng,
         }));
@@ -85,32 +87,32 @@ export class DistanceService {
         const distanceMatrixData = await this.getDistanceMatrix(coords, destinations);
         if (!distanceMatrixData?.rows?.[0]?.elements) return null;
 
-        let minDistance: number | null = null;
         let closestInstitution: any = null;
+        let minDistance: number | null = null;
 
         distanceMatrixData.rows[0].elements.forEach((elem, index) => {
             if (elem.status === 'OK' && elem.distance?.value != null) {
-                const distance = elem.distance.value;
-                if (minDistance == null || distance < minDistance) {
-                    minDistance = distance;
-                    closestInstitution = preferredInstitutions[index];
+                if (minDistance == null || elem.distance.value < minDistance) {
+                    minDistance = elem.distance.value;
+                    closestInstitution = institutions[index];
                 }
             }
         });
 
-        return minDistance;
-    }
+        if (!closestInstitution) return null;
 
-    public async setDistanceFromUniversity(property: Property): Promise<Property> {
-        if (!property?.houseAddress) {
-            property.distanceFromUniversity = null;
-            return property;
-        }
+        const avgTimeByCar = Math.ceil((minDistance || 0) / 1000 * 1.5);
 
-        const addressString = this.formatAddressString(property.houseAddress);
-        const distance = await this.computeClosestUniversityDistance(addressString);
-
-        property.distanceFromUniversity = distance;
-        return property;
+        return {
+            name: closestInstitution.name,
+            address: {
+                addressLine1: closestInstitution.vicinity || closestInstitution.name,
+                townCity: property.houseAddress.townCity,
+                county: property.houseAddress.county,
+                eircode: property.houseAddress.eircode,
+            },
+            distance: minDistance || 0,
+            avgTimeByCar,
+        };
     }
 }

@@ -170,24 +170,27 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
           />
           <PropertyFeature
             icon={Bed}
-            text={`${(item.singleBedrooms || 0) + (item.doubleBedrooms || 0)} ${
-              (item.singleBedrooms || 0) + (item.doubleBedrooms || 0) === 1
+            text={`${(item.singleBedrooms || 0) + (item.doubleBedrooms || 0)} ${(item.singleBedrooms || 0) + (item.doubleBedrooms || 0) === 1
                 ? "Bedroom"
                 : "Bedrooms"
-            }`}
+              }`}
           />
 
           <PropertyFeature
             icon={Bath}
-            text={`${item.bathrooms} ${
-              item.bathrooms > 1 ? "Bathrooms" : "Bathroom"
-            }`}
+            text={`${item.bathrooms} ${item.bathrooms > 1 ? "Bathrooms" : "Bathroom"
+              }`}
           />
 
           <PropertyFeature
-            icon={Bath}
-            text={`${item.distanceFromUniversity}`}
+            icon={MapPin}
+            text={
+              item.nearestUniversity
+                ? `${item.nearestUniversity.name} (${item.nearestUniversity.distance} meters)`
+                : "No university nearby"
+            }
           />
+
         </XStack>
 
         <Separator />

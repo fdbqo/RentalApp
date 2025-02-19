@@ -11,19 +11,20 @@ export class PropertyService {
   constructor(
     @InjectModel(Property.name) private propertyModel: Model<PropertyDocument>,
     private distanceService: DistanceService
-  ) {}
+  ) { }
 
-  async findAll(lenderId: string): Promise<Property[]> {    
-    try {      
+  async findAll(lenderId: string): Promise<Property[]> {
+    try {
       const objectId = new Types.ObjectId(lenderId);
-      
+
       const properties = await this.propertyModel.find({ lenderId: objectId }).exec();
-      
+
       return properties;
     } catch (error) {
       return [];
     }
   }
+
 
   async create(createPropertyDto: CreatePropertyDto): Promise<Property> {
     try {
@@ -35,10 +36,17 @@ export class PropertyService {
           uri: img.uri
         }))
       };
-      
+
       const createdProperty = new this.propertyModel(propertyData);
 
-      await this.distanceService.setDistanceFromUniversity(createdProperty);
+      const nearestUniversity = await this.distanceService.getNearestUniversityDetails(createdProperty);
+      if (nearestUniversity) {
+        createdProperty.nearestUniversity = nearestUniversity;
+        await createdProperty.save();
+      }
+
+      console.log("Nearest University Details:", nearestUniversity);
+
 
       return createdProperty.save();
     } catch (error) {
@@ -46,6 +54,7 @@ export class PropertyService {
       throw error;
     }
   }
+
 
   async findById(id: string): Promise<Property> {
     try {
@@ -64,12 +73,16 @@ export class PropertyService {
       const updatedProperty = await this.propertyModel
         .findByIdAndUpdate(id, updatePropertyDto, { new: true })
         .exec();
-      
+
       if (!updatedProperty) {
         throw new NotFoundException(`Property with ID ${id} not found`);
       }
 
-      await this.distanceService.setDistanceFromUniversity(updatedProperty);
+      const nearestUniversity = await this.distanceService.getNearestUniversityDetails(updatedProperty);
+      if (nearestUniversity) {
+        updatedProperty.nearestUniversity = nearestUniversity;
+        await updatedProperty.save();
+      }
 
       return updatedProperty;
     } catch (error) {
@@ -80,7 +93,7 @@ export class PropertyService {
   async delete(id: string): Promise<void> {
     try {
       const result = await this.propertyModel.findByIdAndDelete(id).exec();
-      
+
       if (!result) {
         throw new NotFoundException(`Property with ID ${id} not found`);
       }
@@ -89,10 +102,10 @@ export class PropertyService {
     }
   }
 
-  async findAllAvailable(filters?: any): Promise<Property[]> {    
-    try {      
+  async findAllAvailable(filters?: any): Promise<Property[]> {
+    try {
       const query: any = {};
-      
+
       if (filters?.searchQuery) {
         query.$or = [
           { 'houseAddress.townCity': { $regex: filters.searchQuery, $options: 'i' } },
@@ -119,10 +132,9 @@ export class PropertyService {
 
       // Handle distance filter
       if (filters?.distance) {
-        query.distanceFromUniversity = { 
-          $lte: parseInt(filters.distance)
-        };
+        query['nearestUniversity.distance'] = { $lte: parseInt(filters.distance) };
       }
+    
 
       return await this.propertyModel.find(query).exec();
     } catch (error) {
@@ -131,8 +143,8 @@ export class PropertyService {
     }
   }
 
-  async findByLenderId(lenderId: string): Promise<Property[]> {    
-    try {      
+  async findByLenderId(lenderId: string): Promise<Property[]> {
+    try {
       const objectId = new Types.ObjectId(lenderId);
       return await this.propertyModel.find({ lenderId: objectId }).exec();
     } catch (error) {

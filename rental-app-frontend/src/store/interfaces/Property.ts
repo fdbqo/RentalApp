@@ -3,6 +3,21 @@ export interface Image {
   uri: string;
 }
 
+export interface Address {
+  addressLine1: string;
+  addressLine2: string;
+  townCity: string;
+  county: string;
+  eircode: string;
+}
+
+export interface NearestUniversity {
+  name: string;
+  address: Address;
+  distance: number; // meters
+  avgTimeByCar: number; // mins
+}
+
 export interface Property {
   _id?: string;
   price: number;
@@ -15,15 +30,17 @@ export interface Property {
   singleBedrooms: number;
   doubleBedrooms: number;
   bathrooms: number;
-  distanceFromUniversity: number;
+  // distanceFromUniversity: number;
+  nearestUniversity: NearestUniversity;
   images: Image[];
-  houseAddress: {
-    addressLine1: string;
-    addressLine2: string;
-    townCity: string;
-    county: string;
-    eircode: string;
-  };
+  houseAddress: Address;
+  // houseAddress: {
+  //   addressLine1: string;
+  //   addressLine2: string;
+  //   townCity: string;
+  //   county: string;
+  //   eircode: string;
+  // };
   lenderId: string;
   lastUpdated?: string;
 }

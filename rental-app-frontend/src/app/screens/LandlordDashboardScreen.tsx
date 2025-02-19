@@ -91,7 +91,7 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
                 {item.propertyType} • {totalRooms}{" "}
                 {totalRooms === 1 ? "room" : "rooms"}
               </Text>
-              <text>{item.distanceFromUniversity}</text>
+              <text>{item.nearestUniversity?.name} - {item.nearestUniversity?.distance}</text>
             </XStack>
           </XStack>
 
