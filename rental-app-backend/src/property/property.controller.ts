@@ -3,10 +3,12 @@ import { PropertyService } from './property.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { Property } from './schemas/property.schema';
+import { GetChatDto } from 'src/chats/dto/get-chat.dto';
+import { ChatsService } from 'src/chats/chats.service';
 
 @Controller('listings')
 export class PropertyController {
-  constructor(private readonly propertyService: PropertyService) {}
+  constructor(private readonly propertyService: PropertyService, private readonly chatsService:ChatsService) {}
 
   @Get()
   async getAllProperties(

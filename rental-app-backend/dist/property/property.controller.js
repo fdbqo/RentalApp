@@ -17,9 +17,11 @@ const common_1 = require("@nestjs/common");
 const property_service_1 = require("./property.service");
 const create_property_dto_1 = require("./dto/create-property.dto");
 const update_property_dto_1 = require("./dto/update-property.dto");
+const chats_service_1 = require("../chats/chats.service");
 let PropertyController = class PropertyController {
-    constructor(propertyService) {
+    constructor(propertyService, chatsService) {
         this.propertyService = propertyService;
+        this.chatsService = chatsService;
     }
     async getAllProperties(lenderId, filters) {
         if (lenderId) {
@@ -80,6 +82,6 @@ __decorate([
 ], PropertyController.prototype, "deleteProperty", null);
 exports.PropertyController = PropertyController = __decorate([
     (0, common_1.Controller)('listings'),
-    __metadata("design:paramtypes", [property_service_1.PropertyService])
+    __metadata("design:paramtypes", [property_service_1.PropertyService, chats_service_1.ChatsService])
 ], PropertyController);
 //# sourceMappingURL=property.controller.js.map

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <script>
+    const socket = new WebSocket('ws://localhost:3000');
+    
+    socket.onopen = () => {
+      console.log('Connected!');
+      socket.send(JSON.stringify({
+        event: 'joinRoom',
+        data: 'test_property'
+      }));
+    };
+
+    socket.onmessage = (e) => {
+      console.log('Message:', e.data);
+    };
+  </script>
+</body>
+</html>
