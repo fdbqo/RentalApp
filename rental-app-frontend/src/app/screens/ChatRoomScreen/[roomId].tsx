@@ -30,6 +30,10 @@ const ChatRoomScreen = () => {
     }
   };
 
+  const sortedMessages = [...messages].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+
   if (isLoading) {
     return (
       <YStack flex={1} justifyContent="center" alignItems="center">
@@ -57,14 +61,14 @@ const ChatRoomScreen = () => {
       >
         <FlatList
           ref={flatListRef}
-          data={messages}
+          data={sortedMessages}
           keyExtractor={(item) => item._id}
           contentContainerStyle={{ padding: 16 }}
           renderItem={({ item }) => (
             <MessageBubble 
               message={item} 
-              isCurrentUser={item.sender_id._id === currentUser?._id} 
-            />
+              isCurrentUser={item.sender_id === currentUser?._id}
+              />
           )}
           onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
         />

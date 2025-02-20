@@ -46,7 +46,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         error: null,
       });
 
-      console.log(`[${timestamp}] Login successful - User ID: ${user.id}`);
+      console.log(`[${timestamp}] Login successful - User ID: ${user._id}`);
       console.log(`[${timestamp}] Auth state updated - isAuthenticated: true`);
       console.log("User successfully logged in:", user);
       console.log("Token stored:", access_token);
@@ -71,7 +71,7 @@ export const useUserStore = create<UserState>((set, get) => ({
 
       if (token && userString) {
         const user = JSON.parse(userString);
-        console.log(`[${timestamp}] Auth state restored - User ID: ${user.id}`);
+        console.log(`[${timestamp}] Auth state restored - User ID: ${user._id}`);
         console.log(`[${timestamp}] Token present: ${!!token}`);
         console.log("Restored user from AsyncStorage:", user);
 
