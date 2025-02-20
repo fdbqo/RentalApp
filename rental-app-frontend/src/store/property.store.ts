@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
-import { Property } from "./interfaces/Property";
+import { Property, NearestUniversity } from "./interfaces/Property";
 import { PropertyState } from "./interfaces/PropertyState";
 import { useUserStore } from "./user.store";
 
@@ -23,7 +23,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     singleBedrooms: null,
     doubleBedrooms: null,
     bathrooms: null,
-    distanceFromUniversity: null,
+    nearestUniversity: null,
     images: [],
     houseAddress: {
       addressLine1: "",
@@ -45,6 +45,9 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       const response = await axios.get(`${API_URL}/listings`, {
         params: cleanFilters,
       });
+
+      console.log("API Response Data:", response.data); // Debugging
+
       set({ properties: response.data, isLoading: false });
     } catch (error) {
       set({
@@ -68,6 +71,8 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       const response = await axios.get(`${API_URL}/listings`, {
         params: { lenderId: userId },
       });
+
+      console.log("API Response Data:", response.data); // Debugging
   
       set({ properties: response.data, isLoading: false });
     } catch (error) {
@@ -104,6 +109,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         doubleBedrooms: formData.doubleBedrooms ?? 0,
         lenderId: userId,
         lastUpdated: new Date().toISOString(),
+        nearestUniversity: formData.nearestUniversity ?? null,
         images: formData.images.map((img) => ({
           id: img.id,
           uri: img.uri,
@@ -140,7 +146,6 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         singleBedrooms: null,
         doubleBedrooms: null,
         bathrooms: null,
-        distanceFromUniversity: null,
         images: [],
         houseAddress: {
           addressLine1: "",
@@ -149,6 +154,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
           county: "",
           eircode: "",
         },
+        nearestUniversity: null,
       },
     });
   },
@@ -220,9 +226,9 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       formData: { ...state.formData, bathrooms },
     })),
 
-  setDistanceFromUniversity: (distanceFromUniversity) =>
+  setNearestUniversity: (nearestUniversity: NearestUniversity | null) =>
     set((state) => ({
-      formData: { ...state.formData, distanceFromUniversity },
+      formData: { ...state.formData, nearestUniversity },
     })),
 
   setImages: (images) =>
@@ -237,6 +243,14 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         houseAddress: { ...state.formData.houseAddress, ...address },
       },
     })),
+
+  // setNearestUniversity: (nearestUniversity: NearestUniversity | null) =>
+  //     set((state) => ({
+  //       formData: {
+  //         ...state.formData,
+  //         nearestUniversity,
+  //       },
+  //     })),
 
   updateProperty: async (id: string, propertyData: Partial<Property>) => {
     set({ isLoading: true, error: null });

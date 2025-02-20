@@ -38,8 +38,12 @@ export default function ListingsScreen() {
     return `calc(50% - 16px)`;
   }, [isWeb, width]);
 
+ 
+
   const renderItem = ({ item }: { item: Property }) => {
     const roomsAvailable = (item.singleBedrooms ?? 0) + (item.doubleBedrooms ?? 0);
+    console.log(item);
+    console.log(item.nearestUniversity)
     return (
       <PropertyCard
         item={item}
@@ -56,7 +60,8 @@ export default function ListingsScreen() {
               propertyType: item.propertyType ?? '',
               roomsAvailable: roomsAvailable.toString(),
               bathrooms: item.bathrooms?.toString() ?? '',
-              distanceFromUniversity: item.distanceFromUniversity?.toString() ?? '',
+              // distanceFromUniversity: item.distanceFromUniversity?.toString() ?? '',
+              nearestUniversity: JSON.stringify(item.nearestUniversity ?? {}), 
               houseAddress: JSON.stringify(item.houseAddress) ?? '{}',
               lenderId: item.lenderId ?? '',
             },

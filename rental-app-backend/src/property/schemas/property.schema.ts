@@ -35,8 +35,19 @@ export class Property {
   @Prop({ required: false })
   bathrooms: number | null;
 
-  @Prop({ required: false })
-  distanceFromUniversity?: number | null;
+  @Prop({ type: Object, required: false})
+  nearestUniversity?: {
+    name: string;
+    address: {
+      addressLine1: string;
+      addressLine2?: string;
+      townCity: string;
+      county: string;
+      eircode?: string;
+    };
+    distance: number;
+    avgTimeByCar: number;
+  };
 
   @Prop({ type: [{ _id: MongooseSchema.Types.ObjectId, uri: String }] })
   images: { _id: MongooseSchema.Types.ObjectId; uri: string }[];
