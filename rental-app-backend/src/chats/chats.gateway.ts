@@ -202,4 +202,21 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
     });
   }
+
+  private handleTyping(client: WebSocket, data: any) {
+    const userData = this.connectedClients.get(client);
+    const { roomId, isTyping } = data;
+    
+    if (isTyping) {
+      this.broadcast(roomId, {
+        event: 'typing',
+        data: {
+          user: {
+            userId: userData.user.sub,
+            name: userData.user.name
+          }
+        }
+      });
+    }
+  }
 }
