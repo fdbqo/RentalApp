@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, RefreshControl, Animated, View } from "react-native";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  RefreshControl,
+  Animated,
+  View,
+} from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { YStack, Spinner, Text, Theme, XStack } from "tamagui";
 import { useChat } from "../../../hooks/useChat";
@@ -10,19 +18,19 @@ import ChatHeader from "../../../components/chat/ChatHeader";
 import { Feather } from "@expo/vector-icons";
 import dayjs from "dayjs";
 import { rentalAppTheme } from "@/constants/Colors";
+import { AppointmentMetadata } from "@/store/interfaces/Chat";
 
-// Helper function to group messages by date
 const groupMessagesByDate = (messages) => {
   const groups = {};
-  
-  messages.forEach(message => {
-    const date = dayjs(message.createdAt).format('YYYY-MM-DD');
+
+  messages.forEach((message) => {
+    const date = dayjs(message.createdAt).format("YYYY-MM-DD");
     if (!groups[date]) {
       groups[date] = [];
     }
     groups[date].push(message);
   });
-  
+
   return Object.entries(groups).map(([date, messages]) => ({
     date,
     messages,
@@ -30,32 +38,30 @@ const groupMessagesByDate = (messages) => {
   }));
 };
 
-// Simple date separator component
 const DateSeparator = ({ date }) => {
-  // Format the date relative to today
-  const today = dayjs().startOf('day');
-  const messageDate = dayjs(date).startOf('day');
-  const diffDays = today.diff(messageDate, 'day');
-  
+  const today = dayjs().startOf("day");
+  const messageDate = dayjs(date).startOf("day");
+  const diffDays = today.diff(messageDate, "day");
+
   let formattedDate;
   if (diffDays === 0) {
-    formattedDate = 'Today';
+    formattedDate = "Today";
   } else if (diffDays === 1) {
-    formattedDate = 'Yesterday';
+    formattedDate = "Yesterday";
   } else if (diffDays < 7) {
-    formattedDate = messageDate.format('dddd'); // Day name
+    formattedDate = messageDate.format("dddd");
   } else {
-    formattedDate = messageDate.format('MMMM D, YYYY');
+    formattedDate = messageDate.format("MMMM D, YYYY");
   }
-  
+
   return (
     <XStack justifyContent="center" marginVertical={16}>
-      <Text 
-        color="$gray10" 
-        fontSize={12} 
-        paddingHorizontal={12} 
-        paddingVertical={6} 
-        backgroundColor="$gray1" 
+      <Text
+        color="$gray10"
+        fontSize={12}
+        paddingHorizontal={12}
+        paddingVertical={6}
+        backgroundColor="$gray1"
         borderRadius={16}
       >
         {formattedDate}
@@ -67,7 +73,7 @@ const DateSeparator = ({ date }) => {
 // Need to do real backend implementation
 const TypingIndicator = () => {
   const opacity = useRef(new Animated.Value(0.5)).current;
-  
+
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
@@ -86,7 +92,7 @@ const TypingIndicator = () => {
     animation.start();
     return () => animation.stop();
   }, []);
-  
+
   return (
     <XStack paddingVertical={8} paddingHorizontal={12} alignItems="center">
       <Animated.View style={{ opacity }}>
@@ -111,11 +117,11 @@ const ChatRoomScreen = () => {
     if (!roomId) {
       router.back();
     }
-    
+
     // Demo: Show typing indicator occasionally
     const timer = setTimeout(() => setIsTyping(true), 2000);
     const endTimer = setTimeout(() => setIsTyping(false), 5000);
-    
+
     return () => {
       clearTimeout(timer);
       clearTimeout(endTimer);
@@ -137,15 +143,42 @@ const ChatRoomScreen = () => {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
+  const handleSendAppointment = (appointmentData: {
+    date: Date;
+    time: Date;
+    name: string;
+  }) => {
+    // Create appointment metadata
+    const appointmentWithStatus: AppointmentMetadata = {
+      ...appointmentData,
+      status: "pending",
+    };
+
+    sendMessage({
+      content: `Appointment Request: ${
+        appointmentData.name
+      } - ${appointmentData.date.toLocaleDateString()} at ${appointmentData.time.toLocaleTimeString()}`,
+      room_id: roomId as string,
+      type: "appointment",
+      metadata: {
+        appointment: appointmentWithStatus,
+      },
+    });
+  };
   const sortedMessages = [...messages].sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
-  
+
   const groupedMessages = groupMessagesByDate(sortedMessages);
 
   if (isLoading) {
     return (
-      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="$background">
+      <YStack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        backgroundColor="$background"
+      >
         <Spinner size="large" color="$blue10" />
       </YStack>
     );
@@ -153,15 +186,21 @@ const ChatRoomScreen = () => {
 
   if (error) {
     return (
-      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="$background" space="md">
+      <YStack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        backgroundColor="$background"
+        space="md"
+      >
         <Feather name="wifi-off" size={36} color="#f43f5e" />
         <Text color="$red10" fontSize={16} textAlign="center">
           {error}
         </Text>
-        <Text 
-          fontSize={14} 
-          color="$blue10" 
-          marginTop={16} 
+        <Text
+          fontSize={14}
+          color="$blue10"
+          marginTop={16}
           onPress={() => router.back()}
         >
           Go Back
@@ -186,10 +225,10 @@ const ChatRoomScreen = () => {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.messageList}
             refreshControl={
-              <RefreshControl 
-                refreshing={refreshing} 
+              <RefreshControl
+                refreshing={refreshing}
                 onRefresh={onRefresh}
-                colors={[rentalAppTheme.primaryDark]} 
+                colors={[rentalAppTheme.primaryDark]}
                 tintColor={rentalAppTheme.primaryDark}
               />
             }
@@ -212,20 +251,27 @@ const ChatRoomScreen = () => {
                 }, 100);
               }
             }}
-            
             ListEmptyComponent={() => (
-              <YStack flex={1} justifyContent="center" alignItems="center" paddingTop={100}>
+              <YStack
+                flex={1}
+                justifyContent="center"
+                alignItems="center"
+                paddingTop={100}
+              >
                 <Feather name="message-circle" size={48} color="#cbd5e1" />
                 <Text color="$gray10" marginTop={16} textAlign="center">
                   No messages yet.{"\n"}Start the conversation!
                 </Text>
               </YStack>
             )}
-            ListFooterComponent={() => isTyping ? <TypingIndicator /> : null}
+            ListFooterComponent={() => (isTyping ? <TypingIndicator /> : null)}
           />
 
           <View style={styles.inputWrapper}>
-            <MessageInput onSend={handleSendMessage} />
+            <MessageInput
+              onSend={handleSendMessage}
+              onSendAppointment={handleSendAppointment}
+            />
           </View>
         </KeyboardAvoidingView>
       </YStack>
@@ -242,8 +288,8 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "rgba(0,0,0,0.1)",
     backgroundColor: "#f8fafc",
-    marginBottom: 20
-  }
+    marginBottom: 20,
+  },
 });
 
 export default ChatRoomScreen;
