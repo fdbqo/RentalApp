@@ -42,6 +42,6 @@ export class ChatsService {
       query['_id'] = { $lt: getChatDto.last_id };
     }
 
-    return this.chatModel.find(query).sort({ createdAt: -1 }).limit(getChatDto.limit);
+    return this.chatModel.find(query).sort({ createdAt: -1 });
   }
 }
