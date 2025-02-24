@@ -20,6 +20,11 @@ interface ChatStore extends Chat {
   
   // New action
   createRoom: (landlordId: string, propertyId: string) => Promise<Room>;
+
+  typingUsers: { [roomId: string]: { id: string, name: string }[] };
+  setTypingUsers: (roomId: string, users: { id: string, name: string }[]) => void;
+  addTypingUser: (roomId: string, userId: string, username: string) => void;
+  removeTypingUser: (roomId: string, userId: string) => void;  
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -29,6 +34,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   isLoading: false,
   error: null,
   currentRoomId: null,
+  typingUsers: {},
 
   // Message actions
   setMessages: (messages) => set({ messages }),
@@ -118,5 +124,34 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
-  }
+  },
+
+  setTypingUsers: (roomId, users) => 
+    set(state => ({
+      typingUsers: { ...state.typingUsers, [roomId]: users }
+    })),
+  
+  addTypingUser: (roomId, userId, username) =>
+    set(state => {
+      // Check if the user is already in the typing list
+      const roomTypers = state.typingUsers[roomId] || [];
+      if (roomTypers.some(user => user.id === userId)) {
+        return state; // User already in the list, no change needed
+      }
+      
+      return {
+        typingUsers: {
+          ...state.typingUsers,
+          [roomId]: [...roomTypers, { id: userId, name: username }]
+        }
+      };
+    }),
+  
+  removeTypingUser: (roomId, userId) =>
+    set(state => ({
+      typingUsers: {
+        ...state.typingUsers,
+        [roomId]: (state.typingUsers[roomId] || []).filter(user => user.id !== userId)
+      }
+    })),
 }));

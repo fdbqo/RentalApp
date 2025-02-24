@@ -1,11 +1,31 @@
 import { EventEmitter } from 'events';
 import { Message } from '../store/interfaces/Chat';
 import { useChatStore } from '../store/chat.store';
+import { useUserStore } from '@/store/user.store';
+
+interface WebSocketEvents {
+  connected: () => void;
+  error: (error: Error | Event) => void;
+  joined: (payload: any) => void;
+  auth_success: (payload: any) => void;
+  max_reconnect_attempts: () => void;
+  user_typing: (payload: { userId: string; username: string }) => void;
+  user_stop_typing: (payload: { userId: string }) => void;
+}
 
 class WebSocketService extends EventEmitter {
-  emit(event: string | symbol, ...args: any[]): boolean {
+  on<K extends keyof WebSocketEvents>(event: K, listener: WebSocketEvents[K]): this {
+    return super.on(event, listener);
+  }
+
+  off<K extends keyof WebSocketEvents>(event: K, listener: WebSocketEvents[K]): this {
+    return super.off(event, listener);
+  }
+
+  emit<K extends keyof WebSocketEvents>(event: K, ...args: Parameters<WebSocketEvents[K]>): boolean {
     return super.emit(event, ...args);
   }
+
   private socket: WebSocket | null = null;
   private readonly url = 'ws://localhost:3000';
   private reconnectAttempts = 0;
@@ -42,14 +62,14 @@ class WebSocketService extends EventEmitter {
     };
 
     this.socket.onmessage = (event) => {
-      console.log('[WebSocket] Received message:', event.data);
       const data = JSON.parse(event.data);
       this.handleSocketMessage(data);
     };
 
     this.socket.onerror = (error) => {
       console.error('[WebSocket] Error:', error);
-      this.emit('error', error);
+      const errorObj = new Error('WebSocket connection error');
+      this.emit('error', errorObj);
       useChatStore.getState().setError('WebSocket connection error');
     };
 
@@ -64,7 +84,6 @@ class WebSocketService extends EventEmitter {
   }
 
   private handleSocketMessage(data: any): void {
-    console.log('[WebSocket] Handling message:', data);
     const { event, data: payload } = data;
 
     switch (event) {
@@ -86,6 +105,12 @@ class WebSocketService extends EventEmitter {
       case 'error':
         useChatStore.getState().setError(payload);
         break;
+      case 'user_typing':
+        this.emit('user_typing', payload);
+        break;
+      case 'user_stop_typing':
+        this.emit('user_stop_typing', payload);
+        break;
     }
   }
   private handleDisconnect(token: string): void {
@@ -102,11 +127,11 @@ class WebSocketService extends EventEmitter {
       }
     }
   }
-  // A helper method to check if the socket is in OPEN state
+
   private isSocketReady(): boolean {
     return this.socket?.readyState === WebSocket.OPEN;
   }
-  // A method that waits for the socket to be ready with a timeout
+
   private async waitForConnection(timeout: number = 5000): Promise<boolean> {
     return new Promise((resolve) => {
       if (this.isSocketReady()) {
@@ -147,7 +172,6 @@ class WebSocketService extends EventEmitter {
   }
 
   public sendMessage(content: string, roomId: string): void {
-    console.log('[WebSocket] Sending message:', { content, roomId });
     if (this.socket?.readyState !== WebSocket.OPEN) {
       console.error('[WebSocket] Cannot send message - socket not open');
       return;
@@ -158,7 +182,6 @@ class WebSocketService extends EventEmitter {
   private send(event: string, data: any): void {
     if (this.socket?.readyState === WebSocket.OPEN) {
       const payload = JSON.stringify({ event, data });
-      console.log('[WebSocket] Sending payload:', payload);
       this.socket.send(payload);
     } else {
       console.error('[WebSocket] Cannot send - socket not open. ReadyState:', this.socket?.readyState);
@@ -173,6 +196,24 @@ class WebSocketService extends EventEmitter {
       this.reconnectAttempts = 0;
     }
   }
+
+  public sendTypingStatus(roomId: string, isTyping: boolean): void {
+    if (this.socket?.readyState !== WebSocket.OPEN) {
+      console.error('[WebSocket] Cannot send typing status - socket not open');
+      return;
+    }
+    
+    const user = useUserStore.getState().user;
+    if (!user) {
+      console.error('[WebSocket] Cannot send typing status - no user logged in');
+      return;
+    }
+    
+    this.send(isTyping ? 'typing' : 'stop_typing', {
+      room_id: roomId,
+      fullName: `${user.firstName}`
+    });
+}
 }
 
 export const wsService = new WebSocketService();

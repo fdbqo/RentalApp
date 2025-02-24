@@ -29,153 +29,107 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private connectedClients = new Map<WebSocket, any>();
 
-  async handleConnection(client: WebSocket, request: Request) {
-    try {
-      client.on('message', async (data: WebSocket.Data) => {
-        try {
-          const message = JSON.parse(data.toString());
-          console.log('[Gateway] Received message:', message);
-          
-          if (!this.connectedClients.has(client) && message.event !== 'auth') {
-            client.close(1008, 'Authentication required');
-            return;
-          }
-
-          if (message.event === 'auth') {
-            // Handle authentication
-            if (!message.data.token) {
-              client.close(1008, 'Authentication required');
-              return;
-            }
-
-            const jwtToken = message.data.token;
-            
-            const payload = await this.jwtService.verifyAsync(jwtToken, {
-              secret: 'jwt_secret_key'
-            });
-
-            this.connectedClients.set(client, { 
-              user: payload,
-              rooms: new Set()
-            });
-
-            client.send(JSON.stringify({ 
-              event: 'authenticated', 
-              data: 'Successfully authenticated' 
-            }));
-            
-            this.logger.log(`Client authenticated: ${payload.sub}`);
-          } else {
-            // Handle other messages
-            await this.handleMessage(client, message);
-          }
-        } catch (error) {
-          this.logger.error(`Message handling error: ${error.message}`);
-          client.send(JSON.stringify({
-            event: 'error',
-            data: error.message
-          }));
-        }
-      });
-
-      // Set timeout for authentication
-      setTimeout(() => {
-        if (!this.connectedClients.has(client)) {
-          client.close(1008, 'Authentication timeout');
-        }
-      }, 5000);
-
-    } catch (error) {
-      this.logger.error(`Connection error: ${error.message}`);
-      client.close(1008, 'Connection failed');
-    }
+  handleConnection(client: WebSocket) {
+    this.logger.log('Client connected');
+    client.on('message', (message: string) => {
+      this.handleMessage(client, message);
+    });
   }
 
   handleDisconnect(client: WebSocket) {
-    const userData = this.connectedClients.get(client);
-    if (userData) {
-      userData.rooms.clear();
-    }
-    this.connectedClients.delete(client);
     this.logger.log('Client disconnected');
+    this.connectedClients.delete(client);
   }
 
-  private async handleMessage(client: WebSocket, message: any) {
-    if (!message || !message.event || !message.data) {
-      throw new Error('Invalid message format');
+  private async handleAuth(client: WebSocket, data: any) {
+    try {
+      const decoded = this.jwtService.verify(data.token);
+      this.connectedClients.set(client, { user: decoded, rooms: [] });
+      client.send(JSON.stringify({ event: 'auth_success', data: decoded }));
+    } catch (error) {
+      client.send(JSON.stringify({ event: 'auth_error', data: 'Invalid token' }));
     }
+  }
 
-    const { event, data } = message;
-    const userData = this.connectedClients.get(client);
+  private async handleMessage(client: WebSocket, rawMessage: string) {
+    try {
+      this.logger.debug(`Raw message received: ${rawMessage}`);
+      const { event, data } = JSON.parse(rawMessage);
+      this.logger.debug(`Parsed event: ${event} with data:`, data);
 
-    if (!userData) {
-      throw new UnauthorizedException('User not authenticated');
-    }
+      switch (event) {
+        case 'auth':
+          await this.handleAuth(client, data);
+          break;
 
-    switch (event) {
-      case 'join':
-        await this.handleJoinRoom(client, data);
-        break;
-      
-      case 'create':
-        await this.handleCreateMessage(client, data);
-        break;
-      
-      case 'leave':
-        await this.handleLeaveRoom(client, data);
-        break;
-      
-      default:
-        client.send(JSON.stringify({
-          event: 'error',
-          data: `Unknown event: ${event}`
-        }));
+        case 'join':
+          await this.handleJoinRoom(client, data);
+          break;
+
+        case 'create':
+          await this.handleCreateMessage(client, data);
+          break;
+
+        case 'typing':
+          await this.handleTypingStatus(client, data, true);
+          break;
+
+        case 'stop_typing':
+          await this.handleTypingStatus(client, data, false);
+          break;
+
+        default:
+          this.logger.warn(`Unknown event received: ${event}`);
+          client.send(JSON.stringify({
+            event: 'error',
+            data: `Unknown event: ${event}`
+          }));
+      }
+    } catch (error) {
+      this.logger.error('Error handling message:', error);
+      client.send(JSON.stringify({
+        event: 'error',
+        data: 'Internal server error'
+      }));
     }
   }
 
   private async handleJoinRoom(client: WebSocket, roomId: string) {
     const userData = this.connectedClients.get(client);
-    userData.rooms.add(roomId);
+    if (!userData) return;
+
+    if (!userData.rooms) {
+      userData.rooms = [];
+    }
     
-    this.logger.log(`User ${userData.user.sub} joined room ${roomId}`);
+    if (!userData.rooms.includes(roomId)) {
+      userData.rooms.push(roomId);
+    }
+    
+    this.connectedClients.set(client, userData);
     
     client.send(JSON.stringify({
       event: 'joined',
-      data: `Successfully joined room ${roomId}`
+      data: { roomId }
     }));
   }
 
-  private async handleCreateMessage(client: WebSocket, data: CreateChatDto) {
-    try {
-      const userData = this.connectedClients.get(client);
-      
-      console.log('[Gateway] Creating message:', {
-        content: data.content,
-        room_id: data.room_id,
-        senderId: userData.user.sub
-      });
-      
-      const chat = await this.chatsService.create({
-        senderId: userData.user.sub,
-        content: data.content,
-        room_id: data.room_id
-      });
-      
-      console.log('[Gateway] Created chat:', chat);
+  private async handleCreateMessage(client: WebSocket, data: any) {
+    const userData = this.connectedClients.get(client);
+    if (!userData) return;
 
-      // Broadcast to all clients in the room
+    try {
+      const message = await this.chatsService.create({
+        senderId: userData.user.sub,
+        ...data
+      });
+
       this.broadcast(data.room_id, {
         event: 'new-chat',
-        data: chat
+        data: message
       });
-
-      // Confirm to sender
-      client.send(JSON.stringify({
-        event: 'created',
-        data: chat
-      }));
     } catch (error) {
-      this.logger.error(`Error creating message: ${error.message}`);
+      this.logger.error('Error creating message:', error);
       client.send(JSON.stringify({
         event: 'error',
         data: 'Failed to create message'
@@ -183,40 +137,41 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  private async handleLeaveRoom(client: WebSocket, roomId: string) {
-    const userData = this.connectedClients.get(client);
-    userData.rooms.delete(roomId);
-    
-    client.send(JSON.stringify({
-      event: 'left',
-      data: `Successfully left room ${roomId}`
-    }));
+  private async handleTypingStatus(client: WebSocket, data: any, isTyping: boolean) {
+    try {
+      const userData = this.connectedClients.get(client);
+      if (!userData) {
+        this.logger.warn('No user data found for typing status');
+        return;
+      }
+  
+      const { room_id } = data;  
+      const displayName = data.fullName || userData.user.email;
+  
+      this.broadcast(room_id, {
+        event: isTyping ? 'user_typing' : 'user_stop_typing',
+        data: {
+          userId: userData.user.sub,
+          username: displayName
+        }
+      }, client);
+    } catch (error) {
+      this.logger.error('Error handling typing status:', error);
+      client.send(JSON.stringify({
+        event: 'error',
+        data: 'Failed to update typing status'
+      }));
+    }
   }
 
-  private broadcast(roomId: string, message: any) {
-    const messageString = JSON.stringify(message);
-    
+  private broadcast(roomId: string, message: any, excludeClient?: WebSocket) {
+    this.logger.debug(`Broadcasting to room ${roomId}:`, message);
     this.connectedClients.forEach((userData, client) => {
-      if (userData.rooms.has(roomId)) {
-        client.send(messageString);
+      if (client !== excludeClient && client.readyState === WebSocket.OPEN) {
+        if (userData.rooms?.includes(roomId)) {
+          client.send(JSON.stringify(message));
+        }
       }
     });
-  }
-
-  private handleTyping(client: WebSocket, data: any) {
-    const userData = this.connectedClients.get(client);
-    const { roomId, isTyping } = data;
-    
-    if (isTyping) {
-      this.broadcast(roomId, {
-        event: 'typing',
-        data: {
-          user: {
-            userId: userData.user.sub,
-            name: userData.user.name
-          }
-        }
-      });
-    }
   }
 }
