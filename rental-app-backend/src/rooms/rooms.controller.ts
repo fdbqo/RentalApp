@@ -16,12 +16,12 @@ export class RoomsController {
   @Post()
   @UseGuards(AuthGuard('jwt'))
   create(@Request() req, @Body() createRoomDto: CreateRoomDto) {
-    console.log('User creating room:', req.user); // Add this for debugging
+    console.log('User creating room:', req.user);
     return this.roomsService.create(req.user._id.toString(), createRoomDto);
   }
 
   @Get()
-  @UseGuards(AuthGuard('jwt')) // Add this guard
+  @UseGuards(AuthGuard('jwt')) 
   getByRequest(@Request() req) {
     return this.roomsService.getByRequest(req.user._id.toString());
   }

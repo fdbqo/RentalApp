@@ -61,7 +61,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
 
-  // New action
+  // Create a new chat room
   createRoom: async (landlordId: string, propertyId: string) => {
     try {
       set({ isLoading: true, error: null });
@@ -71,7 +71,23 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       if (!token || !currentUser) {
         throw new Error('User not authenticated');
       }
+      const roomsResponse = await fetch('http://localhost:3000/rooms', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
+      if (roomsResponse.ok) {
+        const rooms = await roomsResponse.json();
+        const existingRoom = rooms.find(room => 
+          room.members.some(member => member._id === landlordId)
+        );
+
+        if (existingRoom) {
+          get().setRooms(rooms);
+          return existingRoom;
+        }
+      }
       const requestBody = {
         members: [landlordId],
         type: 'personal',
@@ -88,7 +104,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create chat room');
+        const errorData = await response.text();
+        throw new Error(`Failed to create chat room: ${errorData}`);
       }
 
       const room = await response.json();
