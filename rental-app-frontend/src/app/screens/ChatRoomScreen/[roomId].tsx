@@ -70,8 +70,7 @@ const DateSeparator = ({ date }) => {
   );
 };
 
-// Need to do real backend implementation
-const TypingIndicator = () => {
+const TypingIndicator = ({ usernames }: { usernames: string[] }) => {
   const opacity = useRef(new Animated.Value(0.5)).current;
 
   useEffect(() => {
@@ -93,39 +92,43 @@ const TypingIndicator = () => {
     return () => animation.stop();
   }, []);
 
+  if (usernames.length === 0) return null;
+
+  const text =
+    usernames.length === 1
+      ? `${usernames[0]} is typing...`
+      : `${usernames.join(", ")} are typing...`;
+
   return (
-    <XStack paddingVertical={8} paddingHorizontal={12} alignItems="center">
+    <View style={styles.typingIndicatorContainer}>
       <Animated.View style={{ opacity }}>
-        <Text color="$gray10" fontSize={12} fontStyle="italic">
-          Someone is typing...
+        <Text color="$gray10" fontSize={14} fontStyle="italic">
+          {text}
         </Text>
       </Animated.View>
-    </XStack>
+    </View>
   );
 };
 
 const ChatRoomScreen = () => {
   const { roomId } = useLocalSearchParams();
   const router = useRouter();
-  const { messages, sendMessage, isLoading, error } = useChat(roomId as string);
+  const {
+    messages,
+    sendMessage,
+    isLoading,
+    error,
+    typingUsers,
+    handleTyping,
+  } = useChat(roomId as string);
   const currentUser = useUserStore((state) => state.user);
   const flatListRef = useRef<FlatList>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [isTyping, setIsTyping] = useState(false); // Demo state for typing indicator
 
   useEffect(() => {
     if (!roomId) {
       router.back();
     }
-
-    // Demo: Show typing indicator occasionally
-    const timer = setTimeout(() => setIsTyping(true), 2000);
-    const endTimer = setTimeout(() => setIsTyping(false), 5000);
-
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(endTimer);
-    };
   }, [roomId]);
 
   const handleSendMessage = (content: string) => {
@@ -148,7 +151,6 @@ const ChatRoomScreen = () => {
     time: Date;
     name: string;
   }) => {
-    // Create appointment metadata
     const appointmentWithStatus: AppointmentMetadata = {
       ...appointmentData,
       status: "pending",
@@ -165,6 +167,13 @@ const ChatRoomScreen = () => {
       },
     });
   };
+
+  const handleMessageInputChange = (text: string) => {
+    if (text && roomId) {
+      handleTyping(roomId as string);
+    }
+  };
+
   const sortedMessages = [...messages].sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
@@ -264,13 +273,18 @@ const ChatRoomScreen = () => {
                 </Text>
               </YStack>
             )}
-            ListFooterComponent={() => (isTyping ? <TypingIndicator /> : null)}
+            ListFooterComponent={
+              typingUsers.length > 0 ? (
+                <TypingIndicator usernames={typingUsers} />
+              ) : null
+            }
           />
 
           <View style={styles.inputWrapper}>
             <MessageInput
               onSend={handleSendMessage}
               onSendAppointment={handleSendAppointment}
+              onChangeText={handleMessageInputChange}
             />
           </View>
         </KeyboardAvoidingView>
@@ -289,6 +303,12 @@ const styles = StyleSheet.create({
     borderTopColor: "rgba(0,0,0,0.1)",
     backgroundColor: "#f8fafc",
     marginBottom: 20,
+  },
+  typingIndicatorContainer: {
+    alignSelf: "flex-start",
+    marginLeft: 16,
+    marginTop: 8,
+    marginBottom: 6,
   },
 });
 

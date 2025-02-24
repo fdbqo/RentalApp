@@ -15,12 +15,9 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { rentalAppTheme } from "@/constants/Colors";
 
 interface MessageInputProps {
-  onSend: (message: string) => void;
-  onSendAppointment: (appointmentData: {
-    date: Date;
-    time: Date;
-    name: string;
-  }) => void;
+  onSend: (content: string) => void;
+  onSendAppointment: (appointmentData: { date: Date; time: Date; name: string }) => void;
+  onChangeText?: (text: string) => void;
 }
 
 interface AppointmentModalProps {
@@ -127,7 +124,7 @@ const AppointmentModal = ({ visible, onClose, onSubmit }: AppointmentModalProps)
   );
 };
 
-const MessageInput = ({ onSend, onSendAppointment }: MessageInputProps) => {
+const MessageInput: React.FC<MessageInputProps> = ({ onSend, onSendAppointment, onChangeText }) => {
   const [message, setMessage] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
@@ -164,6 +161,11 @@ const MessageInput = ({ onSend, onSendAppointment }: MessageInputProps) => {
     ]).start();
   };
 
+  const handleTextChange = (text: string) => {
+    setMessage(text);
+    onChangeText?.(text);
+  };
+
   return (
     <YStack padding={8}>
       <XStack
@@ -189,7 +191,7 @@ const MessageInput = ({ onSend, onSendAppointment }: MessageInputProps) => {
           ref={inputRef}
           style={styles.input}
           value={message}
-          onChangeText={setMessage}
+          onChangeText={handleTextChange}
           placeholder="Type a message..."
           placeholderTextColor="#94a3b8"
           multiline

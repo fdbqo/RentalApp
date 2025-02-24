@@ -3,6 +3,7 @@ import { useChatStore } from '../store/chat.store';
 import { wsService } from '../services/websocket.service';
 import { SendMessagePayload } from '../store/interfaces/Chat';
 import { useUserStore } from '../store/user.store';
+import { debounce } from 'lodash';
 
 export const useChat = (roomId?: string) => {
   const {
@@ -16,6 +17,9 @@ export const useChat = (roomId?: string) => {
     setCurrentRoom,
     setLoading,
     setError,
+    typingUsers,
+    addTypingUser,
+    removeTypingUser,
   } = useChatStore();
   
   const token = useUserStore(state => state.token);
@@ -73,6 +77,18 @@ export const useChat = (roomId?: string) => {
     }
   }, []);
 
+  const debouncedStopTyping = useCallback(
+    debounce((roomId: string) => {
+      wsService.sendTypingStatus(roomId, false);
+    }, 1000),
+    []
+  );
+
+  const handleTyping = useCallback((roomId: string) => {
+    wsService.sendTypingStatus(roomId, true);
+    debouncedStopTyping(roomId);
+  }, [debouncedStopTyping]);
+
   useEffect(() => {
     if (!token) return;
 
@@ -91,6 +107,27 @@ export const useChat = (roomId?: string) => {
     }
   }, [roomId, fetchMessages]);
 
+  useEffect(() => {
+    if (!roomId) return;
+  
+    const handleUserTyping = (payload: any) => {
+      const name = payload.fullName || payload.username;
+      addTypingUser(roomId, payload.userId, name);
+    };
+  
+    const handleUserStopTyping = ({ userId }: { userId: string }) => {
+      removeTypingUser(roomId, userId);
+    };
+  
+    wsService.on('user_typing', handleUserTyping);
+    wsService.on('user_stop_typing', handleUserStopTyping);
+  
+    return () => {
+      wsService.off('user_typing', handleUserTyping);
+      wsService.off('user_stop_typing', handleUserStopTyping);
+    };
+  }, [roomId]);
+
   return {
     messages,
     rooms,
@@ -99,5 +136,7 @@ export const useChat = (roomId?: string) => {
     error,
     sendMessage,
     fetchRooms,
+    typingUsers: (typingUsers[roomId as string] || []).map(user => user.name),
+    handleTyping,
   };
 };
