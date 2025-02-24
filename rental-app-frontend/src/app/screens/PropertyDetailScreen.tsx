@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, useWindowDimensions } from "react-native";
+import { ScrollView, useWindowDimensions, Alert } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import {
   Theme,
@@ -30,6 +30,7 @@ import NavigationHeader from "@/components/NavigationHeader";
 import { rentalAppTheme } from "@/constants/Colors";
 import { Property } from "@/store/interfaces/Property";
 import { usePropertyStore } from "@/store/property.store";
+import { useChatStore } from "@/store/chat.store";
 
 export default function PropertyDetailScreen() {
   const router = useRouter();
@@ -178,6 +179,37 @@ export default function PropertyDetailScreen() {
             </XStack>
 
             <Separator marginVertical="$3" />
+
+            <Button 
+              size="$5"
+              theme="active"
+              backgroundColor={rentalAppTheme.primaryDark}
+              icon={Calendar}
+              color="white"
+              width="100%"
+              onPress={async () => {
+                try {
+                  const chatStore = useChatStore.getState();
+                  const room = await chatStore.createRoom(
+                    selectedProperty.lenderId,
+                    selectedProperty._id
+                  );
+                  
+                  router.push({
+                    pathname: "/screens/ChatRoomScreen/[roomId]",
+                    params: { roomId: room._id }
+                  });
+                } catch (error) {
+                  Alert.alert(
+                    'Error',
+                    'Failed to create chat room. Please try again.',
+                    [{ text: 'OK' }]
+                  );
+                }
+              }}
+            >
+              <Text color="white">Contact Landlord</Text>
+            </Button>
 
             <AddressSection address={houseAddress} />
             <DescriptionSection description={selectedProperty.description} />

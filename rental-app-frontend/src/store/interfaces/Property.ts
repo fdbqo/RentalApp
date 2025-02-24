@@ -19,7 +19,7 @@ export interface NearestUniversity {
 }
 
 export interface Property {
-  _id?: string;
+  _id: string;
   price: number;
   isRented: boolean;
   availability: string; // "immediately" | "available_from"
