@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Message, Chat } from '../store/interfaces/Chat';
 import { Room } from './interfaces/Room';
+import { useUserStore } from './user.store';
 
 interface ChatStore extends Chat {
   // Message actions
@@ -16,9 +17,12 @@ interface ChatStore extends Chat {
   setCurrentRoom: (roomId: string) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  
+  // New action
+  createRoom: (landlordId: string, propertyId: string) => Promise<Room>;
 }
 
-export const useChatStore = create<ChatStore>((set) => ({
+export const useChatStore = create<ChatStore>((set, get) => ({
   // Initial state
   messages: [],
   rooms: [],
@@ -56,4 +60,63 @@ export const useChatStore = create<ChatStore>((set) => ({
   setCurrentRoom: (roomId) => set({ currentRoomId: roomId }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
+
+  // Create a new chat room
+  createRoom: async (landlordId: string, propertyId: string) => {
+    try {
+      set({ isLoading: true, error: null });
+      const token = useUserStore.getState().token;
+      const currentUser = useUserStore.getState().user;
+      
+      if (!token || !currentUser) {
+        throw new Error('User not authenticated');
+      }
+      const roomsResponse = await fetch('http://localhost:3000/rooms', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (roomsResponse.ok) {
+        const rooms = await roomsResponse.json();
+        const existingRoom = rooms.find(room => 
+          room.members.some(member => member._id === landlordId)
+        );
+
+        if (existingRoom) {
+          get().setRooms(rooms);
+          return existingRoom;
+        }
+      }
+      const requestBody = {
+        members: [landlordId],
+        type: 'personal',
+        name: `Property Chat ${propertyId}`
+      };
+
+      const response = await fetch('http://localhost:3000/rooms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Failed to create chat room: ${errorData}`);
+      }
+
+      const room = await response.json();
+      get().addRoom(room);
+      return room;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create chat room';
+      set({ error: errorMessage });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  }
 }));
