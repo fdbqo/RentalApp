@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PropertyController } from './property.controller';
 import { PropertyService } from './property.service';
 import { Property, PropertySchema } from './schemas/property.schema';
+import { ChatsModule } from 'src/chats/chats.module';
 import { GoogleModule } from '../google/google.module';
 
 @Module({
@@ -10,7 +11,8 @@ import { GoogleModule } from '../google/google.module';
     MongooseModule.forFeature([
       { name: Property.name, schema: PropertySchema, collection: 'listings' }
     ]),
-    GoogleModule,
+    ChatsModule,
+    GoogleModule
   ],
   controllers: [PropertyController],
   providers: [PropertyService],
