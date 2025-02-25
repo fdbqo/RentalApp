@@ -15,6 +15,7 @@ interface MessageBubbleProps {
       name: string;
       avatar?: string;
     };
+    isRead?: boolean;
   };
   isCurrentUser: boolean;
 }
@@ -24,25 +25,15 @@ const MAX_BUBBLE_WIDTH = width * 0.75;
 
 const MessageBubble = ({ message, isCurrentUser }: MessageBubbleProps) => {
   const formattedTime = dayjs(message.createdAt).format("h:mm A");
-  const hasDeliveryReceipt = Math.random() > 0.5; // need to do real backend implementation
-
-  const senderInitial = message.sender?.name 
-    ? message.sender.name.charAt(0).toUpperCase() 
-    : "U";
 
   return (
-    <XStack 
-      width="100%" 
+    <XStack
+      width="100%"
       marginVertical={6}
       justifyContent={isCurrentUser ? "flex-end" : "flex-start"}
     >
       {!isCurrentUser && (
-        <Avatar 
-          circular 
-          size="$3" 
-          marginRight={8}
-          backgroundColor="$blue5"
-        >
+        <Avatar circular size="$3" marginRight={8} backgroundColor="$blue5">
           {message.sender?.avatar && (
             <Avatar.Image
               src={message.sender.avatar}
@@ -81,8 +72,8 @@ const MessageBubble = ({ message, isCurrentUser }: MessageBubbleProps) => {
           </YStack>
         )}
 
-        <XStack 
-          alignItems="center" 
+        <XStack
+          alignItems="center"
           justifyContent={isCurrentUser ? "flex-end" : "flex-start"}
           paddingHorizontal={4}
           marginTop={4}
@@ -91,9 +82,13 @@ const MessageBubble = ({ message, isCurrentUser }: MessageBubbleProps) => {
           <Text color="$gray10" fontSize={10}>
             {formattedTime}
           </Text>
-          
-          {isCurrentUser && hasDeliveryReceipt && (
-            <Feather name="check-circle" size={12} color="#4ade80" />
+
+          {isCurrentUser && (
+            <Feather
+              name="check-circle"
+              size={12}
+              color={message.isRead ? "#4ade80" : "#94a3b8"}
+            />
           )}
         </XStack>
       </YStack>

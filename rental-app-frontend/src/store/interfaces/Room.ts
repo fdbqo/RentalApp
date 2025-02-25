@@ -12,7 +12,7 @@ export interface Room {
   members: User[];
   lastMessage?: {
     content: string;
-    createdAt: Date;
+    createdAt: string;
   };
 }
 
@@ -21,3 +21,5 @@ export interface CreateRoomPayload {
   members: string[];
   type: RoomType;
 }
+
+export type RoomType = "personal" | "group";
