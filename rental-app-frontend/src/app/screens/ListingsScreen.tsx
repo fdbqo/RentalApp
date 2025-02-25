@@ -42,8 +42,6 @@ export default function ListingsScreen() {
 
   const renderItem = ({ item }: { item: Property }) => {
     const roomsAvailable = (item.singleBedrooms ?? 0) + (item.doubleBedrooms ?? 0);
-    console.log(item);
-    console.log(item.nearestUniversity)
     return (
       <PropertyCard
         item={item}
