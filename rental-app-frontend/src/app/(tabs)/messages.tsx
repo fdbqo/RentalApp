@@ -91,16 +91,8 @@ export default function MessagesScreen() {
           No messages yet
         </Text>
         <Text color="gray" textAlign="center" marginTop="$2">
-          Messages from property owners and tenants will appear here
+          Messages will appear here
         </Text>
-        <Button
-          backgroundColor={rentalAppTheme.primaryDark}
-          color="white"
-          marginTop="$6"
-          onPress={() => router.push("../screens/SearchScreen")}
-        >
-          Browse Properties
-        </Button>
       </YStack>
     );
   };
