@@ -1,21 +1,26 @@
-import { User } from './User';
+import { User } from "./User";
 
 export interface AppointmentMetadata {
   name: string;
   date: Date;
   time: Date;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: "pending" | "accepted" | "rejected";
 }
 
-export type MessageType = 'text' | 'appointment';
+export type MessageType = "text" | "appointment";
 
 export interface Message {
   _id: string;
   content: string;
-  sender_id: User;
+  createdAt: string;
+  sender_id: string;
   room_id: string;
-  createdAt: Date;
-  type?: MessageType;
+  sender?: {
+    name: string;
+    avatar?: string;
+  };
+  isRead?: boolean;
+  type?: string;
   metadata?: {
     appointment?: AppointmentMetadata;
   };
