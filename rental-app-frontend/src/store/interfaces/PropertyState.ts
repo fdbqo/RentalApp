@@ -1,4 +1,4 @@
-import { Property, Address, NearestUniversity, FilterState } from "./Property";
+import { Property, Address, NearestUniversity, FilterState, Image } from "./Property";
 
 export interface PropertyState {
   formData: {
@@ -12,7 +12,7 @@ export interface PropertyState {
     singleBedrooms: number | null;
     doubleBedrooms: number | null;
     bathrooms: number | null;
-    images: { id: string; uri: string }[];
+    images: Image[];
     houseAddress: Address;
     nearestUniversity?: NearestUniversity | null;
   };
@@ -24,10 +24,10 @@ export interface PropertyState {
   // Actions
   fetchProperties: (filters: FilterState) => Promise<void>;
   fetchLandlordProperties: () => Promise<void>;
-  createProperty: () => Promise<void>;
+  createProperty: () => Promise<Property>;
   resetForm: () => void;
   fetchPropertyById: (id: string) => Promise<void>;
-  updateProperty: (id: string, propertyData: Partial<Property>) => Promise<void>;
+  updateProperty: (id: string, propertyData: Partial<Property>) => Promise<Property>;
   deleteProperty: (id: string) => Promise<void>;
 
   // Form setters
@@ -43,8 +43,11 @@ export interface PropertyState {
   setBathrooms: (bathrooms: number | null) => void;
   // setDistanceFromUniversity: (distanceFromUniversity: number | null) => void;
   setNearestUniversity: (nearestUniversity: NearestUniversity | null) => void;
-  setImages: (images: { id: string; uri: string }[]) => void;
+  setImages: (images: Image[]) => void;
   setHouseAddress: (
     address: Partial<PropertyState["formData"]["houseAddress"]>
   ) => void;
+
+  uploadImage: (imageUri: string) => Promise<{ key: string; url: string }>;
+  setSelectedProperty: (property: Property | null) => void;
 }
