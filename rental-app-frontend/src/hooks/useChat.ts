@@ -4,6 +4,7 @@ import { wsService } from "../services/websocket.service";
 import { SendMessagePayload } from "../store/interfaces/Chat";
 import { useUserStore } from "../store/user.store";
 import { debounce } from "lodash";
+import { API_URL } from "@env";
 
 export const useChat = (roomId?: string) => {
   const {
@@ -31,7 +32,7 @@ export const useChat = (roomId?: string) => {
       try {
         setLoading(true);
         const response = await fetch(
-          `http://localhost:3000/rooms/${roomId}/chats`,
+          `${API_URL}/rooms/${roomId}/chats`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -56,7 +57,7 @@ export const useChat = (roomId?: string) => {
 
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:3000/rooms", {
+      const response = await fetch(`${API_URL}/rooms`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

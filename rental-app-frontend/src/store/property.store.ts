@@ -3,8 +3,7 @@ import axios from "axios";
 import { Property, NearestUniversity } from "./interfaces/Property";
 import { PropertyState } from "./interfaces/PropertyState";
 import { useUserStore } from "./user.store";
-
-const API_URL = "http://localhost:3000";
+import { API_URL } from "@env";
 
 export const usePropertyStore = create<PropertyState>((set, get) => ({
   properties: [],
