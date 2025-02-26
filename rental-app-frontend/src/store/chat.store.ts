@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { Message, Chat } from "../store/interfaces/Chat";
 import { Room } from "./interfaces/Room";
 import { useUserStore } from "./user.store";
-
+import { API_URL } from "@env";
 interface ChatStore extends Chat {
   // Message actions
   setMessages: (messages: Message[]) => void;
@@ -84,7 +84,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       if (!token || !currentUser) {
         throw new Error("User not authenticated");
       }
-      const roomsResponse = await fetch("http://localhost:3000/rooms", {
+      const roomsResponse = await fetch(`${API_URL}/rooms`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -107,7 +107,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         name: `Property Chat ${propertyId}`,
       };
 
-      const response = await fetch("http://localhost:3000/rooms", {
+      const response = await fetch(`${API_URL}/rooms`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

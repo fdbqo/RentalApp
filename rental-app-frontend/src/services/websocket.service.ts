@@ -2,7 +2,7 @@ import { EventEmitter } from "events";
 import { Message } from "../store/interfaces/Chat";
 import { useChatStore } from "../store/chat.store";
 import { useUserStore } from "@/store/user.store";
-
+import { WEBSOCKET_URL } from "@env";
 interface WebSocketEvents {
   connected: () => void;
   error: (error: Error | Event) => void;
@@ -36,7 +36,7 @@ class WebSocketService extends EventEmitter {
   }
 
   private socket: WebSocket | null = null;
-  private readonly url = "ws://localhost:3000";
+  private readonly url = WEBSOCKET_URL;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectTimeout = 5000;

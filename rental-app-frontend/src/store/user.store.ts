@@ -2,8 +2,7 @@ import { create } from "zustand";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "@/store/interfaces/User";
-
-const API_URL = "http://localhost:3000";
+import { API_URL } from "@env";
 
 interface UserState {
   user: User | null;
