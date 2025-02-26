@@ -3,7 +3,7 @@ import axios from "axios";
 import { Property, NearestUniversity } from "./interfaces/Property";
 import { PropertyState } from "./interfaces/PropertyState";
 import { useUserStore } from "./user.store";
-import { API_URL } from "@env";
+import { env } from "../../env";
 
 export const usePropertyStore = create<PropertyState>((set, get) => ({
   properties: [],
@@ -52,7 +52,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       const token = useUserStore.getState().token;
 
       // Upload to S3 through backend
-      const response = await axios.post(`${API_URL}/upload?folder=properties`, formData, {
+      const response = await axios.post(`${env.EXPO_PUBLIC_API_URL}/upload?folder=properties`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,
@@ -74,7 +74,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         Object.entries(filters).filter(([_, value]) => value !== undefined && value !== '')
       );
 
-      const response = await axios.get(`${API_URL}/listings`, {
+      const response = await axios.get(`${env.EXPO_PUBLIC_API_URL}/listings`, {
         params: cleanFilters,
       });
 
@@ -100,7 +100,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     }
   
     try {
-      const response = await axios.get(`${API_URL}/listings`, {
+      const response = await axios.get(`${env.EXPO_PUBLIC_API_URL}/listings`, {
         params: { lenderId: userId },
       });
 
@@ -160,7 +160,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         images: uploadedImages,
       };
 
-      const response = await axios.post(`${API_URL}/listings`, propertyData);
+      const response = await axios.post(`${env.EXPO_PUBLIC_API_URL}/listings`, propertyData);
 
       await get().fetchLandlordProperties();
       get().resetForm();
@@ -206,7 +206,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
   fetchPropertyById: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.get(`${API_URL}/listings/${id}`);
+      const response = await axios.get(`${env.EXPO_PUBLIC_API_URL}/listings/${id}`);
       set({ selectedProperty: response.data, isLoading: false });
     } catch (error) {
       set({
@@ -301,7 +301,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
 
     try {
       const response = await axios.put(
-        `${API_URL}/listings/${id}`,
+        `${env.EXPO_PUBLIC_API_URL}/listings/${id}`,
         propertyData
       );
 
@@ -330,7 +330,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      await axios.delete(`${API_URL}/listings/${id}`);
+      await axios.delete(`${env.EXPO_PUBLIC_API_URL}/listings/${id}`);
 
       const updatedProperties = get().properties.filter(
         (prop) => prop._id !== id

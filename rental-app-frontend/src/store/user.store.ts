@@ -2,8 +2,7 @@ import { create } from "zustand";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "@/store/interfaces/User";
-import { API_URL } from "@env";
-
+import { env } from "../../env";
 interface UserState {
   user: User | null;
   token: string | null;
@@ -27,7 +26,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       const timestamp = new Date().toISOString();
       console.log(`[${timestamp}] Initiating login request:`, { email: email.toLowerCase() });
       console.log("Sending login request:", { email: email.toLowerCase(), password });
-      const response = await axios.post(`${API_URL}/auth/login`, {
+      const response = await axios.post(`${env.EXPO_PUBLIC_API_URL}/auth/login`, {
         email: email.toLowerCase(),
         password,
       });
@@ -98,7 +97,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         email: userData.email.toLowerCase(),
       };
       
-      const response = await axios.post(`${API_URL}/auth/register`, normalizedUserData);
+      const response = await axios.post(`${env.EXPO_PUBLIC_API_URL}/auth/register`, normalizedUserData);
 
       if (response.status === 201 || response.status === 200) {
         set({ error: null });
