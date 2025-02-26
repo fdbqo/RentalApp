@@ -185,7 +185,7 @@ export default function PropertyDetailScreen() {
                   router.push({
                     pathname: "/screens/ChatRoomScreen/[roomId]",
                     params: { roomId: room._id }
-                  });
+                  } as any);
                 } catch (error) {
                   Alert.alert(
                     'Error',

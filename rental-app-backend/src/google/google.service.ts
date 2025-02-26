@@ -35,8 +35,11 @@ export class DistanceService {
         }
     }
 
-    private async findNearbyUniversities(lat: number, lng: number, radius = 5000): Promise<any[]> {
+    private async findNearbyUniversities(lat: number, lng: number, radius = 15000): Promise<any[]> {
+        
+        console.log(radius);
         const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${radius}&type=university&key=${this.GOOGLE_API_KEY}`;
+        console.log(url);
 
         try {
             const { data } = await axios.get(url);
@@ -69,6 +72,10 @@ export class DistanceService {
         }
     }
 
+
+
+
+
     public async getNearestUniversityDetails(property: Property): Promise<any> {
         if (!property?.houseAddress) return null;
 
@@ -76,7 +83,7 @@ export class DistanceService {
         const coords = await this.geocodeAddress(addressString);
         if (!coords) return null;
 
-        const institutions = await this.findNearbyUniversities(coords.lat, coords.lng, 5000);
+        const institutions = await this.findNearbyUniversities(coords.lat, coords.lng, 15000);
         if (!institutions.length) return null;
 
         const destinations = institutions.map(i => ({
