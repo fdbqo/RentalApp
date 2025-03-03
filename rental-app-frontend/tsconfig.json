@@ -20,7 +20,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "axiosConfig.ts"  ],
+    "expo-env.d.ts",
+    "axiosConfig.ts"
+  ],
   "exclude": ["node_modules"]
 }

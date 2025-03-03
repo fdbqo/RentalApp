@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { YStack, XStack, Text, Button, Input, Theme, Card, Spinner } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
 import { useUserStore } from "@/store/user.store";
-import { AnimatePresence, View } from "moti";
+import { AnimatePresence, View } from "tamagui";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -29,7 +29,11 @@ export default function LoginScreen() {
     <Theme name="light">
       <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor={rentalAppTheme.backgroundLight} padding="$4">
         <AnimatePresence>
-          <View from={{ opacity: 0, translateY: 20 }} animate={{ opacity: 1, translateY: 0 }} transition={{ type: "timing", duration: 300 }}>
+          <View 
+            animation="lazy"
+            enterStyle={{ opacity: 0, translateY: 20 }}
+            exitStyle={{ opacity: 0, translateY: -20 }}
+          >
             <Card elevate shadowColor="gray" shadowOpacity={0.2} padding="$6" borderRadius="$6" width={350} backgroundColor="white">
               <YStack space="$4" alignItems="center">
                 <Text fontSize={28} fontWeight="bold" color={rentalAppTheme.textDark}>

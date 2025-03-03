@@ -38,11 +38,18 @@ export class UploadService {
   }
 
   async getSignedUrl(key: string): Promise<string> {
-    const command = new GetObjectCommand({
-      Bucket: this.bucketName,
-      Key: key,
-    });
+    try {
+      console.log('Getting signed URL for key:', key);
+      const command = new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+      });
 
-    return await getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
+      // Increase expiration time to 24 hours
+      return await getSignedUrl(this.s3Client, command, { expiresIn: 86400 });
+    } catch (error) {
+      console.error('Error generating signed URL:', error);
+      throw error;
+    }
   }
 } 

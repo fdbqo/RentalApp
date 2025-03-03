@@ -71,12 +71,19 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
       {/* Image Container */}
       <Stack position="relative" height={200}>
         <Image
-          source={{ uri: item.images[0].uri }}
+          source={{ 
+            uri: item.images && item.images.length > 0 && item.images[0].uri 
+              ? item.images[0].uri 
+              : 'https://via.placeholder.com/400x300?text=No+Image'
+          }}
           style={{
             width: "100%",
             height: "100%",
           }}
           resizeMode="cover"
+          onError={(e) => {
+            console.error('Image loading error:', e.nativeEvent.error);
+          }}
         />
         {/* Price Tag */}
         <XStack

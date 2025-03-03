@@ -99,14 +99,21 @@ export default function PropertyDetailScreen() {
 
   const ImageCarousel = () => (
     <Stack width="100%" height={isMobile ? 300 : 500} position="relative">
-      {images.length > 0 ? (
+      {images && images.length > 0 ? (
         <>
           <TamaguiImage
-            source={{ uri: images[activeIndex].uri }}
+            source={{ 
+              uri: images[activeIndex]?.uri 
+                ? images[activeIndex].uri 
+                : 'https://via.placeholder.com/800x600?text=No+Image'
+            }}
             width="100%"
             height="100%"
             resizeMode="cover"
             borderRadius={isMobile ? 0 : "$4"}
+            onError={(e) => {
+              console.error('Image loading error in carousel:', e.nativeEvent);
+            }}
           />
           {images.length > 1 && (
             <>
@@ -267,8 +274,6 @@ const formatDistance = (distance: number) => {
   }
   return `${distance} m`;
 };
-
-
 
 const UniversitySection = ({ university }: { university: Property["nearestUniversities"] }) => (
   <Card

@@ -8,6 +8,8 @@ import {
   Query,
   UseGuards,
   Req,
+  MaxFileSizeValidator,
+  ParseFilePipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
@@ -20,9 +22,19 @@ export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    }
+  }))
   async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB limit
+        ],
+      }),
+    ) file: Express.Multer.File,
     @Query('folder') folder?: string,
   ) {
     const key = await this.uploadService.uploadFile(file, folder);
@@ -30,11 +42,16 @@ export class UploadController {
     return { key, url };
   }
 
-  @Get('*')
-  async getSignedUrl(@Req() request: Request) {
-    const key = request.url.replace('/upload/', '');
-    const decodedKey = decodeURIComponent(key);
-    const url = await this.uploadService.getSignedUrl(decodedKey);
-    return { url };
+  @Get(':key(*)')
+  async getSignedUrl(@Param('key') key: string) {
+    try {
+      console.log('Getting signed URL for key:', key);
+      const decodedKey = decodeURIComponent(key);
+      const url = await this.uploadService.getSignedUrl(decodedKey);
+      return { url };
+    } catch (error) {
+      console.error('Error getting signed URL:', error);
+      throw error;
+    }
   }
 } 

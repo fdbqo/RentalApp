@@ -2,7 +2,7 @@ import React from "react";
 import { ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { YStack, XStack, Text, Button, Input, Theme, Card, Spinner, Circle } from "tamagui";
-import { AnimatePresence, View } from "moti";
+import { AnimatePresence, View } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
 import { useUserStore } from "@/store/user.store";
 
@@ -80,9 +80,9 @@ export default function RegisterScreen() {
         >
           <AnimatePresence>
             <View
-              from={{ opacity: 0, translateY: 20 }}
-              animate={{ opacity: 1, translateY: 0 }}
-              transition={{ type: "timing", duration: 300 }}
+              animation="lazy"
+              enterStyle={{ opacity: 0, translateY: 20 }}
+              exitStyle={{ opacity: 0, translateY: -20 }}
             >
               <Card
                 elevate
