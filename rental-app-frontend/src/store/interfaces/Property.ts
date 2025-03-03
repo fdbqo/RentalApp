@@ -11,7 +11,7 @@ export interface Address {
   eircode: string;
 }
 
-export interface NearestUniversity {
+export interface NearestUniversities {
   name: string;
   address: Address;
   distance: number; // meters
@@ -31,7 +31,7 @@ export interface Property {
   doubleBedrooms: number;
   bathrooms: number;
   // distanceFromUniversity: number;
-  nearestUniversity: NearestUniversity;
+  nearestUniversities: NearestUniversities[];
   images: Image[];
   houseAddress: Address;
   // houseAddress: {

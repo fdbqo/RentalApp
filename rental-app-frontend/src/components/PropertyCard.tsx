@@ -135,15 +135,15 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
         </XStack>
 
         {/* University Info */}
-        {item.nearestUniversity && (
+        {item.nearestUniversities?.length > 0 && (
           <XStack backgroundColor="$gray3" borderRadius="$4" padding="$3" alignItems="center" space="$2">
             <MapPin size={18} color={rentalAppTheme.primaryDark} />
             <YStack>
               <Text fontSize={14} fontWeight="500" color="$gray12">
-                {item.nearestUniversity.name}
+                {item.nearestUniversities[0].name}
               </Text>
               <Text fontSize={13} color="$gray11">
-                {formatDistance(item.nearestUniversity.distance)} away
+                {/* {formatDistance(item.nearestUniversities[0].distance)} away */}
               </Text>
             </YStack>
           </XStack>

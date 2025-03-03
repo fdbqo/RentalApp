@@ -48,7 +48,7 @@ export default function PropertyDetailScreen() {
     }
   }, [params.id, fetchPropertyById])
 
-  const nearestUniversity = selectedProperty?.nearestUniversity
+  const nearestUniversities = selectedProperty?.nearestUniversities[0]
 
   const capitaliseFirstLetter = (str: string) => {
     return str ? str.charAt(0).toUpperCase() + str.slice(1) : ""
@@ -199,7 +199,7 @@ export default function PropertyDetailScreen() {
             </Button>
 
             <AddressSection address={houseAddress} />
-            <UniversitySection university={selectedProperty.nearestUniversity} />
+            <UniversitySection university={selectedProperty.nearestUniversities} />
             <DescriptionSection description={selectedProperty.description} />
           </YStack>
         </YStack>
@@ -270,7 +270,7 @@ const formatDistance = (distance: number) => {
 
 
 
-const UniversitySection = ({ university }: { university: Property["nearestUniversity"] }) => (
+const UniversitySection = ({ university }: { university: Property["nearestUniversities"] }) => (
   <Card
     padding="$4"
     borderRadius="$4"
@@ -289,11 +289,11 @@ const UniversitySection = ({ university }: { university: Property["nearestUniver
       {university ? (
         <YStack space="$2">
           <Paragraph size="$5" fontWeight="bold" color={rentalAppTheme.textDark}>
-            {university.name}
+            {university[0].name}
           </Paragraph>
           <XStack space="$4">
-            <Paragraph color="$gray11">{formatDistance(university.distance)} away</Paragraph>
-            <Paragraph color="$gray11">{university.avgTimeByCar} min by car</Paragraph>
+            <Paragraph color="$gray11">{formatDistance(university[0].distance)} away</Paragraph>
+            <Paragraph color="$gray11">{university[0].avgTimeByCar} min by car</Paragraph>
           </XStack>
         </YStack>
       ) : (

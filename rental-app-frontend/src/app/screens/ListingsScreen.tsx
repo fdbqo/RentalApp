@@ -59,7 +59,7 @@ export default function ListingsScreen() {
               roomsAvailable: roomsAvailable.toString(),
               bathrooms: item.bathrooms?.toString() ?? '',
               // distanceFromUniversity: item.distanceFromUniversity?.toString() ?? '',
-              nearestUniversity: JSON.stringify(item.nearestUniversity ?? {}), 
+              nearestUniversities: JSON.stringify(item.nearestUniversities ?? {}), 
               houseAddress: JSON.stringify(item.houseAddress) ?? '{}',
               lenderId: item.lenderId ?? '',
             },
