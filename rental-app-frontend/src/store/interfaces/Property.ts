@@ -1,11 +1,11 @@
 export interface Image {
+  id: string;
   uri: string;
-  _id?: string;
 }
 
 export interface Address {
   addressLine1: string;
-  addressLine2?: string;
+  addressLine2: string;
   townCity: string;
   county: string;
   eircode: string;
@@ -19,10 +19,10 @@ export interface NearestUniversities {
 }
 
 export interface Property {
-  _id?: string;
+  _id: string;
   price: number;
   isRented: boolean;
-  availability: 'immediately' | 'available_from';
+  availability: string; // "immediately" | "available_from"
   availableFrom?: string;
   description: string;
   shortDescription: string;
@@ -34,7 +34,13 @@ export interface Property {
   nearestUniversities: NearestUniversities[];
   images: Image[];
   houseAddress: Address;
-  nearestUniversity?: NearestUniversity;
+  // houseAddress: {
+  //   addressLine1: string;
+  //   addressLine2: string;
+  //   townCity: string;
+  //   county: string;
+  //   eircode: string;
+  // };
   lenderId: string;
   lastUpdated?: string;
 }
