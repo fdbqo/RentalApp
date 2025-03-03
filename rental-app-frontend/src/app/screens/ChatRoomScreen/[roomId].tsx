@@ -19,6 +19,7 @@ import { Feather } from "@expo/vector-icons";
 import dayjs from "dayjs";
 import { rentalAppTheme } from "@/constants/Colors";
 import { AppointmentMetadata } from "@/store/interfaces/Chat";
+import { wsService } from "@/services/websocket.service";
 
 const groupMessagesByDate = (messages) => {
   const groups = {};
@@ -113,14 +114,8 @@ const TypingIndicator = ({ usernames }: { usernames: string[] }) => {
 const ChatRoomScreen = () => {
   const { roomId } = useLocalSearchParams();
   const router = useRouter();
-  const {
-    messages,
-    sendMessage,
-    isLoading,
-    error,
-    typingUsers,
-    handleTyping,
-  } = useChat(roomId as string);
+  const { messages, sendMessage, isLoading, error, typingUsers, handleTyping } =
+    useChat(roomId as string);
   const currentUser = useUserStore((state) => state.user);
   const flatListRef = useRef<FlatList>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -130,6 +125,16 @@ const ChatRoomScreen = () => {
       router.back();
     }
   }, [roomId]);
+
+  useEffect(() => {
+    if (roomId && messages.length > 0 && currentUser) {
+      messages.forEach((message) => {
+        if (!message.isRead && message.sender_id !== currentUser._id) {
+          wsService.markMessageAsRead(message._id, roomId as string);
+        }
+      });
+    }
+  }, [messages, roomId, currentUser]);
 
   const handleSendMessage = (content: string) => {
     if (roomId) {

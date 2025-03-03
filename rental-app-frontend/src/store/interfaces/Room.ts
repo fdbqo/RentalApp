@@ -1,18 +1,25 @@
-import { User } from './User';
+import { User } from "./User";
 
 export enum RoomType {
-  PERSONAL = 'personal',
-  GROUP = 'group'
+  PERSONAL = "personal",
+  GROUP = "group",
 }
 
 export interface Room {
   _id: string;
   name: string;
   type: RoomType;
-  members: User[];
+  members: {
+    _id: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  }[];
   lastMessage?: {
     content: string;
-    createdAt: Date;
+    createdAt: string;
+    isRead?: boolean;
+    sender_id?: string;
   };
 }
 

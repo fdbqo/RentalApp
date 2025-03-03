@@ -1,8 +1,8 @@
-import { EventEmitter } from 'events';
-import { Message } from '../store/interfaces/Chat';
-import { useChatStore } from '../store/chat.store';
-import { useUserStore } from '@/store/user.store';
-
+import { EventEmitter } from "events";
+import { Message } from "../store/interfaces/Chat";
+import { useChatStore } from "../store/chat.store";
+import { useUserStore } from "@/store/user.store";
+import { env } from "../../env";
 interface WebSocketEvents {
   connected: () => void;
   error: (error: Error | Event) => void;
@@ -14,20 +14,29 @@ interface WebSocketEvents {
 }
 
 class WebSocketService extends EventEmitter {
-  on<K extends keyof WebSocketEvents>(event: K, listener: WebSocketEvents[K]): this {
+  on<K extends keyof WebSocketEvents>(
+    event: K,
+    listener: WebSocketEvents[K]
+  ): this {
     return super.on(event, listener);
   }
 
-  off<K extends keyof WebSocketEvents>(event: K, listener: WebSocketEvents[K]): this {
+  off<K extends keyof WebSocketEvents>(
+    event: K,
+    listener: WebSocketEvents[K]
+  ): this {
     return super.off(event, listener);
   }
 
-  emit<K extends keyof WebSocketEvents>(event: K, ...args: Parameters<WebSocketEvents[K]>): boolean {
+  emit<K extends keyof WebSocketEvents>(
+    event: K,
+    ...args: Parameters<WebSocketEvents[K]>
+  ): boolean {
     return super.emit(event, ...args);
   }
 
   private socket: WebSocket | null = null;
-  private readonly url = 'ws://localhost:3000';
+  private readonly url = env.WEBSOCKET_URL;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectTimeout = 5000;
@@ -39,7 +48,7 @@ class WebSocketService extends EventEmitter {
 
   public connect(token: string): void {
     if (!token) {
-      this.emit('error', new Error('No token provided'));
+      this.emit("error", new Error("No token provided"));
       return;
     }
 
@@ -55,10 +64,10 @@ class WebSocketService extends EventEmitter {
     if (!this.socket) return;
 
     this.socket.onopen = () => {
-      console.log('[WebSocket] Connection opened');
+      console.log("[WebSocket] Connection opened");
       this.reconnectAttempts = 0;
       this.authenticate(token);
-      this.emit('connected');
+      this.emit("connected");
     };
 
     this.socket.onmessage = (event) => {
@@ -67,63 +76,70 @@ class WebSocketService extends EventEmitter {
     };
 
     this.socket.onerror = (error) => {
-      console.error('[WebSocket] Error:', error);
-      const errorObj = new Error('WebSocket connection error');
-      this.emit('error', errorObj);
-      useChatStore.getState().setError('WebSocket connection error');
+      console.error("[WebSocket] Error:", error);
+      const errorObj = new Error("WebSocket connection error");
+      this.emit("error", errorObj);
+      useChatStore.getState().setError("WebSocket connection error");
     };
 
     this.socket.onclose = () => {
-      console.log('[WebSocket] Connection closed');
+      console.log("[WebSocket] Connection closed");
       this.handleDisconnect(token);
     };
   }
 
   private authenticate(token: string): void {
-    this.send('auth', { token });
+    this.send("auth", { token });
   }
 
   private handleSocketMessage(data: any): void {
     const { event, data: payload } = data;
 
     switch (event) {
-      case 'new-chat':
-        console.log('[WebSocket] New chat received:', payload);
+      case "new-chat":
+        console.log("[WebSocket] New chat received:", payload);
         useChatStore.getState().addMessage(payload as Message);
         break;
-      case 'joined':
-        this.emit('joined', payload);
+      case "joined":
+        this.emit("joined", payload);
         break;
-      case 'auth_success':
+      case "auth_success":
         this.isAuthenticated = true;
-        this.emit('auth_success', payload);
+        this.emit("auth_success", payload);
         break;
-      case 'auth_error':
+      case "auth_error":
         this.isAuthenticated = false;
-        useChatStore.getState().setError('Authentication failed');
+        useChatStore.getState().setError("Authentication failed");
         break;
-      case 'error':
+      case "error":
         useChatStore.getState().setError(payload);
         break;
-      case 'user_typing':
-        this.emit('user_typing', payload);
+      case "user_typing":
+        this.emit("user_typing", payload);
         break;
-      case 'user_stop_typing':
-        this.emit('user_stop_typing', payload);
+      case "user_stop_typing":
+        this.emit("user_stop_typing", payload);
+        break;
+      case "message_read":
+        useChatStore.getState().markMessageAsRead(payload.messageId);
         break;
     }
   }
   private handleDisconnect(token: string): void {
     this.isAuthenticated = false;
-    
+
     if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++;
-        console.log(`[WebSocket] Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+        console.log(
+          `[WebSocket] Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
+        );
         setTimeout(() => this.connect(token), this.reconnectTimeout);
       } else {
-        this.emit('max_reconnect_attempts');
-        useChatStore.getState().setError('Maximum reconnection attempts reached');
+        this.emit("max_reconnect_attempts");
+        useChatStore
+          .getState()
+          .setError("Maximum reconnection attempts reached");
       }
     }
   }
@@ -141,7 +157,7 @@ class WebSocketService extends EventEmitter {
 
       const checkInterval = 100;
       let totalWait = 0;
-      
+
       const interval = setInterval(() => {
         if (this.isSocketReady()) {
           clearInterval(interval);
@@ -162,21 +178,23 @@ class WebSocketService extends EventEmitter {
     if (!this.isSocketReady()) {
       const isConnected = await this.waitForConnection();
       if (!isConnected) {
-        console.error('[WebSocket] Failed to join room - connection timeout');
-        useChatStore.getState().setError('Failed to join room - connection timeout');
+        console.error("[WebSocket] Failed to join room - connection timeout");
+        useChatStore
+          .getState()
+          .setError("Failed to join room - connection timeout");
         return;
       }
     }
-    
-    this.send('join', roomId);
+
+    this.send("join", roomId);
   }
 
   public sendMessage(content: string, roomId: string): void {
     if (this.socket?.readyState !== WebSocket.OPEN) {
-      console.error('[WebSocket] Cannot send message - socket not open');
+      console.error("[WebSocket] Cannot send message - socket not open");
       return;
     }
-    this.send('create', { room_id: roomId, content });
+    this.send("create", { room_id: roomId, content });
   }
 
   private send(event: string, data: any): void {
@@ -184,7 +202,10 @@ class WebSocketService extends EventEmitter {
       const payload = JSON.stringify({ event, data });
       this.socket.send(payload);
     } else {
-      console.error('[WebSocket] Cannot send - socket not open. ReadyState:', this.socket?.readyState);
+      console.error(
+        "[WebSocket] Cannot send - socket not open. ReadyState:",
+        this.socket?.readyState
+      );
     }
   }
 
@@ -199,21 +220,34 @@ class WebSocketService extends EventEmitter {
 
   public sendTypingStatus(roomId: string, isTyping: boolean): void {
     if (this.socket?.readyState !== WebSocket.OPEN) {
-      console.error('[WebSocket] Cannot send typing status - socket not open');
+      console.error("[WebSocket] Cannot send typing status - socket not open");
       return;
     }
-    
+
     const user = useUserStore.getState().user;
     if (!user) {
-      console.error('[WebSocket] Cannot send typing status - no user logged in');
+      console.error(
+        "[WebSocket] Cannot send typing status - no user logged in"
+      );
       return;
     }
-    
-    this.send(isTyping ? 'typing' : 'stop_typing', {
+
+    this.send(isTyping ? "typing" : "stop_typing", {
       room_id: roomId,
-      fullName: `${user.firstName}`
+      fullName: `${user.firstName}`,
     });
-}
+  }
+
+  public markMessageAsRead(messageId: string, roomId: string): void {
+    if (this.socket?.readyState !== WebSocket.OPEN) {
+      console.error(
+        "[WebSocket] Cannot mark message as read - socket not open"
+      );
+      return;
+    }
+
+    this.send("mark_read", { messageId, roomId });
+  }
 }
 
 export const wsService = new WebSocketService();

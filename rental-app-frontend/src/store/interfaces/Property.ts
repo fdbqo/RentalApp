@@ -1,11 +1,11 @@
 export interface Image {
-  id: string;
   uri: string;
+  _id?: string;
 }
 
 export interface Address {
   addressLine1: string;
-  addressLine2: string;
+  addressLine2?: string;
   townCity: string;
   county: string;
   eircode: string;
@@ -19,28 +19,20 @@ export interface NearestUniversities {
 }
 
 export interface Property {
-  _id: string;
+  _id?: string;
   price: number;
   isRented: boolean;
-  availability: string; // "immediately" | "available_from"
+  availability: 'immediately' | 'available_from';
   availableFrom?: string;
   description: string;
   shortDescription: string;
   propertyType: string;
-  singleBedrooms: number;
-  doubleBedrooms: number;
-  bathrooms: number;
+  
   // distanceFromUniversity: number;
   nearestUniversities: NearestUniversities[];
   images: Image[];
   houseAddress: Address;
-  // houseAddress: {
-  //   addressLine1: string;
-  //   addressLine2: string;
-  //   townCity: string;
-  //   county: string;
-  //   eircode: string;
-  // };
+  nearestUniversity?: NearestUniversity;
   lenderId: string;
   lastUpdated?: string;
 }

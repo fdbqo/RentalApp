@@ -1,30 +1,36 @@
-import { create } from 'zustand';
-import { Message, Chat } from '../store/interfaces/Chat';
-import { Room } from './interfaces/Room';
-import { useUserStore } from './user.store';
+import { create } from "zustand";
+import { Message, Chat } from "../store/interfaces/Chat";
+import { Room } from "./interfaces/Room";
+import { useUserStore } from "./user.store";
+import { env } from "../../env";
 
 interface ChatStore extends Chat {
   // Message actions
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
-  
+
   // Room actions
   rooms: Room[];
   setRooms: (rooms: Room[]) => void;
   addRoom: (room: Room) => void;
-  
+
   // UI state actions
   setCurrentRoom: (roomId: string) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
-  
+
   // New action
   createRoom: (landlordId: string, propertyId: string) => Promise<Room>;
 
-  typingUsers: { [roomId: string]: { id: string, name: string }[] };
-  setTypingUsers: (roomId: string, users: { id: string, name: string }[]) => void;
+  typingUsers: { [roomId: string]: { id: string; name: string }[] };
+  setTypingUsers: (
+    roomId: string,
+    users: { id: string; name: string }[]
+  ) => void;
   addTypingUser: (roomId: string, userId: string, username: string) => void;
-  removeTypingUser: (roomId: string, userId: string) => void;  
+  removeTypingUser: (roomId: string, userId: string) => void;
+
+  markMessageAsRead: (messageId: string) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -38,25 +44,27 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   // Message actions
   setMessages: (messages) => set({ messages }),
-  addMessage: (message) => set((state) => {
-    console.log('[ChatStore] Adding new message:', message);
-    const newState = { 
-      messages: [...state.messages, message],
-      rooms: state.rooms.map(room => 
-        room._id === message.room_id 
+  addMessage: (message) =>
+    set((state) => {
+      console.log("[ChatStore] Adding new message:", message);
+
+      const updatedRooms = state.rooms.map((room) =>
+        room._id === message.room_id
           ? {
               ...room,
               lastMessage: {
                 content: message.content,
-                createdAt: message.createdAt
-              }
+                createdAt: message.createdAt,
+              },
             }
           : room
-      )
-    };
-    console.log('[ChatStore] Updated state:', newState);
-    return newState;
-  }),
+      );
+
+      return {
+        messages: [...state.messages, message],
+        rooms: updatedRooms,
+      };
+    }),
 
   // Room actions
   setRooms: (rooms) => set({ rooms }),
@@ -73,20 +81,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       set({ isLoading: true, error: null });
       const token = useUserStore.getState().token;
       const currentUser = useUserStore.getState().user;
-      
+
       if (!token || !currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
-      const roomsResponse = await fetch('http://localhost:3000/rooms', {
+      const roomsResponse = await fetch(`${env.EXPO_PUBLIC_API_URL}/rooms`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (roomsResponse.ok) {
         const rooms = await roomsResponse.json();
-        const existingRoom = rooms.find(room => 
-          room.members.some(member => member._id === landlordId)
+        const existingRoom = rooms.find((room) =>
+          room.members.some((member) => member._id === landlordId)
         );
 
         if (existingRoom) {
@@ -96,17 +104,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
       const requestBody = {
         members: [landlordId],
-        type: 'personal',
-        name: `Property Chat ${propertyId}`
+        type: "personal",
+        name: `Property Chat ${propertyId}`,
       };
 
-      const response = await fetch('http://localhost:3000/rooms', {
-        method: 'POST',
+      const response = await fetch(`${env.EXPO_PUBLIC_API_URL}/rooms`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -118,7 +126,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       get().addRoom(room);
       return room;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create chat room';
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create chat room";
       set({ error: errorMessage });
       throw error;
     } finally {
@@ -126,32 +135,41 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  setTypingUsers: (roomId, users) => 
-    set(state => ({
-      typingUsers: { ...state.typingUsers, [roomId]: users }
+  setTypingUsers: (roomId, users) =>
+    set((state) => ({
+      typingUsers: { ...state.typingUsers, [roomId]: users },
     })),
-  
+
   addTypingUser: (roomId, userId, username) =>
-    set(state => {
+    set((state) => {
       // Check if the user is already in the typing list
       const roomTypers = state.typingUsers[roomId] || [];
-      if (roomTypers.some(user => user.id === userId)) {
+      if (roomTypers.some((user) => user.id === userId)) {
         return state; // User already in the list, no change needed
       }
-      
+
       return {
         typingUsers: {
           ...state.typingUsers,
-          [roomId]: [...roomTypers, { id: userId, name: username }]
-        }
+          [roomId]: [...roomTypers, { id: userId, name: username }],
+        },
       };
     }),
-  
+
   removeTypingUser: (roomId, userId) =>
-    set(state => ({
+    set((state) => ({
       typingUsers: {
         ...state.typingUsers,
-        [roomId]: (state.typingUsers[roomId] || []).filter(user => user.id !== userId)
-      }
+        [roomId]: (state.typingUsers[roomId] || []).filter(
+          (user) => user.id !== userId
+        ),
+      },
+    })),
+
+  markMessageAsRead: (messageId: string) =>
+    set((state) => ({
+      messages: state.messages.map((message) =>
+        message._id === messageId ? { ...message, isRead: true } : message
+      ),
     })),
 }));
