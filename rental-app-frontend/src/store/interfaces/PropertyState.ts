@@ -1,5 +1,5 @@
 
-import { Property, Address, NearestUniversity, FilterState, Image } from "./Property";
+import { Property, Address, NearestUniversities, FilterState, Image } from "./Property";
 
 export interface PropertyState {
   formData: {
@@ -15,7 +15,7 @@ export interface PropertyState {
     bathrooms: number | null;
     images: Image[];
     houseAddress: Address;
-    nearestUniversities?: NearestUniversities | null;
+    nearestUniversities: NearestUniversities[];
   };
   properties: Property[];
   selectedProperty: Property | null;
@@ -43,7 +43,7 @@ export interface PropertyState {
   setDoubleBedrooms: (doubleBedrooms: number | null) => void;
   setBathrooms: (bathrooms: number | null) => void;
   // setDistanceFromUniversity: (distanceFromUniversity: number | null) => void;
-  setNearestUniversity: (nearestUniversity: NearestUniversity | null) => void;
+  setNearestUniversities: (nearestUniversities: NearestUniversities[] | null) => void;
   setImages: (images: Image[]) => void;
   setHouseAddress: (
     address: Partial<PropertyState["formData"]["houseAddress"]>
