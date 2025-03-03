@@ -45,6 +45,7 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
     >
       <XStack padding="$3" space="$3">
         <YStack flex={1} space="$2">
+          {/* Row 1: Address + Availability */}
           <XStack justifyContent="space-between" alignItems="center">
             <Text
               fontSize={16}
@@ -62,21 +63,56 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
               }
               fontWeight="500"
             >
-              {item.isRented ? "Rented" : "Available"}
+              {item.isRented
+                ? "Rented"
+                : item.availableFrom
+                  ? `Available from ${new Date(item.availableFrom).toLocaleDateString()}`
+                  : "Available Now"}
+
             </Text>
           </XStack>
 
+          {/* Row 2: City */}
           <XStack space="$2" alignItems="center">
-            <Feather
-              name="map-pin"
-              size={14}
-              color={rentalAppTheme.textLight}
-            />
+            <Feather name="map-pin" size={14} color={rentalAppTheme.textLight} />
             <Text fontSize={14} color={rentalAppTheme.textLight}>
               {item.houseAddress.townCity}
             </Text>
           </XStack>
 
+        
+
+       
+        {/* {item.nearestUniversity && (
+          <YStack space="$1">
+            <Text fontWeight="600" fontSize={14} color={rentalAppTheme.textDark}>
+              Nearest University
+            </Text>
+
+            <XStack alignItems="center" space="$2">
+              <Feather name="book" size={14} color={rentalAppTheme.textLight} />
+              <Text fontSize={14} color={rentalAppTheme.textDark}>
+                {item.nearestUniversity.name}
+              </Text>
+            </XStack>
+
+         
+            <XStack space="$2" alignItems="center">
+              {!!item.nearestUniversity.distance && (
+                <Text fontSize={14} color={rentalAppTheme.textLight}>
+                  {(item.nearestUniversity.distance / 1000).toFixed(1)} km
+                </Text>
+              )}
+              {!!item.nearestUniversity.avgTimeByCar && (
+                <Text fontSize={14} color={rentalAppTheme.textLight}>
+                  • ~{item.nearestUniversity.avgTimeByCar} min by car
+                </Text>
+              )}
+            </XStack>
+          </YStack>
+        )} */}
+
+          {/* Row 3: Price + Property Type/Rooms */}
           <XStack justifyContent="space-between" alignItems="center">
             <Text
               fontSize={15}
@@ -98,6 +134,8 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
             </XStack>
           </XStack>
 
+
+          {/* Row 5: Last Updated */}
           {formattedDate && (
             <XStack space="$2" alignItems="center">
               <Feather
@@ -239,6 +277,7 @@ export default function LandlordDashboardScreen() {
         backgroundColor={rentalAppTheme.backgroundLight}
         padding="$4"
       >
+        {/* Header */}
         <XStack
           justifyContent="space-between"
           alignItems="center"

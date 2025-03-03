@@ -1,9 +1,9 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Schema as MongooseSchema } from "mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type PropertyDocument = Property & Document;
 
-@Schema({ collection: "listings" })
+@Schema({ collection: 'listings' })
 export class Property {
   @Prop()
   price: number;
@@ -35,8 +35,9 @@ export class Property {
   @Prop({ required: false })
   bathrooms: number | null;
 
-  @Prop({ type: Object, required: false})
-  nearestUniversity?: {
+  // Change from a single object to an array.
+  @Prop({ type: [Object], required: false })
+  nearestUniversities?: {
     name: string;
     address: {
       addressLine1: string;
@@ -47,7 +48,7 @@ export class Property {
     };
     distance: number;
     avgTimeByCar: number;
-  };
+  }[];
 
   @Prop({ type: [{ _id: MongooseSchema.Types.ObjectId, uri: String }] })
   images: { _id: MongooseSchema.Types.ObjectId; uri: string }[];

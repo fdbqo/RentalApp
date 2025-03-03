@@ -33,34 +33,33 @@ import { usePropertyStore } from "@/store/property.store";
 import { useChatStore } from "@/store/chat.store";
 
 export default function PropertyDetailScreen() {
-  const router = useRouter();
-  const params = useLocalSearchParams<{ id: string }>();
-  const [activeIndex, setActiveIndex] = useState(0);
-  const media = useMedia();
-  const isMobile = !media.gtXs;
-  const { width } = useWindowDimensions();
+  const router = useRouter()
+  const params = useLocalSearchParams<{ id: string }>()
+  const [activeIndex, setActiveIndex] = useState(0)
+  const media = useMedia()
+  const isMobile = !media.gtXs
+  const { width } = useWindowDimensions()
 
-  const { selectedProperty, isLoading, error, fetchPropertyById } =
-    usePropertyStore();
+  const { selectedProperty, isLoading, error, fetchPropertyById } = usePropertyStore()
 
   useEffect(() => {
     if (params.id) {
-      fetchPropertyById(params.id);
+      fetchPropertyById(params.id)
     }
-  }, [params.id]);
+  }, [params.id, fetchPropertyById])
 
-  const nearestUniversity = selectedProperty?.nearestUniversity;
+  const nearestUniversities = selectedProperty?.nearestUniversities[0]
 
   const capitaliseFirstLetter = (str: string) => {
-    return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
-  };
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : ""
+  }
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("default", {
       month: "short",
       day: "numeric",
-    });
-  };
+    })
+  }
 
   if (isLoading) {
     return (
@@ -70,7 +69,7 @@ export default function PropertyDetailScreen() {
           <Text>Loading...</Text>
         </Stack>
       </Theme>
-    );
+    )
   }
 
   if (error) {
@@ -81,7 +80,7 @@ export default function PropertyDetailScreen() {
           <Text color="$red10">{error}</Text>
         </Stack>
       </Theme>
-    );
+    )
   }
 
   if (!selectedProperty) {
@@ -92,11 +91,11 @@ export default function PropertyDetailScreen() {
           <Text>Property not found</Text>
         </Stack>
       </Theme>
-    );
+    )
   }
 
-  const images = selectedProperty.images;
-  const houseAddress = selectedProperty.houseAddress;
+  const images = selectedProperty.images
+  const houseAddress = selectedProperty.houseAddress
 
   const ImageCarousel = () => (
     <Stack width="100%" height={isMobile ? 300 : 500} position="relative">
@@ -116,18 +115,14 @@ export default function PropertyDetailScreen() {
                   icon={ChevronLeft}
                   circular
                   size="$3"
-                  onPress={() =>
-                    setActiveIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1))
-                  }
+                  onPress={() => setActiveIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1))}
                   backgroundColor="rgba(255,255,255,0.7)"
                 />
                 <Button
                   icon={ChevronRight}
                   circular
                   size="$3"
-                  onPress={() =>
-                    setActiveIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0))
-                  }
+                  onPress={() => setActiveIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0))}
                   backgroundColor="rgba(255,255,255,0.7)"
                 />
               </XStack>
@@ -140,7 +135,7 @@ export default function PropertyDetailScreen() {
         </Stack>
       )}
     </Stack>
-  );
+  )
 
   return (
     <Theme name="blue">
@@ -162,19 +157,11 @@ export default function PropertyDetailScreen() {
             </YStack>
 
             <XStack space="$2" flexWrap="wrap">
-              <PropertyFeature icon={Bed} text={`${(selectedProperty.singleBedrooms || 0) + (selectedProperty.doubleBedrooms || 0)} Bed`} />
-              <PropertyFeature icon={Bath} text={`${selectedProperty.bathrooms || "N/A"} Bath`} />
-              {nearestUniversity ? (
-                <PropertyFeature
-                icon={MapPin}
-                text={nearestUniversity
-                  ? `${nearestUniversity.name} - ${nearestUniversity.distance} meters away (${nearestUniversity.avgTimeByCar} min by car)`
-                  : "No university data available"
-                }
+              <PropertyFeature
+                icon={Bed}
+                text={`${(selectedProperty.singleBedrooms || 0) + (selectedProperty.doubleBedrooms || 0)} Bed`}
               />
-              ) : (
-                <PropertyFeature icon={MapPin} text="No university nearby" />
-              )}
+              <PropertyFeature icon={Bath} text={`${selectedProperty.bathrooms || "N/A"} Bath`} />
               <PropertyFeature icon={Home} text={capitaliseFirstLetter(selectedProperty.propertyType) || "N/A"} />
             </XStack>
 
@@ -198,7 +185,7 @@ export default function PropertyDetailScreen() {
                   router.push({
                     pathname: "/screens/ChatRoomScreen/[roomId]",
                     params: { roomId: room._id }
-                  });
+                  } as any);
                 } catch (error) {
                   Alert.alert(
                     'Error',
@@ -212,12 +199,13 @@ export default function PropertyDetailScreen() {
             </Button>
 
             <AddressSection address={houseAddress} />
+            <UniversitySection university={selectedProperty.nearestUniversities} />
             <DescriptionSection description={selectedProperty.description} />
           </YStack>
         </YStack>
       </ScrollView>
     </Theme>
-  );
+  )
 }
 
 const PropertyFeature = ({ icon: Icon, text }: { icon: React.ElementType; text: string }) => (
@@ -227,12 +215,21 @@ const PropertyFeature = ({ icon: Icon, text }: { icon: React.ElementType; text: 
       {text}
     </Paragraph>
   </XStack>
-);
+)
 
 const AddressSection = ({ address }: { address: Property["houseAddress"] }) => (
-  <Card padding="$4" borderRadius="$4" borderWidth={1} borderColor="$gray4" elevation={3} backgroundColor={rentalAppTheme.backgroundLight}>
+  <Card
+    padding="$4"
+    borderRadius="$4"
+    borderWidth={1}
+    borderColor="$gray4"
+    elevation={3}
+    backgroundColor={rentalAppTheme.backgroundLight}
+  >
     <YStack space="$3">
-      <H2 size="$6" color={rentalAppTheme.primaryDark}>Address</H2>
+      <H2 size="$6" color={rentalAppTheme.primaryDark}>
+        Address
+      </H2>
       <Separator marginBottom="$2" />
       <Paragraph>{address.addressLine1 || "Address line 1 not available"}</Paragraph>
       {address.addressLine2 && <Paragraph>{address.addressLine2}</Paragraph>}
@@ -240,13 +237,69 @@ const AddressSection = ({ address }: { address: Property["houseAddress"] }) => (
       <Paragraph>{address.eircode || "Eircode not available"}</Paragraph>
     </YStack>
   </Card>
-);
+)
 
 const DescriptionSection = ({ description }: { description: string }) => (
-  <Card padding="$4" borderRadius="$4" borderWidth={1} borderColor="$gray4" elevation={3} backgroundColor={rentalAppTheme.backgroundLight}>
+  <Card
+    padding="$4"
+    borderRadius="$4"
+    borderWidth={1}
+    borderColor="$gray4"
+    elevation={3}
+    backgroundColor={rentalAppTheme.backgroundLight}
+  >
     <YStack space="$3">
-      <H2 size="$6" color={rentalAppTheme.primaryDark}>Property Description</H2>
+      <H2 size="$6" color={rentalAppTheme.primaryDark}>
+        Property Description
+      </H2>
       <Paragraph color="$gray11">{description || "No description available"}</Paragraph>
     </YStack>
   </Card>
-);
+)
+
+const formatNumberWithCommas = (number: number) => {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+const formatDistance = (distance: number) => {
+  if (distance >= 1000) {
+    return `${(distance / 1000).toFixed(1)} km`;
+  }
+  return `${distance} m`;
+};
+
+
+
+const UniversitySection = ({ university }: { university: Property["nearestUniversities"] }) => (
+  <Card
+    padding="$4"
+    borderRadius="$4"
+    borderWidth={1}
+    borderColor="$gray4"
+    elevation={3}
+    backgroundColor={rentalAppTheme.backgroundLight}
+  >
+    <YStack space="$3">
+      <XStack alignItems="center" space="$2">
+        <H2 size="$6" color={rentalAppTheme.primaryDark}>
+          Nearest University
+        </H2>
+      </XStack>
+      <Separator marginBottom="$2" />
+      {university ? (
+        <YStack space="$2">
+          <Paragraph size="$5" fontWeight="bold" color={rentalAppTheme.textDark}>
+            {university[0].name}
+          </Paragraph>
+          <XStack space="$4">
+            <Paragraph color="$gray11">{formatDistance(university[0].distance)} away</Paragraph>
+            <Paragraph color="$gray11">{university[0].avgTimeByCar} min by car</Paragraph>
+          </XStack>
+        </YStack>
+      ) : (
+        <Paragraph color="$gray11">No university information available</Paragraph>
+      )}
+    </YStack>
+  </Card>
+)
+

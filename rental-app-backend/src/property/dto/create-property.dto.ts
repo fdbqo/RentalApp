@@ -90,11 +90,11 @@ export class CreatePropertyDto {
   @Type(() => ImageDto)
   images: ImageDto[];
 
-  @IsObject()
-  @ValidateNested()
+  @IsArray()
+  @ValidateNested({ each: true })
   @IsOptional()
   @Type(() => NearestUniversityDto)
-  nearestUniversity?: NearestUniversityDto;
+  nearestUniversities?: NearestUniversityDto[];
 
   @IsObject()
   @ValidateNested()

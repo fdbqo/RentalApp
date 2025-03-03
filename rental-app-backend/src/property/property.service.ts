@@ -10,21 +10,18 @@ import { DistanceService } from 'src/google/google.service';
 export class PropertyService {
   constructor(
     @InjectModel(Property.name) private propertyModel: Model<PropertyDocument>,
-    private distanceService: DistanceService
-  ) { }
+    private distanceService: DistanceService,
+  ) {}
 
   async findAll(lenderId: string): Promise<Property[]> {
     try {
       const objectId = new Types.ObjectId(lenderId);
-
       const properties = await this.propertyModel.find({ lenderId: objectId }).exec();
-
       return properties;
     } catch (error) {
       return [];
     }
   }
-
 
   async create(createPropertyDto: CreatePropertyDto): Promise<Property> {
     try {
@@ -33,28 +30,26 @@ export class PropertyService {
         lenderId: new Types.ObjectId(createPropertyDto.lenderId),
         images: createPropertyDto.images.map(img => ({
           _id: new Types.ObjectId(),
-          uri: img.uri
-        }))
+          uri: img.uri,
+        })),
       };
 
       const createdProperty = new this.propertyModel(propertyData);
 
-      const nearestUniversity = await this.distanceService.getNearestUniversityDetails(createdProperty);
-      if (nearestUniversity) {
-        createdProperty.nearestUniversity = nearestUniversity;
+      // Get an array of nearest universities.
+      const nearestUniversities = await this.distanceService.getNearestUniversities(createdProperty, 5);
+      if (nearestUniversities && nearestUniversities.length) {
+        createdProperty.nearestUniversities = nearestUniversities;
         await createdProperty.save();
       }
 
-      console.log("Nearest University Details:", nearestUniversity);
-
-
+      console.log('Nearest Universities Details:', nearestUniversities);
       return createdProperty.save();
     } catch (error) {
       console.error('Error creating property:', error);
       throw error;
     }
   }
-
 
   async findById(id: string): Promise<Property> {
     try {
@@ -78,9 +73,10 @@ export class PropertyService {
         throw new NotFoundException(`Property with ID ${id} not found`);
       }
 
-      const nearestUniversity = await this.distanceService.getNearestUniversityDetails(updatedProperty);
-      if (nearestUniversity) {
-        updatedProperty.nearestUniversity = nearestUniversity;
+      // Update nearest universities details.
+      const nearestUniversities = await this.distanceService.getNearestUniversities(updatedProperty, 5);
+      if (nearestUniversities && nearestUniversities.length) {
+        updatedProperty.nearestUniversities = nearestUniversities;
         await updatedProperty.save();
       }
 
@@ -93,7 +89,6 @@ export class PropertyService {
   async delete(id: string): Promise<void> {
     try {
       const result = await this.propertyModel.findByIdAndDelete(id).exec();
-
       if (!result) {
         throw new NotFoundException(`Property with ID ${id} not found`);
       }
@@ -111,7 +106,7 @@ export class PropertyService {
           { 'houseAddress.townCity': { $regex: filters.searchQuery, $options: 'i' } },
           { 'houseAddress.county': { $regex: filters.searchQuery, $options: 'i' } },
           { 'houseAddress.addressLine1': { $regex: filters.searchQuery, $options: 'i' } },
-          { 'houseAddress.addressLine2': { $regex: filters.searchQuery, $options: 'i' } }
+          { 'houseAddress.addressLine2': { $regex: filters.searchQuery, $options: 'i' } },
         ];
       }
 
@@ -126,15 +121,14 @@ export class PropertyService {
       if (filters?.beds) {
         const totalBeds = parseInt(filters.beds);
         query.$expr = {
-          $gte: [{ $add: ['$singleBedrooms', '$doubleBedrooms'] }, totalBeds]
+          $gte: [{ $add: ['$singleBedrooms', '$doubleBedrooms'] }, totalBeds],
         };
       }
 
-      // Handle distance filter
+      // Handle distance filter (using nearestUniversities array)
       if (filters?.distance) {
-        query['nearestUniversity.distance'] = { $lte: parseInt(filters.distance) };
+        query['nearestUniversities.distance'] = { $lte: parseInt(filters.distance) };
       }
-    
 
       return await this.propertyModel.find(query).exec();
     } catch (error) {

@@ -42,8 +42,6 @@ export default function ListingsScreen() {
 
   const renderItem = ({ item }: { item: Property }) => {
     const roomsAvailable = (item.singleBedrooms ?? 0) + (item.doubleBedrooms ?? 0);
-    console.log(item);
-    console.log(item.nearestUniversity)
     return (
       <PropertyCard
         item={item}
@@ -61,7 +59,7 @@ export default function ListingsScreen() {
               roomsAvailable: roomsAvailable.toString(),
               bathrooms: item.bathrooms?.toString() ?? '',
               // distanceFromUniversity: item.distanceFromUniversity?.toString() ?? '',
-              nearestUniversity: JSON.stringify(item.nearestUniversity ?? {}), 
+              nearestUniversities: JSON.stringify(item.nearestUniversities ?? {}), 
               houseAddress: JSON.stringify(item.houseAddress) ?? '{}',
               lenderId: item.lenderId ?? '',
             },
