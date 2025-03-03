@@ -124,8 +124,12 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
             <XStack space="$2" alignItems="center">
               <Feather name="home" size={14} color={rentalAppTheme.textLight} />
               <Text fontSize={14} color={rentalAppTheme.textLight}>
-                {item.propertyType} • {totalRooms}{" "}
-                {totalRooms === 1 ? "room" : "rooms"}
+                {item.propertyType} • {totalRooms}
+                {totalRooms === 1 ? " room" : " rooms"}
+              </Text>
+              <Text fontSize={14} color={rentalAppTheme.textLight}>
+                {item.nearestUniversity?.name} -{" "}
+                {item.nearestUniversity?.distance}
               </Text>
             </XStack>
           </XStack>

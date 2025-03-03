@@ -19,6 +19,9 @@ export class Chat {
 
     @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: Room.name })
     room_id: Room;
+
+    @Prop({ default: false })
+    isRead: boolean;
 }
 
 export const ChatSchema = SchemaFactory.createForClass(Chat);
