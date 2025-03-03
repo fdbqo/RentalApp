@@ -3,8 +3,7 @@ import axios from "axios";
 import { Property, NearestUniversity } from "./interfaces/Property";
 import { PropertyState } from "./interfaces/PropertyState";
 import { useUserStore } from "./user.store";
-
-const API_URL = "http://localhost:3000";
+import { env } from "../../env";
 
 export const usePropertyStore = create<PropertyState>((set, get) => ({
   properties: [],
@@ -34,6 +33,39 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     },
   },
 
+  // New function to handle image upload
+  uploadImage: async (imageUri: string) => {
+    try {
+      // Create form data
+      const formData = new FormData();
+      const filename = imageUri.split('/').pop() || 'image.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+      
+      formData.append('file', {
+        uri: imageUri,
+        name: filename,
+        type,
+      } as any);
+
+      // Get the auth token
+      const token = useUserStore.getState().token;
+
+      // Upload to S3 through backend
+      const response = await axios.post(`${env.EXPO_PUBLIC_API_URL}/upload?folder=properties`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw error;
+    }
+  },
+
   // Actions
   fetchProperties: async (filters) => {
     set({ isLoading: true, error: null });
@@ -42,7 +74,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         Object.entries(filters).filter(([_, value]) => value !== undefined && value !== '')
       );
 
-      const response = await axios.get(`${API_URL}/listings`, {
+      const response = await axios.get(`${env.EXPO_PUBLIC_API_URL}/listings`, {
         params: cleanFilters,
       });
 
@@ -68,7 +100,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     }
   
     try {
-      const response = await axios.get(`${API_URL}/listings`, {
+      const response = await axios.get(`${env.EXPO_PUBLIC_API_URL}/listings`, {
         params: { lenderId: userId },
       });
 
@@ -84,6 +116,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
   },
   
 
+  // Modified createProperty function
   createProperty: async () => {
     set({ isLoading: true, error: null });
 
@@ -96,6 +129,20 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
 
     try {
       const { formData } = get();
+
+      // Upload all images first
+      const uploadedImages = await Promise.all(
+        formData.images.map(async (img) => {
+          if (img.uri.startsWith('http')) {
+            // Image is already uploaded, return as is
+            return { uri: img.uri };
+          }
+          // Upload new image
+          const uploadResult = await get().uploadImage(img.uri);
+          return { uri: uploadResult.url };
+        })
+      );
+
       const propertyData = {
         ...formData,
         price: parseFloat(formData.price),
@@ -110,13 +157,10 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         lenderId: userId,
         lastUpdated: new Date().toISOString(),
         nearestUniversity: formData.nearestUniversity ?? null,
-        images: formData.images.map((img) => ({
-          id: img.id,
-          uri: img.uri,
-        })),
+        images: uploadedImages,
       };
 
-      const response = await axios.post(`${API_URL}/listings`, propertyData);
+      const response = await axios.post(`${env.EXPO_PUBLIC_API_URL}/listings`, propertyData);
 
       await get().fetchLandlordProperties();
       get().resetForm();
@@ -162,7 +206,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
   fetchPropertyById: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.get(`${API_URL}/listings/${id}`);
+      const response = await axios.get(`${env.EXPO_PUBLIC_API_URL}/listings/${id}`);
       set({ selectedProperty: response.data, isLoading: false });
     } catch (error) {
       set({
@@ -257,7 +301,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
 
     try {
       const response = await axios.put(
-        `${API_URL}/listings/${id}`,
+        `${env.EXPO_PUBLIC_API_URL}/listings/${id}`,
         propertyData
       );
 
@@ -286,7 +330,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      await axios.delete(`${API_URL}/listings/${id}`);
+      await axios.delete(`${env.EXPO_PUBLIC_API_URL}/listings/${id}`);
 
       const updatedProperties = get().properties.filter(
         (prop) => prop._id !== id
