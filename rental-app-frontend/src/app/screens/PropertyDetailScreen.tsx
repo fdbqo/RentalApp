@@ -286,7 +286,7 @@ const UniversitySection = ({ university }: { university: Property["nearestUniver
         </H2>
       </XStack>
       <Separator marginBottom="$2" />
-      {university ? (
+      {university.length > 0 ? (
         <YStack space="$2">
           <Paragraph size="$5" fontWeight="bold" color={rentalAppTheme.textDark}>
             {university[0].name}
