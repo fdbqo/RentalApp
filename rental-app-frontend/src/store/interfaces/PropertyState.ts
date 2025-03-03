@@ -1,4 +1,4 @@
-import { Property, Address, NearestUniversity, FilterState, Image } from "./Property";
+import { Property, Address, NearestUniversities, FilterState, Image } from "./Property";
 
 
 export interface PropertyState {

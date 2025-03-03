@@ -128,8 +128,8 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
                 {totalRooms === 1 ? " room" : " rooms"}
               </Text>
               <Text fontSize={14} color={rentalAppTheme.textLight}>
-                {item.nearestUniversity?.name} -{" "}
-                {item.nearestUniversity?.distance}
+                {item.nearestUniversities[0]?.name} -{" "}
+                {item.nearestUniversities[0]?.distance}
               </Text>
             </XStack>
           </XStack>

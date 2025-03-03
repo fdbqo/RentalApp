@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { FilterState } from '../Types/types'
+import { FilterState } from '../store/interfaces/Property'
 
 const initialFilters: FilterState = {
   searchQuery: '',

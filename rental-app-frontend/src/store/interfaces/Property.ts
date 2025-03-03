@@ -27,12 +27,14 @@ export interface Property {
   description: string;
   shortDescription: string;
   propertyType: string;
-  
+  singleBedrooms: number;
+  doubleBedrooms: number;
+  bathrooms: number;
   // distanceFromUniversity: number;
   nearestUniversities: NearestUniversities[];
   images: Image[];
   houseAddress: Address;
-  nearestUniversity?: NearestUniversity;
+  nearestUniversity?: NearestUniversities;
   lenderId: string;
   lastUpdated?: string;
 }

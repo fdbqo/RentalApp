@@ -262,7 +262,7 @@ export default function EditPropertyScreen() {
         },
         images: property.images
           ? property.images.map((img, index) => ({
-              id: img.id || `${img.uri}-${index}`,
+              id: img._id || `${img.uri}-${index}`,
               uri: img.uri,
             }))
           : [],
@@ -404,7 +404,7 @@ export default function EditPropertyScreen() {
         singleBedrooms: Number(formData.singleBedrooms),
         doubleBedrooms: Number(formData.doubleBedrooms),
         bathrooms: Number(formData.bathrooms),
-        availability: formData.availability,
+        availability: formData.availability as "immediately" | "available_from",
         availableFrom: formData.availableFrom,
         houseAddress: {
           addressLine1: formData.houseAddress.addressLine1,

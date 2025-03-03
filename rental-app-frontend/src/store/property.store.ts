@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
-import { Property, NearestUniversity } from "./interfaces/Property";
+import { Property, NearestUniversities } from "./interfaces/Property";
 import { PropertyState } from "./interfaces/PropertyState";
 import { useUserStore } from "./user.store";
 import { env } from "../../env";
@@ -22,7 +22,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     singleBedrooms: null,
     doubleBedrooms: null,
     bathrooms: null,
-    nearestUniversity: null,
+    nearestUniversities: null,
     images: [],
     houseAddress: {
       addressLine1: "",
@@ -156,7 +156,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         doubleBedrooms: formData.doubleBedrooms ?? 0,
         lenderId: userId,
         lastUpdated: new Date().toISOString(),
-        nearestUniversity: formData.nearestUniversity ?? null,
+        nearestUniversities: formData.nearestUniversities ?? null,
         images: uploadedImages,
       };
 
@@ -198,7 +198,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
           county: "",
           eircode: "",
         },
-        nearestUniversity: null,
+        nearestUniversities: null,
       },
     });
   },
@@ -270,9 +270,9 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       formData: { ...state.formData, bathrooms },
     })),
 
-  setNearestUniversity: (nearestUniversity: NearestUniversity | null) =>
+  setNearestUniversities: (nearestUniversities: NearestUniversities | null) =>
     set((state) => ({
-      formData: { ...state.formData, nearestUniversity },
+      formData: { ...state.formData, nearestUniversities },
     })),
 
   setImages: (images) =>

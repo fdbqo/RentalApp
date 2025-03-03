@@ -179,7 +179,7 @@ export default function PropertyDetailScreen() {
                   const chatStore = useChatStore.getState();
                   const room = await chatStore.createRoom(
                     selectedProperty.lenderId,
-                    selectedProperty._id
+                    selectedProperty._id || ""
                   );
                   
                   router.push({
