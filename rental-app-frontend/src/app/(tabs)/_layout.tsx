@@ -29,20 +29,28 @@ export default function TabLayout() {
     </View>
   );
 
-  const handleUnauthenticatedRedirect = (tabName: string) => {
-    if (!isAuthenticated && tabName !== "index") {
-      router.replace("/screens/LoginScreen");
-    }
-  };
+  // If user is not authenticated, we'll just render a single screen without tabs
+  if (!isAuthenticated) {
+    return (
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: { display: 'none' } // Hide the tab bar completely
+        }}
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Home",
+          }}
+        />
+      </Tabs>
+    );
+  }
 
+  // For authenticated users, show all tabs
   return (
     <Tabs
-      screenListeners={{
-        state: (e) => {
-          const currentTab = e.data.state.routes[e.data.state.index]?.name;
-          handleUnauthenticatedRedirect(currentTab);
-        },
-      }}
       screenOptions={{
         tabBarActiveTintColor: tintColor,
         tabBarShowLabel: false,
