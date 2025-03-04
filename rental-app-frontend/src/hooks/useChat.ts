@@ -6,6 +6,8 @@ import { useUserStore } from "../store/user.store";
 import { debounce } from "lodash";
 import { env } from "../../env";
 
+const API_URL = env.EXPO_PUBLIC_API_URL;
+
 export const useChat = (roomId?: string) => {
   const {
     messages,
@@ -32,7 +34,7 @@ export const useChat = (roomId?: string) => {
       try {
         setLoading(true);
         const response = await fetch(
-          `${env.EXPO_PUBLIC_API_URL}/rooms/${roomId}/chats`,
+          `${API_URL}/rooms/${roomId}/chats`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -57,7 +59,7 @@ export const useChat = (roomId?: string) => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${env.EXPO_PUBLIC_API_URL}/rooms`, {
+      const response = await fetch(`${API_URL}/rooms`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

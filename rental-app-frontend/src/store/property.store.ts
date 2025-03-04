@@ -5,6 +5,8 @@ import { PropertyState } from "./interfaces/PropertyState";
 import { useUserStore } from "./user.store";
 import { env } from "../../env";
 
+const API_URL = env.EXPO_PUBLIC_API_URL;
+
 export const usePropertyStore = create<PropertyState>((set, get) => ({
   properties: [],
   selectedProperty: null,
@@ -52,7 +54,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       const token = useUserStore.getState().token;
 
       // Upload to S3 through backend
-      const response = await axios.post(`${env.EXPO_PUBLIC_API_URL}/upload?folder=properties`, formData, {
+      const response = await axios.post(`${API_URL}/upload?folder=properties`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,
@@ -75,7 +77,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         Object.entries(filters).filter(([_, value]) => value !== undefined && value !== '')
       );
 
-      const response = await axios.get(`${env.EXPO_PUBLIC_API_URL}/listings`, {
+      const response = await axios.get(`${API_URL}/listings`, {
         params: cleanFilters,
       });
 
@@ -93,7 +95,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
             
             // Otherwise, get a signed URL from the backend
             try {
-              const signedUrlResponse = await axios.get(`${env.EXPO_PUBLIC_API_URL}/upload/${encodeURIComponent(img.uri)}`);
+              const signedUrlResponse = await axios.get(`${API_URL}/upload/${encodeURIComponent(img.uri)}`);
               return { ...img, uri: signedUrlResponse.data.url };
             } catch (error) {
               console.error('Error getting signed URL:', error);
@@ -127,7 +129,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     }
   
     try {
-      const response = await axios.get(`${env.EXPO_PUBLIC_API_URL}/listings`, {
+      const response = await axios.get(`${API_URL}/listings`, {
         params: { lenderId: userId },
       });
 
@@ -145,7 +147,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
             
             // Otherwise, get a signed URL from the backend
             try {
-              const signedUrlResponse = await axios.get(`${env.EXPO_PUBLIC_API_URL}/upload/${encodeURIComponent(img.uri)}`);
+              const signedUrlResponse = await axios.get(`${API_URL}/upload/${encodeURIComponent(img.uri)}`);
               return { ...img, uri: signedUrlResponse.data.url };
             } catch (error) {
               console.error('Error getting signed URL:', error);
@@ -214,7 +216,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         images: uploadedImages,
       };
 
-      const response = await axios.post(`${env.EXPO_PUBLIC_API_URL}/listings`, propertyData);
+      const response = await axios.post(`${API_URL}/listings`, propertyData);
 
       await get().fetchLandlordProperties();
       get().resetForm();
@@ -260,7 +262,14 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
   fetchPropertyById: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.get(`${env.EXPO_PUBLIC_API_URL}/listings/${id}`);
+      // First check if we already have this property in our properties array
+      const existingProperty = get().properties.find(p => p._id === id);
+      if (existingProperty) {
+        set({ selectedProperty: existingProperty, isLoading: false });
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/listings/${id}`);
       
       // Process images to ensure they have valid URLs
       const property = response.data;
@@ -274,7 +283,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
           
           // Otherwise, get a signed URL from the backend
           try {
-            const signedUrlResponse = await axios.get(`${env.EXPO_PUBLIC_API_URL}/upload/${encodeURIComponent(img.uri)}`);
+            const signedUrlResponse = await axios.get(`${API_URL}/upload/${encodeURIComponent(img.uri)}`);
             return { ...img, uri: signedUrlResponse.data.url };
           } catch (error) {
             console.error('Error getting signed URL:', error);
@@ -285,12 +294,16 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         property.images = processedImages;
       }
       
-      set({ selectedProperty: property, isLoading: false });
+      // Update both selectedProperty and add to properties array for caching
+      set(state => ({
+        selectedProperty: property,
+        properties: [...state.properties.filter(p => p._id !== id), property],
+        isLoading: false
+      }));
     } catch (error) {
       console.error('Error fetching property by ID:', error);
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to fetch property",
+        error: error instanceof Error ? error.message : "Failed to fetch property",
         isLoading: false,
       });
     }
@@ -400,7 +413,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
           
           // Otherwise, get a signed URL from the backend
           try {
-            const signedUrlResponse = await axios.get(`${env.EXPO_PUBLIC_API_URL}/upload/${encodeURIComponent(img.uri)}`);
+            const signedUrlResponse = await axios.get(`${API_URL}/upload/${encodeURIComponent(img.uri)}`);
             return { ...img, uri: signedUrlResponse.data.url };
           } catch (error) {
             console.error('Error getting signed URL during update:', error);
@@ -412,7 +425,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       }
 
       const response = await axios.put(
-        `${env.EXPO_PUBLIC_API_URL}/listings/${id}`,
+        `${API_URL}/listings/${id}`,
         propertyData
       );
 
@@ -425,7 +438,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
           }
           
           try {
-            const signedUrlResponse = await axios.get(`${env.EXPO_PUBLIC_API_URL}/upload/${encodeURIComponent(img.uri)}`);
+            const signedUrlResponse = await axios.get(`${API_URL}/upload/${encodeURIComponent(img.uri)}`);
             return { ...img, uri: signedUrlResponse.data.url };
           } catch (error) {
             console.error('Error getting signed URL for updated property:', error);
@@ -463,7 +476,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      await axios.delete(`${env.EXPO_PUBLIC_API_URL}/listings/${id}`);
+      await axios.delete(`${API_URL}/listings/${id}`);
 
       const updatedProperties = get().properties.filter(
         (prop) => prop._id !== id

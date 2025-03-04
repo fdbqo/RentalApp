@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView, useWindowDimensions, Alert } from "react-native";
+import { ScrollView, useWindowDimensions, Alert, Image } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import {
   Theme,
@@ -42,13 +42,24 @@ export default function PropertyDetailScreen() {
 
   const { selectedProperty, isLoading, error, fetchPropertyById } = usePropertyStore()
 
+  // Preload all images when property is loaded
+  useEffect(() => {
+    if (selectedProperty?.images && selectedProperty.images.length > 0) {
+      selectedProperty.images.forEach(image => {
+        if (image.uri) {
+          Image.prefetch(image.uri).catch(err => 
+            console.error('Error prefetching image:', err)
+          );
+        }
+      });
+    }
+  }, [selectedProperty]);
+
   useEffect(() => {
     if (params.id) {
       fetchPropertyById(params.id)
     }
   }, [params.id, fetchPropertyById])
-
-  const nearestUniversities = selectedProperty?.nearestUniversities[0]
 
   const capitaliseFirstLetter = (str: string) => {
     return str ? str.charAt(0).toUpperCase() + str.slice(1) : ""
@@ -105,7 +116,8 @@ export default function PropertyDetailScreen() {
             source={{ 
               uri: images[activeIndex]?.uri 
                 ? images[activeIndex].uri 
-                : 'https://via.placeholder.com/800x600?text=No+Image'
+                : 'https://via.placeholder.com/800x600?text=No+Image',
+              cache: 'force-cache'
             }}
             width="100%"
             height="100%"
@@ -115,6 +127,22 @@ export default function PropertyDetailScreen() {
               console.error('Image loading error in carousel:', e.nativeEvent);
             }}
           />
+          {/* Preload next and previous images */}
+          {images.map((image, index) => (
+            index !== activeIndex && (
+              <TamaguiImage
+                key={`preload-${index}`}
+                source={{
+                  uri: image.uri,
+                  cache: 'force-cache'
+                }}
+                width={0}
+                height={0}
+                opacity={0}
+                position="absolute"
+              />
+            )
+          ))}
           {images.length > 1 && (
             <>
               <XStack position="absolute" bottom="$2" left="$2" right="$2" justifyContent="space-between">
@@ -122,14 +150,20 @@ export default function PropertyDetailScreen() {
                   icon={ChevronLeft}
                   circular
                   size="$3"
-                  onPress={() => setActiveIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1))}
+                  onPress={() => {
+                    const newIndex = activeIndex > 0 ? activeIndex - 1 : images.length - 1;
+                    setActiveIndex(newIndex);
+                  }}
                   backgroundColor="rgba(255,255,255,0.7)"
                 />
                 <Button
                   icon={ChevronRight}
                   circular
                   size="$3"
-                  onPress={() => setActiveIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0))}
+                  onPress={() => {
+                    const newIndex = activeIndex < images.length - 1 ? activeIndex + 1 : 0;
+                    setActiveIndex(newIndex);
+                  }}
                   backgroundColor="rgba(255,255,255,0.7)"
                 />
               </XStack>
@@ -297,8 +331,8 @@ const UniversitySection = ({ university }: { university: Property["nearestUniver
             {university[0].name}
           </Paragraph>
           <XStack space="$4">
-            <Paragraph color="$gray11">{formatDistance(university[0].distance)} away</Paragraph>
-            <Paragraph color="$gray11">{university[0].avgTimeByCar} min by car</Paragraph>
+            <Paragraph color="$gray11">{formatDistance(university[0].distance || 0)} away</Paragraph>
+            <Paragraph color="$gray11">{university[0].avgTimeByCar || 0} min by car</Paragraph>
           </XStack>
         </YStack>
       ) : (

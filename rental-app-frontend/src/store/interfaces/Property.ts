@@ -30,7 +30,6 @@ export interface Property {
   singleBedrooms: number;
   doubleBedrooms: number;
   bathrooms: number;
-  // distanceFromUniversity: number;
   nearestUniversities: NearestUniversities[];
   images: Image[];
   houseAddress: Address;

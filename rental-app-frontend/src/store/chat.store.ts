@@ -4,6 +4,8 @@ import { Room } from "./interfaces/Room";
 import { useUserStore } from "./user.store";
 import { env } from "../../env";
 
+const API_URL = env.EXPO_PUBLIC_API_URL;
+
 interface ChatStore extends Chat {
   // Message actions
   setMessages: (messages: Message[]) => void;
@@ -85,7 +87,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       if (!token || !currentUser) {
         throw new Error("User not authenticated");
       }
-      const roomsResponse = await fetch(`${env.EXPO_PUBLIC_API_URL}/rooms`, {
+      const roomsResponse = await fetch(`${API_URL}/rooms`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -108,7 +110,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         name: `Property Chat ${propertyId}`,
       };
 
-      const response = await fetch(`${env.EXPO_PUBLIC_API_URL}/rooms`, {
+      const response = await fetch(`${API_URL}/rooms`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
