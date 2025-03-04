@@ -56,8 +56,7 @@ export default function PropertyCard({ item, onPress }: PropertyCardProps) {
     <Card
       elevate
       bordered={false}
-      marginHorizontal="$2"
-      marginVertical="$2"
+      marginVertical="$1.5"
       onPress={onPress}
       backgroundColor="$gray1"
       borderRadius="$6"

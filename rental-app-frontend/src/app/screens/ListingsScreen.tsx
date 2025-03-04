@@ -101,7 +101,7 @@ export default function ListingsScreen() {
         data={properties} 
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ gap: 16, padding: 16 }}
+        contentContainerStyle={{ gap: 16, padding: 12 }}
         numColumns={getNumColumns}
       />
     );
