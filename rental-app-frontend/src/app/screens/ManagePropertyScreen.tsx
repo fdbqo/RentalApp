@@ -101,7 +101,10 @@ export default function ManagePropertyScreen() {
                     {property.images.map((image, index) => (
                       <Image
                         key={`${image.uri}-${index}`}
-                        source={{ uri: image.uri }}
+                        source={{ 
+                          uri: image.uri,
+                          cache: 'force-cache'
+                        }}
                         style={{
                           width: 200,
                           height: 150,

@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect } from "react";
-import { FlatList, useWindowDimensions, Platform } from "react-native";
+import { FlatList, useWindowDimensions, Platform, Image } from "react-native";
 import { YStack, XStack, Text, Button, Theme, ScrollView } from "tamagui";
 import { Bell } from "@tamagui/lucide-icons";
 import { Feather } from "@expo/vector-icons";
@@ -25,6 +25,22 @@ export default function ListingsScreen() {
     fetchProperties(filters);
   }, [filters]);
 
+  useEffect(() => {
+    // Prefetch images when properties are loaded
+    if (properties.length > 0) {
+      properties.forEach(property => {
+        if (property.images && property.images.length > 0) {
+          const imageUri = property.images[0].uri;
+          if (imageUri) {
+            Image.prefetch(imageUri).catch(err => 
+              console.error('Error prefetching image:', err)
+            );
+          }
+        }
+      });
+    }
+  }, [properties]);
+
   const getNumColumns = useMemo(() => {
     if (!isWeb) return 1;
     if (width >= 1400) return 4;
@@ -38,36 +54,39 @@ export default function ListingsScreen() {
     return `calc(50% - 16px)`;
   }, [isWeb, width]);
 
- 
+  const renderItem = useMemo(() => 
+    ({ item }: { item: Property }) => {
+      const roomsAvailable = (item.singleBedrooms ?? 0) + (item.doubleBedrooms ?? 0);
+      return (
+        <PropertyCard
+          item={item}
+          onPress={() =>
+            router.push({
+              pathname: "/screens/PropertyDetailScreen",
+              params: {
+                id: item._id,
+                shortDescription: item.shortDescription ?? '',
+                price: item.price?.toString() ?? '',
+                images: JSON.stringify(item.images) ?? '[]',
+                availability: item.availability ?? '',
+                description: item.description ?? '',
+                propertyType: item.propertyType ?? '',
+                roomsAvailable: roomsAvailable.toString(),
+                bathrooms: item.bathrooms?.toString() ?? '',
+                nearestUniversities: JSON.stringify(item.nearestUniversities ?? {}), 
+                houseAddress: JSON.stringify(item.houseAddress) ?? '{}',
+                lenderId: item.lenderId ?? '',
+              },
+            })
+          }
+        />
+      );
+    }, [router]);
 
-  const renderItem = ({ item }: { item: Property }) => {
-    const roomsAvailable = (item.singleBedrooms ?? 0) + (item.doubleBedrooms ?? 0);
-    return (
-      <PropertyCard
-        item={item}
-        onPress={() =>
-          router.push({
-            pathname: "/screens/PropertyDetailScreen",
-            params: {
-              id: item._id,
-              shortDescription: item.shortDescription ?? '',
-              price: item.price?.toString() ?? '',
-              images: JSON.stringify(item.images) ?? '[]',
-              availability: item.availability ?? '',
-              description: item.description ?? '',
-              propertyType: item.propertyType ?? '',
-              roomsAvailable: roomsAvailable.toString(),
-              bathrooms: item.bathrooms?.toString() ?? '',
-              // distanceFromUniversity: item.distanceFromUniversity?.toString() ?? '',
-              nearestUniversities: JSON.stringify(item.nearestUniversities ?? {}), 
-              houseAddress: JSON.stringify(item.houseAddress) ?? '{}',
-              lenderId: item.lenderId ?? '',
-            },
-          })
-        }
-      />
-    );
-  };
+  const keyExtractor = useMemo(() => 
+    (item: Property) => item._id || Math.random().toString(),
+    []
+  );
 
   const PropertyList = useMemo(() => {
     if (isLoading) {
@@ -98,14 +117,19 @@ export default function ListingsScreen() {
 
     return (
       <FlatList
-        data={properties} 
+        data={properties}
         renderItem={renderItem}
+        keyExtractor={keyExtractor}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ gap: 16, padding: 12 }}
         numColumns={getNumColumns}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
+        initialNumToRender={5}
       />
     );
-  }, [isLoading, error, properties, isWeb, getCardWidth, getNumColumns]);
+  }, [isLoading, error, properties, isWeb, getCardWidth, getNumColumns, renderItem, keyExtractor]);
 
   return (
     <Theme name="light">

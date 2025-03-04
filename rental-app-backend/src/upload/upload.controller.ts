@@ -14,7 +14,6 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
 import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
 
 @Controller('upload')
 @UseGuards(AuthGuard('jwt'))
@@ -24,14 +23,14 @@ export class UploadController {
   @Post()
   @UseInterceptors(FileInterceptor('file', {
     limits: {
-      fileSize: 5 * 1024 * 1024, // 5MB limit
+      fileSize: 10 * 1024 * 1024, // 10MB limit
     }
   }))
   async uploadFile(
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB limit
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB limit
         ],
       }),
     ) file: Express.Multer.File,
@@ -42,8 +41,8 @@ export class UploadController {
     return { key, url };
   }
 
-  @Get(':key(*)')
-  async getSignedUrl(@Param('key') key: string) {
+  @Get('*path')
+  async getSignedUrl(@Param('path') key: string) {
     try {
       console.log('Getting signed URL for key:', key);
       const decodedKey = decodeURIComponent(key);
