@@ -183,7 +183,7 @@ export default function LoginScreen() {
                 <Button
                   onPress={handleLogin}
                   backgroundColor={rentalAppTheme.primaryDark}
-                  pressStyle={{ backgroundColor: rentalAppTheme.primaryLight }}
+                  pressStyle={{ backgroundColor: rentalAppTheme.primaryDarkPressed }}
                   borderRadius="$4"
                   width="100%"
                   disabled={loading}

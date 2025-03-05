@@ -722,7 +722,7 @@ export default function RegisterScreen() {
                     onPress={handleRegister}
                     backgroundColor={rentalAppTheme.primaryDark}
                     pressStyle={{
-                      backgroundColor: rentalAppTheme.primaryLight,
+                      backgroundColor: rentalAppTheme.primaryDarkPressed,
                     }}
                     borderRadius="$4"
                     width="100%"

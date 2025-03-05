@@ -127,10 +127,10 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
                 {item.propertyType} • {totalRooms}
                 {totalRooms === 1 ? " room" : " rooms"}
               </Text>
-              <Text fontSize={14} color={rentalAppTheme.textDark}>
+              {/* <Text fontSize={14} color={rentalAppTheme.textDark}>
                 {item.nearestUniversities?.length > 0 ? `${item.nearestUniversities[0].name} - ` : 'No nearby universities'}
                 {item.nearestUniversities?.length > 0 && item.nearestUniversities[0].distance}
-              </Text>
+              </Text> */}
             </XStack>
           </XStack>
 

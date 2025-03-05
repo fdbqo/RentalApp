@@ -23,7 +23,9 @@ import { rentalAppTheme } from "@/constants/Colors";
 import NavigationHeader from "@/components/NavigationHeader";
 import * as ImagePicker from "expo-image-picker";
 import { ChevronDown, Check } from "@tamagui/lucide-icons";
-import { KeyboardTypeOptions } from "react-native";
+import { KeyboardTypeOptions, Alert } from "react-native";
+import { countiesToCities } from "@/constants/irishPlaces";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 type PageInputProps = {
   label: string;
@@ -116,102 +118,17 @@ const propertyTypes = [
   { type: "Shared living" },
 ];
 
-const availabilityOptions = [{ type: "Available" }, { type: "Not available" }];
-
-const countiesToCities: { [key: string]: string[] } = {
-  Carlow: ["Carlow Town", "Tullow", "Muine Bheag", "Hacketstown"],
-  Cavan: ["Cavan Town", "Ballyjamesduff", "Virginia", "Bailieborough"],
-  Clare: ["Ennis", "Shannon", "Kilrush", "Killaloe", "Lisdoonvarna"],
-  Cork: [
-    "Cork City",
-    "Mallow",
-    "Kinsale",
-    "Midleton",
-    "Clonakilty",
-    "Bantry",
-    "Youghal",
-    "Bandon",
-    "Skibbereen",
-  ],
-  Donegal: [
-    "Letterkenny",
-    "Donegal Town",
-    "Buncrana",
-    "Ballybofey",
-    "Bundoran",
-    "Dunfanaghy",
-    "Killybegs",
-  ],
-  Dublin: ["Dublin City", "Swords", "Drogheda", "Tallaght", "Blanchardstown"],
-  Galway: [
-    "Galway City",
-    "Salthill",
-    "Tuam",
-    "Loughrea",
-    "Ballinasloe",
-    "Clifden",
-    "Oranmore",
-  ],
-  Kerry: [
-    "Tralee",
-    "Killarney",
-    "Listowel",
-    "Dingle",
-    "Killorglin",
-    "Kenmare",
-    "Cahersiveen",
-  ],
-  Kildare: [
-    "Naas",
-    "Newbridge",
-    "Kildare Town",
-    "Maynooth",
-    "Celbridge",
-    "Leixlip",
-  ],
-  Kilkenny: ["Kilkenny City", "Thomastown", "Callan", "Castlecomer"],
-  Laois: ["Portlaoise", "Mountmellick", "Abbeyleix", "Mountrath"],
-  Leitrim: ["Carrick-on-Shannon", "Manorhamilton", "Drumshanbo", "Ballinamore"],
-  Limerick: [
-    "Limerick City",
-    "Adare",
-    "Newcastle West",
-    "Kilmallock",
-    "Rathkeale",
-  ],
-  Longford: ["Longford Town", "Granard", "Edgeworthstown", "Ballymahon"],
-  Louth: ["Drogheda", "Dundalk", "Ardee", "Carlingford"],
-  Mayo: ["Castlebar", "Westport", "Ballina", "Claremorris", "Belmullet"],
-  Meath: ["Navan", "Kells", "Trim", "Ashbourne", "Ratoath", "Dunshaughlin"],
-  Monaghan: ["Monaghan Town", "Carrickmacross", "Castleblayney", "Clones"],
-  Offaly: ["Tullamore", "Birr", "Edenderry", "Clara", "Banagher"],
-  Roscommon: ["Roscommon Town", "Boyle", "Castlerea", "Ballaghaderreen"],
-  Sligo: ["Sligo Town", "Tubbercurry", "Ballymote", "Enniscrone"],
-  Tipperary: [
-    "Clonmel",
-    "Nenagh",
-    "Thurles",
-    "Cashel",
-    "Tipperary Town",
-    "Carrick-on-Suir",
-  ],
-  Waterford: ["Waterford City", "Dungarvan", "Tramore", "Lismore", "Portlaw"],
-  Westmeath: ["Mullingar", "Athlone", "Kinnegad", "Moate"],
-  Wexford: ["Wexford Town", "Gorey", "New Ross", "Enniscorthy", "Bunclody"],
-  Wicklow: ["Wicklow Town", "Arklow", "Bray", "Greystones", "Blessington"],
-  Antrim: ["Belfast", "Lisburn", "Carrickfergus", "Ballymena", "Antrim Town"],
-  Armagh: ["Armagh City", "Portadown", "Craigavon", "Lurgan"],
-  "Derry (Londonderry)": ["Derry", "Coleraine", "Limavady", "Magherafelt"],
-  Down: ["Newry", "Belfast", "Bangor", "Downpatrick", "Holywood"],
-  Fermanagh: ["Enniskillen", "Lisnaskea", "Irvinestown"],
-  Tyrone: ["Omagh", "Dungannon", "Cookstown", "Strabane"],
-};
+const availabilityOptions = [
+  { type: "Available Immediately", value: "immediately" },
+  { type: "Available From", value: "available_from" },
+];
 
 export default function EditPropertyScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { properties, updateProperty } = usePropertyStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const property = properties.find((p) => p._id === id);
 
@@ -223,8 +140,8 @@ export default function EditPropertyScreen() {
     singleBedrooms: "",
     doubleBedrooms: "",
     bathrooms: "",
-    availability: "",
-    availableFrom: "",
+    availability: "immediately",
+    availableFrom: undefined as string | undefined,
     houseAddress: {
       addressLine1: "",
       addressLine2: "",
@@ -243,7 +160,9 @@ export default function EditPropertyScreen() {
         shortDescription: property.shortDescription || "",
         description: property.description || "",
         price: property.price ? property.price.toString() : "",
-        propertyType: property.propertyType || "",
+        propertyType: property.propertyType
+          ? property.propertyType.toLowerCase()
+          : "",
         singleBedrooms: property.singleBedrooms
           ? property.singleBedrooms.toString()
           : "",
@@ -251,8 +170,8 @@ export default function EditPropertyScreen() {
           ? property.doubleBedrooms.toString()
           : "",
         bathrooms: property.bathrooms ? property.bathrooms.toString() : "",
-        availability: property.availability || "",
-        availableFrom: property.availableFrom || "",
+        availability: property.availability || "immediately",
+        availableFrom: property.availableFrom || undefined,
         houseAddress: {
           addressLine1: property.houseAddress.addressLine1 || "",
           addressLine2: property.houseAddress.addressLine2 || "",
@@ -287,6 +206,78 @@ export default function EditPropertyScreen() {
     }));
   }, []);
 
+  const handlePriceChange = useCallback(
+    (text: string) => {
+      updateFormData("price", text);
+      setErrors((prev) => ({ ...prev, price: "" }));
+    },
+    [updateFormData]
+  );
+
+  const handleSingleBedroomsChange = useCallback(
+    (text: string) => {
+      updateFormData("singleBedrooms", text);
+      setErrors((prev) => ({
+        ...prev,
+        singleBedrooms: "",
+        bedrooms: "",
+      }));
+    },
+    [updateFormData]
+  );
+
+  const handleDoubleBedroomsChange = useCallback(
+    (text: string) => {
+      updateFormData("doubleBedrooms", text);
+      setErrors((prev) => ({
+        ...prev,
+        doubleBedrooms: "",
+        bedrooms: "",
+      }));
+    },
+    [updateFormData]
+  );
+
+  const handleBathroomsChange = useCallback(
+    (text: string) => {
+      updateFormData("bathrooms", text);
+      setErrors((prev) => ({ ...prev, bathrooms: "" }));
+    },
+    [updateFormData]
+  );
+
+  const handleAddressLine1Change = useCallback(
+    (text: string) => {
+      updateAddress("addressLine1", text);
+      setErrors((prev) => ({ ...prev, addressLine1: "" }));
+    },
+    [updateAddress]
+  );
+
+  const handleAddressLine2Change = useCallback(
+    (text: string) => {
+      updateAddress("addressLine2", text);
+    },
+    [updateAddress]
+  );
+
+  const handleCountyChange = useCallback(
+    (value: string) => {
+      updateAddress("county", value);
+      updateAddress("townCity", "");
+      setErrors((prev) => ({ ...prev, county: "" }));
+    },
+    [updateAddress]
+  );
+
+  const handleEircodeChange = useCallback(
+    (text: string) => {
+      updateAddress("eircode", text);
+      setErrors((prev) => ({ ...prev, eircode: "" }));
+    },
+    [updateAddress]
+  );
+
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
@@ -302,12 +293,40 @@ export default function EditPropertyScreen() {
       newErrors.availability = "Please select availability";
     }
 
+    if (formData.availability === "available_from") {
+      if (!formData.availableFrom) {
+        newErrors.availableFrom = "Please select an availability date";
+      } else {
+        const selectedDate = new Date(formData.availableFrom);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate < today) {
+          newErrors.availableFrom = "Availability date cannot be in the past";
+        }
+      }
+    }
+
+    if (!formData.singleBedrooms && !formData.doubleBedrooms) {
+      newErrors.bedrooms = "Please enter at least one bedroom.";
+    }
+
+    if (formData.singleBedrooms && isNaN(Number(formData.singleBedrooms))) {
+      newErrors.singleBedrooms =
+        "Please enter a valid number of single bedrooms.";
+    }
+
+    if (formData.doubleBedrooms && isNaN(Number(formData.doubleBedrooms))) {
+      newErrors.doubleBedrooms =
+        "Please enter a valid number of double bedrooms.";
+    }
+
     if (!formData.bathrooms || isNaN(Number(formData.bathrooms))) {
       newErrors.bathrooms = "Please enter number of bathrooms";
     }
 
-    if (!formData.shortDescription) {
-      newErrors.shortDescription = "Please enter a brief overview";
+    if (!formData.shortDescription || formData.shortDescription.length > 20) {
+      newErrors.shortDescription =
+        "Brief overview must be 20 characters or less";
     }
 
     if (!formData.description) {
@@ -316,18 +335,6 @@ export default function EditPropertyScreen() {
 
     if (formData.images.length === 0) {
       newErrors.images = "Please add at least one photo";
-    }
-
-    if (!formData.singleBedrooms || isNaN(Number(formData.singleBedrooms))) {
-      newErrors.singleBedrooms = "Please enter number of single bedrooms";
-    }
-
-    if (!formData.doubleBedrooms || isNaN(Number(formData.doubleBedrooms))) {
-      newErrors.doubleBedrooms = "Please enter number of double bedrooms";
-    }
-
-    if (formData.availability === "available_from" && !formData.availableFrom) {
-      newErrors.availableFrom = "Please select an availability date";
     }
 
     if (!formData.houseAddress.addressLine1) {
@@ -342,12 +349,15 @@ export default function EditPropertyScreen() {
       newErrors.townCity = "Please select a city";
     }
 
-    if (!formData.houseAddress.eircode) {
-      newErrors.eircode = "Please enter an eircode";
+    const eircodeRegex = /^[AC-FHKNPRTV-Y]\d{2}\s?[AC-FHKNPRTV-Y0-9]{4}$/i;
+    if (
+      !formData.houseAddress.eircode ||
+      !eircodeRegex.test(formData.houseAddress.eircode)
+    ) {
+      newErrors.eircode = "Please enter a valid Irish Eircode";
     }
 
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
@@ -396,13 +406,13 @@ export default function EditPropertyScreen() {
     try {
       setIsSubmitting(true);
 
-      const updatedProperty: Partial<Property> = {
+      const updatedProperty = {
         shortDescription: formData.shortDescription,
         description: formData.description,
         price: Number(formData.price),
         propertyType: formData.propertyType,
-        singleBedrooms: Number(formData.singleBedrooms),
-        doubleBedrooms: Number(formData.doubleBedrooms),
+        singleBedrooms: Number(formData.singleBedrooms) || 0,
+        doubleBedrooms: Number(formData.doubleBedrooms) || 0,
         bathrooms: Number(formData.bathrooms),
         availability: formData.availability as "immediately" | "available_from",
         availableFrom: formData.availableFrom,
@@ -419,8 +429,13 @@ export default function EditPropertyScreen() {
 
       await updateProperty(id as string, updatedProperty);
       router.back();
-    } catch (error) {
-      console.error("Failed to update property:", error);
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        Alert.alert("Error", error.response.data.message);
+      } else {
+        console.error("Failed to update property:", error);
+        Alert.alert("Error", "Failed to update property. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -445,26 +460,26 @@ export default function EditPropertyScreen() {
                 <PageInput
                   label="Price per Month (€)"
                   value={formData.price}
-                  onChangeText={(text) => updateFormData("price", text)}
+                  onChangeText={handlePriceChange}
                   placeholder="Enter price"
                   keyboardType="numeric"
                   error={errors.price}
                 />
 
-                <YStack marginBottom="$4">
+                <YStack space="$1.5" marginBottom="$4">
                   <Text
                     fontSize="$4"
                     fontWeight="500"
                     color={rentalAppTheme.text.secondary}
-                    marginBottom="$2"
                   >
                     Property Type
                   </Text>
                   <Select
                     value={formData.propertyType}
-                    onValueChange={(value) =>
-                      updateFormData("propertyType", value.toLowerCase())
-                    }
+                    onValueChange={(value) => {
+                      updateFormData("propertyType", value);
+                      setErrors((prev) => ({ ...prev, propertyType: "" }));
+                    }}
                     disablePreventBodyScroll
                   >
                     <Select.Trigger
@@ -479,7 +494,15 @@ export default function EditPropertyScreen() {
                       padding="$3"
                       iconAfter={ChevronDown}
                     >
-                      <Select.Value placeholder="Select property type" />
+                      <Select.Value>
+                        {formData.propertyType
+                          ? propertyTypes.find(
+                              (type) =>
+                                type.type.toLowerCase() ===
+                                formData.propertyType
+                            )?.type || "Select property type"
+                          : "Select property type"}
+                      </Select.Value>
                     </Select.Trigger>
                     <Adapt when="sm" platform="touch">
                       <Sheet
@@ -529,20 +552,29 @@ export default function EditPropertyScreen() {
                   )}
                 </YStack>
 
-                <YStack marginBottom="$4">
+                <YStack space="$1.5" marginBottom="$4">
                   <Text
                     fontSize="$4"
                     fontWeight="500"
                     color={rentalAppTheme.text.secondary}
-                    marginBottom="$2"
                   >
                     Availability
                   </Text>
                   <Select
                     value={formData.availability}
-                    onValueChange={(value) =>
-                      updateFormData("availability", value)
-                    }
+                    onValueChange={(value) => {
+                      updateFormData("availability", value);
+                      setErrors((prev) => ({
+                        ...prev,
+                        availability: "",
+                        availableFrom: "",
+                      }));
+                      if (value === "available_from") {
+                        setShowDatePicker(true);
+                      } else if (value === "immediately") {
+                        updateFormData("availableFrom", "immediately");
+                      }
+                    }}
                     disablePreventBodyScroll
                   >
                     <Select.Trigger
@@ -587,8 +619,8 @@ export default function EditPropertyScreen() {
                           {availabilityOptions.map((item, i) => (
                             <Select.Item
                               index={i}
-                              key={item.type}
-                              value={item.type.toLowerCase()}
+                              key={item.value}
+                              value={item.value}
                             >
                               <Select.ItemText>{item.type}</Select.ItemText>
                               <Select.ItemIndicator marginLeft="auto">
@@ -607,45 +639,92 @@ export default function EditPropertyScreen() {
                   )}
 
                   {formData.availability === "available_from" && (
-                    <PageInput
-                      label="Available From"
-                      value={formData.availableFrom}
-                      onChangeText={(text) =>
-                        updateFormData("availableFrom", text)
-                      }
-                      placeholder="Select date"
-                      keyboardType="default"
-                      error={errors.availableFrom}
-                    />
+                    <YStack space="$2" marginTop="$4">
+                      <Text
+                        fontSize="$4"
+                        fontWeight="500"
+                        color={rentalAppTheme.text.secondary}
+                        marginBottom="$2"
+                      >
+                        Available From
+                      </Text>
+                      <Button
+                        backgroundColor={rentalAppTheme.border}
+                        borderRadius="$4"
+                        padding="$3"
+                        onPress={() => setShowDatePicker(true)}
+                      >
+                        <Text
+                          color={
+                            formData.availableFrom &&
+                            formData.availableFrom !== "immediately"
+                              ? "black"
+                              : rentalAppTheme.text.secondary
+                          }
+                        >
+                          {formData.availableFrom &&
+                          formData.availableFrom !== "immediately"
+                            ? formData.availableFrom
+                            : "Select Date"}
+                        </Text>
+                      </Button>
+                      {showDatePicker && (
+                        <DateTimePicker
+                          value={
+                            formData.availableFrom &&
+                            formData.availableFrom !== "immediately"
+                              ? new Date(formData.availableFrom)
+                              : new Date()
+                          }
+                          mode="date"
+                          display="default"
+                          onChange={(event, selectedDate) => {
+                            setShowDatePicker(false);
+                            if (selectedDate) {
+                              const formattedDate = selectedDate
+                                .toISOString()
+                                .split("T")[0];
+                              updateFormData("availableFrom", formattedDate);
+                              setErrors((prev) => ({
+                                ...prev,
+                                availableFrom: "",
+                              }));
+                            }
+                          }}
+                          minimumDate={new Date()}
+                        />
+                      )}
+                      {errors.availableFrom && (
+                        <Text color={rentalAppTheme.error} fontSize="$2">
+                          {errors.availableFrom}
+                        </Text>
+                      )}
+                    </YStack>
                   )}
                 </YStack>
 
                 <PageInput
                   label="Single Bedrooms"
                   value={formData.singleBedrooms}
-                  onChangeText={(text) =>
-                    updateFormData("singleBedrooms", text)
-                  }
+                  onChangeText={handleSingleBedroomsChange}
                   placeholder="Enter number of single bedrooms"
                   keyboardType="numeric"
-                  error={errors.singleBedrooms}
+                  error={errors.singleBedrooms || errors.bedrooms}
                 />
 
                 <PageInput
                   label="Double Bedrooms"
                   value={formData.doubleBedrooms}
-                  onChangeText={(text) =>
-                    updateFormData("doubleBedrooms", text)
-                  }
+                  onChangeText={handleDoubleBedroomsChange}
                   placeholder="Enter number of double bedrooms"
                   keyboardType="numeric"
-                  error={errors.doubleBedrooms}
+                  error={errors.doubleBedrooms || errors.bedrooms}
                 />
 
                 <PageInput
                   label="Bathrooms"
                   value={formData.bathrooms}
-                  onChangeText={(text) => updateFormData("bathrooms", text)}
+                  onChangeText={handleBathroomsChange}
                   placeholder="Enter number"
                   keyboardType="numeric"
                   error={errors.bathrooms}
@@ -759,14 +838,14 @@ export default function EditPropertyScreen() {
                 <PageInput
                   label="Address Line 1"
                   value={formData.houseAddress.addressLine1}
-                  onChangeText={(text) => updateAddress("addressLine1", text)}
+                  onChangeText={handleAddressLine1Change}
                   placeholder="Street address"
                   error={errors.addressLine1}
                 />
                 <PageInput
                   label="Address Line 2"
                   value={formData.houseAddress.addressLine2}
-                  onChangeText={(text) => updateAddress("addressLine2", text)}
+                  onChangeText={handleAddressLine2Change}
                   placeholder="Apartment, suite, etc. (optional)"
                 />
                 <XStack space="$4">
@@ -782,10 +861,7 @@ export default function EditPropertyScreen() {
                     </Text>
                     <Select
                       value={formData.houseAddress.county}
-                      onValueChange={(value) => {
-                        updateAddress("county", value);
-                        updateAddress("townCity", "");
-                      }}
+                      onValueChange={handleCountyChange}
                       disablePreventBodyScroll
                     >
                       <Select.Trigger
@@ -800,7 +876,9 @@ export default function EditPropertyScreen() {
                         padding="$3"
                         iconAfter={ChevronDown}
                       >
-                        <Select.Value placeholder="Select county" />
+                        <Select.Value>
+                          {formData.houseAddress.county || "Select county"}
+                        </Select.Value>
                       </Select.Trigger>
                       <Adapt when="sm" platform="touch">
                         <Sheet
@@ -945,7 +1023,7 @@ export default function EditPropertyScreen() {
                 <PageInput
                   label="Eircode"
                   value={formData.houseAddress.eircode}
-                  onChangeText={(text) => updateAddress("eircode", text)}
+                  onChangeText={handleEircodeChange}
                   placeholder="Enter eircode"
                   error={errors.eircode}
                 />
@@ -955,7 +1033,9 @@ export default function EditPropertyScreen() {
             {/* Submit Button */}
             <Button
               backgroundColor={rentalAppTheme.primaryDark}
-              pressStyle={{ backgroundColor: rentalAppTheme.primaryLight }}
+              pressStyle={{
+                backgroundColor: rentalAppTheme.primaryDarkPressed,
+              }}
               borderRadius="$4"
               onPress={handleSubmit}
               disabled={isSubmitting}

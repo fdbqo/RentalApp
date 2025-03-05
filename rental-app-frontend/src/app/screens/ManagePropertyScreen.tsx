@@ -10,8 +10,9 @@ import { Image } from "react-native";
 export default function ManagePropertyScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { properties, deleteProperty } = usePropertyStore();
+  const { properties, deleteProperty, updateProperty } = usePropertyStore();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const property = properties.find((p) => p._id === id);
@@ -64,8 +65,15 @@ export default function ManagePropertyScreen() {
     }
   };
 
-  const handleViewApplications = () => {
-    // Handle viewing applications
+  const handleMarkAsRented = async () => {
+    try {
+      setIsUpdating(true);
+      await updateProperty(id as string, { isRented: true });
+      setIsUpdating(false);
+    } catch (error) {
+      console.error("Failed to mark property as rented:", error);
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -101,9 +109,9 @@ export default function ManagePropertyScreen() {
                     {property.images.map((image, index) => (
                       <Image
                         key={`${image.uri}-${index}`}
-                        source={{ 
+                        source={{
                           uri: image.uri,
-                          cache: 'force-cache'
+                          cache: "force-cache",
                         }}
                         style={{
                           width: 200,
@@ -337,22 +345,25 @@ export default function ManagePropertyScreen() {
               </Button>
             )}
 
-            {/* View Applications Button */}
-            <Button
-              backgroundColor={rentalAppTheme.primaryLight}
-              pressStyle={{
-                backgroundColor: rentalAppTheme.primaryLightPressed,
-              }}
-              borderRadius="$4"
-              onPress={handleViewApplications}
-            >
-              <XStack alignItems="center" space="$2">
-                <Feather name="users" size={20} color="white" />
-                <Text color="white" fontSize={16} fontWeight="bold">
-                  View Applications
-                </Text>
-              </XStack>
-            </Button>
+            {/* Mark As Rented Button - Only show if not rented */}
+            {!property.isRented && (
+              <Button
+                backgroundColor={rentalAppTheme.primaryLight}
+                pressStyle={{
+                  backgroundColor: rentalAppTheme.primaryLightPressed,
+                }}
+                borderRadius="$4"
+                onPress={handleMarkAsRented}
+                disabled={isUpdating}
+              >
+                <XStack alignItems="center" space="$2">
+                  <Feather name="check-circle" size={20} color="white" />
+                  <Text color="white" fontSize={16} fontWeight="bold">
+                    {isUpdating ? "Updating..." : "Mark As Rented"}
+                  </Text>
+                </XStack>
+              </Button>
+            )}
           </YStack>
         </ScrollView>
       </YStack>
