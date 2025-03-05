@@ -65,13 +65,13 @@ export default function ManagePropertyScreen() {
     }
   };
 
-  const handleMarkAsRented = async () => {
+  const handleToggleRentedStatus = async () => {
     try {
       setIsUpdating(true);
-      await updateProperty(id as string, { isRented: true });
+      await updateProperty(id as string, { isRented: !property.isRented });
       setIsUpdating(false);
     } catch (error) {
-      console.error("Failed to mark property as rented:", error);
+      console.error("Failed to update property status:", error);
       setIsUpdating(false);
     }
   };
@@ -345,25 +345,37 @@ export default function ManagePropertyScreen() {
               </Button>
             )}
 
-            {/* Mark As Rented Button - Only show if not rented */}
-            {!property.isRented && (
-              <Button
-                backgroundColor={rentalAppTheme.primaryLight}
-                pressStyle={{
-                  backgroundColor: rentalAppTheme.primaryLightPressed,
-                }}
-                borderRadius="$4"
-                onPress={handleMarkAsRented}
-                disabled={isUpdating}
-              >
-                <XStack alignItems="center" space="$2">
-                  <Feather name="check-circle" size={20} color="white" />
-                  <Text color="white" fontSize={16} fontWeight="bold">
-                    {isUpdating ? "Updating..." : "Mark As Rented"}
-                  </Text>
-                </XStack>
-              </Button>
-            )}
+            {/* Toggle Rented Status Button */}
+            <Button
+              backgroundColor={
+                property.isRented
+                  ? rentalAppTheme.primaryLight
+                  : rentalAppTheme.primaryLight
+              }
+              pressStyle={{
+                backgroundColor: property.isRented
+                  ? rentalAppTheme.primaryLightPressed
+                  : rentalAppTheme.primaryLightPressed,
+              }}
+              borderRadius="$4"
+              onPress={handleToggleRentedStatus}
+              disabled={isUpdating}
+            >
+              <XStack alignItems="center" space="$2">
+                <Feather
+                  name={property.isRented ? "check-circle" : "check-circle"}
+                  size={20}
+                  color="white"
+                />
+                <Text color="white" fontSize={16} fontWeight="bold">
+                  {isUpdating
+                    ? "Updating..."
+                    : property.isRented
+                    ? "Mark As Available"
+                    : "Mark As Rented"}
+                </Text>
+              </XStack>
+            </Button>
           </YStack>
         </ScrollView>
       </YStack>
