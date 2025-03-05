@@ -35,7 +35,6 @@ export class Property {
   @Prop({ required: false })
   bathrooms: number | null;
 
-  // Change from a single object to an array.
   @Prop({ type: [Object], required: false })
   nearestUniversities?: {
     name: string;

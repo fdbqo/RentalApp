@@ -17,24 +17,44 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { AnimatePresence } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
 import { Alert } from "react-native";
-import { useStripe } from "@stripe/stripe-react-native";
+import { useStripe, initStripe } from "@stripe/stripe-react-native";
 import axios from "axios";
 import { env } from "../../../env";
 
 export default function ProfileScreen() {
   const user = useUserStore((state) => state.user);
+  const token = useUserStore((state) => state.token);
   const logout = useUserStore((state) => state.logout);
   const refreshUserData = useUserStore((state) => state.refreshUserData);
   const [showTopUpDialog, setShowTopUpDialog] = useState(false);
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const stripe = useStripe();
+  const fullName = user ? `${user.firstName} ${user.lastName}` : "";
 
   useEffect(() => {
     refreshUserData();
   }, []);
 
-  const fullName = user ? `${user.firstName} ${user.lastName}` : "";
+  // Initialize Stripe
+  useEffect(() => {
+    if (!env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+      console.error("Stripe publishable key is not configured");
+      return;
+    }
+
+    const init = async () => {
+      try {
+        await initStripe({
+          publishableKey: env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+        });
+      } catch (error) {
+        console.error("Error initializing Stripe:", error);
+      }
+    };
+
+    init();
+  }, []);
 
   const formattedAddress = user?.address
     ? {
@@ -59,14 +79,20 @@ export default function ProfileScreen() {
       setIsLoading(true);
       const response = await axios.post(
         `${env.API_URL}/payment/create-payment-intent`,
-        { amount: Number(amount) }
+        { amount: Number(amount) },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const { clientSecret } = response.data;
 
-      const { error: initError } = await initPaymentSheet({
+      const { error: initError } = await stripe.initPaymentSheet({
         merchantDisplayName: "RentalApp",
         paymentIntentClientSecret: clientSecret,
+        returnURL: "rentalapp://stripe-redirect",
       });
 
       if (initError) {
@@ -74,7 +100,7 @@ export default function ProfileScreen() {
         return;
       }
 
-      const { error: presentError } = await presentPaymentSheet();
+      const { error: presentError } = await stripe.presentPaymentSheet();
 
       if (presentError) {
         Alert.alert("Error", presentError.message);
@@ -85,6 +111,7 @@ export default function ProfileScreen() {
         refreshUserData();
       }
     } catch (error) {
+      console.error("Payment error:", error.response?.data || error.message);
       Alert.alert(
         "Error",
         error.response?.data?.message || "Failed to process payment"
