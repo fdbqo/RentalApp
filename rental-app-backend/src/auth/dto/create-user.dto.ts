@@ -60,6 +60,7 @@ export class CreateUserDto {
   @Type(() => AddressDto)
   address?: AddressDto;
 
+  @ValidateIf((o) => o.userType === "landlord")
   @IsOptional()
   balance?: number;
 }

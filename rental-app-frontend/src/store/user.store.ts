@@ -57,7 +57,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         password,
       });
       const response = await axios.post(
-        `${env.EXPO_PUBLIC_API_URL}/auth/login`,
+        `${env.API_URL}/auth/login`,
         {
           email: email.toLowerCase(),
           password,
@@ -138,7 +138,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       };
 
       const response = await axios.post(
-        `${env.EXPO_PUBLIC_API_URL}/auth/register`,
+        `${env.API_URL}/auth/register`,
         normalizedUserData
       );
 

@@ -1,7 +1,17 @@
 import React from "react";
 import { ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-import { YStack, XStack, Text, Button, Input, Theme, Card, Spinner, Circle } from "tamagui";
+import {
+  YStack,
+  XStack,
+  Text,
+  Button,
+  Input,
+  Theme,
+  Card,
+  Spinner,
+  Circle,
+} from "tamagui";
 import { AnimatePresence, View } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
 import { useUserStore } from "@/store/user.store";
@@ -9,7 +19,9 @@ import { useUserStore } from "@/store/user.store";
 export default function RegisterScreen() {
   const router = useRouter();
 
-  const [userType, setUserType] = React.useState<"tenant" | "landlord">("tenant");
+  const [userType, setUserType] = React.useState<"tenant" | "landlord">(
+    "tenant"
+  );
   const [firstName, setFirstName] = React.useState("");
   const [lastName, setLastName] = React.useState("");
   const [email, setEmail] = React.useState("");
@@ -54,6 +66,7 @@ export default function RegisterScreen() {
         eircode,
       };
       if (licenseNumber) userData.licenseNumber = licenseNumber;
+      userData.balance = 0;
     }
 
     try {
@@ -119,7 +132,10 @@ export default function RegisterScreen() {
                       Register as
                     </Text>
                     <XStack space="$4" alignItems="center">
-                      <XStack alignItems="center" onPress={() => setUserType("tenant")}>  
+                      <XStack
+                        alignItems="center"
+                        onPress={() => setUserType("tenant")}
+                      >
                         <Circle
                           size={20}
                           borderWidth={1}
@@ -138,7 +154,10 @@ export default function RegisterScreen() {
                           Tenant
                         </Text>
                       </XStack>
-                      <XStack alignItems="center" onPress={() => setUserType("landlord")}>  
+                      <XStack
+                        alignItems="center"
+                        onPress={() => setUserType("landlord")}
+                      >
                         <Circle
                           size={20}
                           borderWidth={1}
@@ -287,7 +306,9 @@ export default function RegisterScreen() {
                   <Button
                     onPress={handleRegister}
                     backgroundColor={rentalAppTheme.primaryDark}
-                    pressStyle={{ backgroundColor: rentalAppTheme.primaryLight }}
+                    pressStyle={{
+                      backgroundColor: rentalAppTheme.primaryLight,
+                    }}
                     borderRadius="$4"
                     width="100%"
                     disabled={loading}
@@ -295,11 +316,7 @@ export default function RegisterScreen() {
                     {loading ? (
                       <Spinner color="white" size="small" />
                     ) : (
-                      <Text
-                        color="white"
-                        fontSize={16}
-                        textAlign="center"
-                      >
+                      <Text color="white" fontSize={16} textAlign="center">
                         Register
                       </Text>
                     )}
