@@ -23,6 +23,7 @@ import NavigationHeader from "@/components/NavigationHeader";
 import { usePropertyStore } from "@/store/property.store";
 import { rentalAppTheme } from "../../constants/Colors";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { countiesToCities } from "@/constants/irishPlaces";
 
 type PageInputProps = {
   label: string;
@@ -42,7 +43,7 @@ const PageInput = React.memo(
     keyboardType = "default",
     error,
   }: PageInputProps) => (
-    <YStack space="$2" marginBottom="$4">
+    <YStack space="$1.5" marginBottom="$4">
       <Text
         fontSize="$4"
         fontWeight="500"
@@ -81,7 +82,7 @@ type PageTextAreaProps = {
 
 const PageTextArea = React.memo(
   ({ label, value, onChangeText, placeholder, error }: PageTextAreaProps) => (
-    <YStack space="$2" marginBottom="$4">
+    <YStack space="$1.5" marginBottom="$4">
       <Text
         fontSize="$4"
         fontWeight="500"
@@ -108,431 +109,6 @@ const PageTextArea = React.memo(
     </YStack>
   )
 );
-
-const countiesToCities = {
-  Carlow: [
-    "Carlow Town",
-    "Tullow",
-    "Muine Bheag (Borrisokane)",
-    "Borris",
-    "Leighlinbridge",
-    "Tullowbridge",
-    "Ballon",
-    "Castlecomer",
-  ],
-  Cavan: [
-    "Cavan Town",
-    "Ballyjamesduff",
-    "Virginia",
-    "Bailieborough",
-    "Kingscourt",
-    "Belturbet",
-    "Swanlinbar",
-    "Butlersbridge",
-    "Drumalee",
-    "Shercock",
-  ],
-  Clare: [
-    "Ennis",
-    "Shannon",
-    "Kilrush",
-    "Killaloe",
-    "Lisdoonvarna",
-    "Doonbeg",
-    "Sixmilebridge",
-    "Miltown Malbay",
-    "Newmarket-on-Fergus",
-    "Mullagh",
-    "Kilmihil",
-  ],
-  Cork: [
-    "Cork City",
-    "Mallow",
-    "Kinsale",
-    "Midleton",
-    "Clonakilty",
-    "Bantry",
-    "Youghal",
-    "Bandon",
-    "Skibbereen",
-    "Cobh",
-    "Fermoy",
-    "Mallow",
-    "Midleton",
-    "Kinsale",
-    "Clonakilty",
-    "Bandon",
-    "Skibbereen",
-    "Carrigtwohill",
-    "Youghal",
-    "Ballincollig",
-    "Ballinascorney",
-    "Inchigeelagh",
-    "Bantry",
-    "Killeagh",
-    "Drimoleague",
-  ],
-  Donegal: [
-    "Letterkenny",
-    "Donegal Town",
-    "Buncrana",
-    "Ballybofey",
-    "Bundoran",
-    "Dunfanaghy",
-    "Killybegs",
-    "Milford",
-    "Lifford",
-    "Dungloe (An Clochán Liath)",
-    "Glenties",
-    "Ardara",
-    "Moville",
-    "Raphoe",
-    "Stranorlar",
-    "Creeslough",
-  ],
-  Dublin: [
-    "Dublin City",
-    "Swords",
-    "Drogheda",
-    "Tallaght",
-    "Blanchardstown",
-    "Bray",
-    "Malahide",
-    "Greystones",
-    "Maynooth",
-    "Navan (partly in Meath)",
-    "Lucan",
-    "Celbridge",
-    "Ashbourne",
-    "Balbriggan",
-    "Kilcock",
-    "Leixlip",
-    "Dalkey",
-    "Howth",
-    "Rathcoole",
-    "Clonsilla",
-    "Firhouse",
-  ],
-  Galway: [
-    "Galway City",
-    "Tuam",
-    "Loughrea",
-    "Ballinasloe",
-    "Clifden",
-    "Oranmore",
-    "Athenry",
-    "Gort",
-    "Ballindine",
-    "Carnmore",
-    "Kinvara",
-    "Salthill",
-    "Barna",
-    "Cregmore",
-    "Spiddal (An Spidéal)",
-    "Letterfrack",
-  ],
-  Kerry: [
-    "Tralee",
-    "Killarney",
-    "Listowel",
-    "Dingle (An Daingean)",
-    "Killorglin",
-    "Kenmare",
-    "Cahersiveen",
-    "Valentia",
-    "Beaufort",
-    "Ballybunion",
-    "Ballyheigue",
-    "Killorglin",
-    "Kenmare",
-    "Sneem",
-    "Waterville",
-    "Cahersiveen",
-    "Glenbeigh",
-  ],
-  Kildare: [
-    "Naas",
-    "Newbridge",
-    "Kildare Town",
-    "Maynooth",
-    "Celbridge",
-    "Leixlip",
-    "Monasterevin",
-    "Maynooth",
-    "Kilcock",
-    "Prosperous",
-    "Clane",
-    "Ardclough",
-    "Allenwood",
-    "Sallins",
-    "Johnstownbridge",
-    "Kilteel",
-  ],
-  Kilkenny: [
-    "Kilkenny City",
-    "Thomastown",
-    "Callan",
-    "Castlecomer",
-    "Bennettsbridge",
-    "Durrow",
-    "Mullinavat",
-    "Freshford",
-    "Tullaroan",
-    "Gowran",
-    "Inistioge",
-  ],
-  Laois: [
-    "Portlaoise",
-    "Mountmellick",
-    "Abbeyleix",
-    "Mountrath",
-    "Borris-in-Ossory",
-    "Stradbally",
-    "Emo",
-    "Rosenallis",
-    "Timahoe",
-    "Ballacolla",
-    "The Swan",
-    "Mountmellick",
-  ],
-  Leitrim: [
-    "Carrick-on-Shannon",
-    "Manorhamilton",
-    "Drumshanbo",
-    "Ballinamore",
-    "Aughawillan",
-    "Glenfarne",
-    "Rossinver",
-    "Dromahair",
-  ],
-  Limerick: [
-    "Limerick City",
-    "Adare",
-    "Newcastle West",
-    "Kilmallock",
-    "Rathkeale",
-    "Abbeyfeale",
-    "Oola",
-    "Bruff",
-    "Tourin",
-    "Cappamore",
-    "O'Briensbridge",
-    "Askeaton",
-    "Fedamore",
-    "Raheen",
-  ],
-  Longford: [
-    "Longford Town",
-    "Granard",
-    "Edgeworthstown (Mostrim)",
-    "Ballymahon",
-    "Ballymahon",
-    "Granard",
-    "Edgeworthstown",
-    "Kiltoom",
-    "Abbeyshrule",
-    "Drumlish",
-    "Ardagh",
-    "Strokestown",
-    "Killoe",
-  ],
-  Louth: [
-    "Drogheda",
-    "Dundalk",
-    "Ardee",
-    "Carlingford",
-    "Cooley",
-    "Castlebellingham",
-    "Enfield",
-    "Baltray",
-    "Termonfeckin",
-    "Omeath",
-    "Hillsborough",
-    "Dowdallshill",
-  ],
-  Mayo: [
-    "Castlebar",
-    "Ballina",
-    "Westport",
-    "Claremorris",
-    "Ballinrobe",
-    "Belmullet",
-    "Swinford",
-    "Foxford",
-    "Ballaghaderreen",
-    "Knock",
-    "Cong",
-    "Louisburgh",
-    "Ballycastle",
-    "Clifden",
-    "Newport",
-  ],
-  Meath: [
-    "Navan",
-    "Kells",
-    "Trim",
-    "Ashbourne",
-    "Ratoath",
-    "Dunshaughlin",
-    "Dunboyne",
-    "Ashbourne",
-    "Ratoath",
-    "Dunshaughlin",
-    "Slane",
-    "Martinstown",
-    "Kilskyre",
-  ],
-  Monaghan: [
-    "Monaghan Town",
-    "Carrickmacross",
-    "Castleblayney",
-    "Clones",
-    "Ballybay",
-    "Inniskeen",
-    "Scotstown",
-    "Emyvale",
-  ],
-  Offaly: [
-    "Tullamore",
-    "Birr",
-    "Edenderry",
-    "Clara",
-    "Banagher",
-    "Ferbane",
-    "Rhode",
-    "Shinrone",
-    "Durrow",
-    "Portarlington",
-  ],
-  Roscommon: [
-    "Roscommon Town",
-    "Boyle",
-    "Castlerea",
-    "Ballaghaderreen",
-    "Elphin",
-    "Ballyhaunis",
-    "Athleague",
-    "Knockcroghery",
-    "Cloonfad",
-    "Crossmolina",
-    "Carrick-on-Shannon (partly in Leitrim)",
-  ],
-  Sligo: [
-    "Sligo Town",
-    "Tubbercurry",
-    "Ballymote",
-    "Enniscrone",
-    "Achonry",
-    "Aclare",
-    "Ballaghnatrillick",
-    "Ballinafad",
-    "Ballincar",
-    "Ballintogher",
-    "Ballygawley",
-    "Ballynacarrow",
-    "Ballysadare",
-    "Bellaghy",
-    "Beltra",
-    "Bunnanadden",
-    "Carney",
-    "Castlebaldwin",
-    "Charlestown-Bellahy",
-    "Cliffoney",
-    "Cloonacool",
-    "Collooney",
-    "Coolaney",
-    "Dromore West",
-    "Drumcliff",
-    "Easky",
-    "Geevagh",
-    "Gorteen",
-    "Grange",
-    "Kilglass",
-    "Knocknahur",
-    "Monasteraden",
-    "Mullaghmore",
-    "Nagnata",
-    "Owenbeg",
-    "Rathcormack",
-    "Riverstown",
-    "Rosses Point",
-    "Skreen",
-    "Sooey",
-    "Strandhill",
-    "Toorlestraun",
-  ],
-  Tipperary: [
-    "Clonmel",
-    "Nenagh",
-    "Thurles",
-    "Cashel",
-    "Tipperary Town",
-    "Carrick-on-Suir",
-    "Cahir",
-    "Newport",
-    "Borrisokane",
-    "Roscrea",
-    "Kilruane",
-    "Golden",
-    "Tipperary Town",
-    "Templemore",
-  ],
-  Waterford: [
-    "Waterford City",
-    "Dungarvan",
-    "Tramore",
-    "Lismore",
-    "Portlaw",
-    "Carrick-on-Suir",
-    "Kilmacthomas",
-    "Cappoquin",
-    "Youghal",
-    "Ballymacarbry",
-    "Dungarvan",
-    "Tramore",
-    "Passage East",
-    "Ballygunner",
-  ],
-  Westmeath: [
-    "Mullingar",
-    "Athlone",
-    "Kinnegad",
-    "Moate",
-    "Castlepollard",
-    "Delvin",
-    "Rochfortbridge",
-    "Tyrrellspass",
-    "Castlemaine",
-    "Ferbane",
-  ],
-  Wexford: [
-    "Wexford Town",
-    "Gorey",
-    "New Ross",
-    "Enniscorthy",
-    "Bunclody",
-    "Rosslare Europort",
-    "Arklow",
-    "Ballygarrett",
-    "Courtown",
-    "Bridgetown",
-  ],
-  Wicklow: [
-    "Wicklow Town",
-    "Arklow",
-    "Bray",
-    "Greystones",
-    "Blessington",
-    "Avoca",
-    "Ashford",
-    "Tinahely",
-    "Roundwood",
-    "Rathdrum",
-    "Baltinglass",
-    "Enniskerry",
-    "Hollywood",
-  ],
-};
 
 export default function ListPropertyScreen() {
   const router = useRouter();
@@ -580,6 +156,7 @@ export default function ListPropertyScreen() {
   const handlePriceChange = useCallback(
     (text: string) => {
       updateFormData("price", text);
+      setErrors((prev) => ({ ...prev, price: "" }));
     },
     [updateFormData]
   );
@@ -587,6 +164,11 @@ export default function ListPropertyScreen() {
   const handleSingleBedroomsChange = useCallback(
     (text: string) => {
       updateFormData("singleBedrooms", text);
+      setErrors((prev) => ({
+        ...prev,
+        singleBedrooms: "",
+        bedrooms: "",
+      }));
     },
     [updateFormData]
   );
@@ -594,6 +176,11 @@ export default function ListPropertyScreen() {
   const handleDoubleBedroomsChange = useCallback(
     (text: string) => {
       updateFormData("doubleBedrooms", text);
+      setErrors((prev) => ({
+        ...prev,
+        doubleBedrooms: "",
+        bedrooms: "",
+      }));
     },
     [updateFormData]
   );
@@ -601,6 +188,7 @@ export default function ListPropertyScreen() {
   const handleBathroomsChange = useCallback(
     (text: string) => {
       updateFormData("bathrooms", text);
+      setErrors((prev) => ({ ...prev, bathrooms: "" }));
     },
     [updateFormData]
   );
@@ -608,6 +196,7 @@ export default function ListPropertyScreen() {
   const handleAddressLine1Change = useCallback(
     (text: string) => {
       updateAddress("addressLine1", text);
+      setErrors((prev) => ({ ...prev, addressLine1: "" }));
     },
     [updateAddress]
   );
@@ -623,6 +212,7 @@ export default function ListPropertyScreen() {
     (value: string) => {
       updateAddress("county", value);
       updateAddress("townCity", "");
+      setErrors((prev) => ({ ...prev, county: "" }));
     },
     [updateAddress]
   );
@@ -630,6 +220,7 @@ export default function ListPropertyScreen() {
   const handleEircodeChange = useCallback(
     (text: string) => {
       updateAddress("eircode", text);
+      setErrors((prev) => ({ ...prev, eircode: "" }));
     },
     [updateAddress]
   );
@@ -783,20 +374,20 @@ export default function ListPropertyScreen() {
                   error={errors.price}
                 />
 
-                <YStack marginBottom="$4">
+                <YStack space="$1.5" marginBottom="$4">
                   <Text
                     fontSize="$4"
                     fontWeight="500"
                     color={rentalAppTheme.text.secondary}
-                    marginBottom="$2"
                   >
                     Property Type
                   </Text>
                   <Select
                     value={formData.propertyType}
-                    onValueChange={(value) =>
-                      updateFormData("propertyType", value.toLowerCase())
-                    }
+                    onValueChange={(value) => {
+                      updateFormData("propertyType", value.toLowerCase());
+                      setErrors((prev) => ({ ...prev, propertyType: "" }));
+                    }}
                     disablePreventBodyScroll
                   >
                     <Select.Trigger
@@ -862,12 +453,11 @@ export default function ListPropertyScreen() {
                 </YStack>
 
                 {/* Availability Section */}
-                <YStack marginBottom="$4">
+                <YStack space="$1.5" marginBottom="$4">
                   <Text
                     fontSize="$4"
                     fontWeight="500"
                     color={rentalAppTheme.text.secondary}
-                    marginBottom="$2"
                   >
                     Availability
                   </Text>
@@ -875,6 +465,11 @@ export default function ListPropertyScreen() {
                     value={formData.availability}
                     onValueChange={(value) => {
                       updateFormData("availability", value);
+                      setErrors((prev) => ({
+                        ...prev,
+                        availability: "",
+                        availableFrom: "",
+                      }));
                       if (value === "available_from") {
                         setShowDatePicker(true);
                       } else if (value === "immediately") {
@@ -1013,7 +608,7 @@ export default function ListPropertyScreen() {
                   onChangeText={handleSingleBedroomsChange}
                   placeholder="Enter number of single bedrooms"
                   keyboardType="numeric"
-                  error={errors.singleBedrooms}
+                  error={errors.singleBedrooms || errors.bedrooms}
                 />
 
                 {/* Double Bedrooms Input */}
@@ -1023,7 +618,7 @@ export default function ListPropertyScreen() {
                   onChangeText={handleDoubleBedroomsChange}
                   placeholder="Enter number of double bedrooms"
                   keyboardType="numeric"
-                  error={errors.doubleBedrooms}
+                  error={errors.doubleBedrooms || errors.bedrooms}
                 />
 
                 <PageInput
@@ -1050,16 +645,20 @@ export default function ListPropertyScreen() {
                 <PageInput
                   label="Brief Overview"
                   value={formData.shortDescription}
-                  onChangeText={(text) =>
-                    updateFormData("shortDescription", text)
-                  }
+                  onChangeText={(text) => {
+                    updateFormData("shortDescription", text);
+                    setErrors((prev) => ({ ...prev, shortDescription: "" }));
+                  }}
                   placeholder="e.g., Semi-Detached House"
                   error={errors.shortDescription}
                 />
                 <PageTextArea
                   label="Full Description"
                   value={formData.description}
-                  onChangeText={(text) => updateFormData("description", text)}
+                  onChangeText={(text) => {
+                    updateFormData("description", text);
+                    setErrors((prev) => ({ ...prev, description: "" }));
+                  }}
                   placeholder="Describe your property in detail..."
                   error={errors.description}
                 />
@@ -1110,7 +709,11 @@ export default function ListPropertyScreen() {
                     width={150}
                     height={150}
                     backgroundColor="transparent"
-                    borderColor={rentalAppTheme.border}
+                    borderColor={
+                      errors.images
+                        ? rentalAppTheme.error
+                        : rentalAppTheme.border
+                    }
                     borderWidth={2}
                     borderRadius="$4"
                     borderStyle="dashed"
@@ -1156,12 +759,11 @@ export default function ListPropertyScreen() {
                 />
                 <XStack space="$4">
                   {/* County Dropdown */}
-                  <YStack flex={1}>
+                  <YStack space="$1.5" flex={1}>
                     <Text
                       fontSize="$4"
                       fontWeight="500"
                       color={rentalAppTheme.text.secondary}
-                      marginBottom="$2"
                     >
                       County
                     </Text>
@@ -1233,20 +835,20 @@ export default function ListPropertyScreen() {
                   </YStack>
 
                   {/* City Dropdown */}
-                  <YStack flex={1} marginBottom="$4">
+                  <YStack space="$1.5" flex={1} marginBottom="$4">
                     <Text
                       fontSize="$4"
                       fontWeight="500"
                       color={rentalAppTheme.text.secondary}
-                      marginBottom="$2"
                     >
                       City
                     </Text>
                     <Select
                       value={formData.houseAddress.townCity}
-                      onValueChange={(value) =>
-                        updateAddress("townCity", value)
-                      }
+                      onValueChange={(value) => {
+                        updateAddress("townCity", value);
+                        setErrors((prev) => ({ ...prev, townCity: "" }));
+                      }}
                       disablePreventBodyScroll
                     >
                       <Select.Trigger

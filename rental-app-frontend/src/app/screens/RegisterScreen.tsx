@@ -20,52 +20,7 @@ import { rentalAppTheme } from "../../constants/Colors";
 import { useUserStore } from "@/store/user.store";
 import { Feather } from "@expo/vector-icons";
 import { ChevronDown, Check } from "@tamagui/lucide-icons";
-
-// Counties and cities data
-const countiesToCities = {
-  Carlow: [
-    "Carlow Town",
-    "Tullow",
-    "Muine Bheag (Borrisokane)",
-    "Borris",
-    "Leighlinbridge",
-  ],
-  Dublin: [
-    "Dublin City",
-    "Swords",
-    "Tallaght",
-    "Blanchardstown",
-    "Malahide",
-    "Lucan",
-    "Clondalkin",
-    "Dun Laoghaire",
-  ],
-  Cork: [
-    "Cork City",
-    "Ballincollig",
-    "Carrigaline",
-    "Cobh",
-    "Midleton",
-    "Mallow",
-  ],
-  Galway: [
-    "Galway City",
-    "Salthill",
-    "Oranmore",
-    "Athenry",
-    "Ballinasloe",
-    "Tuam",
-  ],
-  Kerry: [
-    "Tralee",
-    "Killarney",
-    "Dingle",
-    "Kenmare",
-    "Listowel",
-    "Castleisland",
-  ],
-  // Add more counties as needed...
-};
+import { countiesToCities } from "@/constants/irishPlaces";
 
 // Validation helper functions
 const isValidEmail = (email: string): boolean => {
