@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import {
   YStack,
@@ -67,6 +67,26 @@ const countiesToCities = {
   // Add more counties as needed...
 };
 
+// Validation helper functions
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+const isValidPassword = (password: string): boolean => {
+  return password.length >= 8;
+};
+
+const isValidPhone = (phone: string): boolean => {
+  const phoneRegex = /^(\+\d{1,3}[- ]?)?\d{10}$/;
+  return phone === "" || phoneRegex.test(phone); // Optional field
+};
+
+const isValidEircode = (eircode: string): boolean => {
+  const eircodeRegex = /^[AC-FHKNPRTV-Y]\d{2}\s?[AC-FHKNPRTV-Y0-9]{4}$/i;
+  return eircodeRegex.test(eircode);
+};
+
 export default function RegisterScreen() {
   const router = useRouter();
 
@@ -103,31 +123,76 @@ export default function RegisterScreen() {
     setErrors((prev) => ({ ...prev, city: "" }));
   }, []);
 
-  const handleRegister = async () => {
-    setLoading(true);
+  const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
+    // Required for all users
+    if (!firstName.trim()) {
+      newErrors.firstName = "First name is required";
+    } else if (firstName.length < 2) {
+      newErrors.firstName = "First name must be at least 2 characters";
+    }
+
+    if (!lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+    } else if (lastName.length < 2) {
+      newErrors.lastName = "Last name must be at least 2 characters";
+    }
+
+    if (!email) {
+      newErrors.email = "Email is required";
+    } else if (!isValidEmail(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (!isValidPassword(password)) {
+      newErrors.password = "Password must be at least 8 characters";
+    }
+
+    if (phone && !isValidPhone(phone)) {
+      newErrors.phone = "Please enter a valid phone number";
+    }
+
+    // Additional validation for landlords
     if (userType === "landlord") {
-      if (!addressLine) {
+      if (!licenseNumber) {
+        newErrors.licenseNumber = "License number is required for landlords";
+      } else if (licenseNumber.length < 5) {
+        newErrors.licenseNumber =
+          "License number must be at least 5 characters";
+      }
+
+      if (!addressLine.trim()) {
         newErrors.addressLine = "Address is required";
       }
+
       if (!county) {
         newErrors.county = "County is required";
       }
+
       if (!city) {
         newErrors.city = "City is required";
       }
+
       if (!eircode) {
         newErrors.eircode = "Eircode is required";
-      }
-
-      if (Object.keys(newErrors).length > 0) {
-        setErrors(newErrors);
-        setLoading(false);
-        return;
+      } else if (!isValidEircode(eircode)) {
+        newErrors.eircode = "Please enter a valid Irish Eircode";
       }
     }
 
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleRegister = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
     const userData: any = {
       firstName,
       lastName,
@@ -141,24 +206,47 @@ export default function RegisterScreen() {
     }
 
     if (userType === "landlord") {
+      userData.licenseNumber = licenseNumber;
       userData.address = {
         addressLine1: addressLine,
         city,
         county,
         eircode,
       };
-      if (licenseNumber) userData.licenseNumber = licenseNumber;
       userData.balance = 0;
     }
 
     try {
       await register(userData);
-      router.push("/screens/LoginScreen");
-    } catch (err) {
-      setErrors((prev) => ({
-        ...prev,
-        general: userError || "Registration failed",
-      }));
+      Alert.alert("Success", "Your account has been created successfully!", [
+        {
+          text: "Login Now",
+          onPress: () => router.push("/screens/LoginScreen"),
+        },
+      ]);
+    } catch (err: any) {
+      console.error("Registration failed:", err);
+
+      // Handle specific error cases
+      if (err?.response?.data?.message) {
+        if (err.response.data.message.includes("duplicate key error")) {
+          Alert.alert(
+            "Registration Failed",
+            "An account with this email already exists.",
+            [{ text: "OK" }]
+          );
+        } else {
+          Alert.alert("Registration Failed", err.response.data.message, [
+            { text: "OK" },
+          ]);
+        }
+      } else {
+        Alert.alert(
+          "Registration Error",
+          "An error occurred while creating your account. Please try again.",
+          [{ text: "OK" }]
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -265,88 +353,187 @@ export default function RegisterScreen() {
                   </YStack>
 
                   {/* First Name */}
-                  <Input
-                    placeholder="First Name"
-                    value={firstName}
-                    onChangeText={setFirstName}
-                    borderColor={rentalAppTheme.border}
-                    borderWidth={1}
-                    padding="$3"
-                    borderRadius="$4"
-                    width="100%"
-                  />
-
-                  {/* Last Name */}
-                  <Input
-                    placeholder="Last Name"
-                    value={lastName}
-                    onChangeText={setLastName}
-                    borderColor={rentalAppTheme.border}
-                    borderWidth={1}
-                    padding="$3"
-                    borderRadius="$4"
-                    width="100%"
-                  />
-
-                  {/* Email */}
-                  <Input
-                    placeholder="Email"
-                    value={email}
-                    onChangeText={(text) => setEmail(text.toLowerCase())}
-                    keyboardType="email-address"
-                    borderColor={rentalAppTheme.border}
-                    borderWidth={1}
-                    padding="$3"
-                    borderRadius="$4"
-                    width="100%"
-                  />
-
-                  {/* Password */}
-                  <Input
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    borderColor={rentalAppTheme.border}
-                    borderWidth={1}
-                    padding="$3"
-                    borderRadius="$4"
-                    width="100%"
-                  />
-
-                  {/* Phone */}
-                  <Input
-                    placeholder="Phone (Optional)"
-                    value={phone}
-                    onChangeText={setPhone}
-                    keyboardType="phone-pad"
-                    borderColor={rentalAppTheme.border}
-                    borderWidth={1}
-                    padding="$3"
-                    borderRadius="$4"
-                    width="100%"
-                  />
-
-                  {/* License Number - Landlord Only */}
-                  {userType === "landlord" && (
+                  <YStack space="$1" width="100%">
                     <Input
-                      placeholder="License Number"
-                      value={licenseNumber}
-                      onChangeText={setLicenseNumber}
-                      borderColor={rentalAppTheme.border}
+                      placeholder="First Name"
+                      value={firstName}
+                      onChangeText={(text) => {
+                        setFirstName(text);
+                        if (errors.firstName) {
+                          setErrors((prev) => ({ ...prev, firstName: "" }));
+                        }
+                      }}
+                      borderColor={
+                        errors.firstName
+                          ? rentalAppTheme.error
+                          : rentalAppTheme.border
+                      }
                       borderWidth={1}
                       padding="$3"
                       borderRadius="$4"
                       width="100%"
                     />
+                    {errors.firstName && (
+                      <Text color={rentalAppTheme.error} fontSize="$2">
+                        {errors.firstName}
+                      </Text>
+                    )}
+                  </YStack>
+
+                  {/* Last Name */}
+                  <YStack space="$1" width="100%">
+                    <Input
+                      placeholder="Last Name"
+                      value={lastName}
+                      onChangeText={(text) => {
+                        setLastName(text);
+                        if (errors.lastName) {
+                          setErrors((prev) => ({ ...prev, lastName: "" }));
+                        }
+                      }}
+                      borderColor={
+                        errors.lastName
+                          ? rentalAppTheme.error
+                          : rentalAppTheme.border
+                      }
+                      borderWidth={1}
+                      padding="$3"
+                      borderRadius="$4"
+                      width="100%"
+                    />
+                    {errors.lastName && (
+                      <Text color={rentalAppTheme.error} fontSize="$2">
+                        {errors.lastName}
+                      </Text>
+                    )}
+                  </YStack>
+
+                  {/* Email */}
+                  <YStack space="$1" width="100%">
+                    <Input
+                      placeholder="Email"
+                      value={email}
+                      onChangeText={(text) => {
+                        setEmail(text.toLowerCase());
+                        if (errors.email) {
+                          setErrors((prev) => ({ ...prev, email: "" }));
+                        }
+                      }}
+                      keyboardType="email-address"
+                      borderColor={
+                        errors.email
+                          ? rentalAppTheme.error
+                          : rentalAppTheme.border
+                      }
+                      borderWidth={1}
+                      padding="$3"
+                      borderRadius="$4"
+                      width="100%"
+                    />
+                    {errors.email && (
+                      <Text color={rentalAppTheme.error} fontSize="$2">
+                        {errors.email}
+                      </Text>
+                    )}
+                  </YStack>
+
+                  {/* Password */}
+                  <YStack space="$1" width="100%">
+                    <Input
+                      placeholder="Password"
+                      value={password}
+                      onChangeText={(text) => {
+                        setPassword(text);
+                        if (errors.password) {
+                          setErrors((prev) => ({ ...prev, password: "" }));
+                        }
+                      }}
+                      secureTextEntry
+                      borderColor={
+                        errors.password
+                          ? rentalAppTheme.error
+                          : rentalAppTheme.border
+                      }
+                      borderWidth={1}
+                      padding="$3"
+                      borderRadius="$4"
+                      width="100%"
+                    />
+                    {errors.password && (
+                      <Text color={rentalAppTheme.error} fontSize="$2">
+                        {errors.password}
+                      </Text>
+                    )}
+                  </YStack>
+
+                  {/* Phone */}
+                  <YStack space="$1" width="100%">
+                    <Input
+                      placeholder="Phone (Optional)"
+                      value={phone}
+                      onChangeText={(text) => {
+                        setPhone(text);
+                        if (errors.phone) {
+                          setErrors((prev) => ({ ...prev, phone: "" }));
+                        }
+                      }}
+                      keyboardType="phone-pad"
+                      borderColor={
+                        errors.phone
+                          ? rentalAppTheme.error
+                          : rentalAppTheme.border
+                      }
+                      borderWidth={1}
+                      padding="$3"
+                      borderRadius="$4"
+                      width="100%"
+                    />
+                    {errors.phone && (
+                      <Text color={rentalAppTheme.error} fontSize="$2">
+                        {errors.phone}
+                      </Text>
+                    )}
+                  </YStack>
+
+                  {/* License Number - Landlord Only */}
+                  {userType === "landlord" && (
+                    <YStack space="$1" width="100%">
+                      <Input
+                        placeholder="License Number"
+                        value={licenseNumber}
+                        onChangeText={(text) => {
+                          setLicenseNumber(text);
+                          if (errors.licenseNumber) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              licenseNumber: "",
+                            }));
+                          }
+                        }}
+                        borderColor={
+                          errors.licenseNumber
+                            ? rentalAppTheme.error
+                            : rentalAppTheme.border
+                        }
+                        borderWidth={1}
+                        padding="$3"
+                        borderRadius="$4"
+                        width="100%"
+                      />
+                      {errors.licenseNumber && (
+                        <Text color={rentalAppTheme.error} fontSize="$2">
+                          {errors.licenseNumber}
+                        </Text>
+                      )}
+                    </YStack>
                   )}
 
                   {/* Address - Landlord Only */}
                   {userType === "landlord" && (
-                    <YStack space="$4" width="100%">
-                      <XStack space="$4">
+                    <YStack space="$2" width="100%">
+                      <XStack space="$3">
                         {/* County Dropdown */}
-                        <YStack flex={1}>
+                        <YStack marginBottom={6} space="$1" flex={1}>
                           <Text
                             fontSize="$4"
                             fontWeight="500"
@@ -427,7 +614,7 @@ export default function RegisterScreen() {
                         </YStack>
 
                         {/* City Dropdown */}
-                        <YStack flex={1}>
+                        <YStack marginBottom={6} space="$1" flex={1}>
                           <Text
                             fontSize="$4"
                             fontWeight="500"
@@ -454,9 +641,7 @@ export default function RegisterScreen() {
                               iconAfter={ChevronDown}
                             >
                               <Select.Value
-                                placeholder={
-                                  county ? "Select" : "Select"
-                                }
+                                placeholder={county ? "Select" : "Select"}
                               />
                             </Select.Trigger>
                             <Adapt when="sm" platform="touch">
@@ -518,27 +703,62 @@ export default function RegisterScreen() {
                         </YStack>
                       </XStack>
 
-                      <Input
-                        placeholder="Address Line"
-                        value={addressLine}
-                        onChangeText={setAddressLine}
-                        borderColor={rentalAppTheme.border}
-                        borderWidth={1}
-                        padding="$3"
-                        borderRadius="$4"
-                        width="100%"
-                      />
+                      <YStack space="$1" marginVertical={6} width="100%">
+                        <Input
+                          placeholder="Address Line"
+                          value={addressLine}
+                          onChangeText={(text) => {
+                            setAddressLine(text);
+                            if (errors.addressLine) {
+                              setErrors((prev) => ({
+                                ...prev,
+                                addressLine: "",
+                              }));
+                            }
+                          }}
+                          borderColor={
+                            errors.addressLine
+                              ? rentalAppTheme.error
+                              : rentalAppTheme.border
+                          }
+                          borderWidth={1}
+                          padding="$3"
+                          borderRadius="$4"
+                          width="100%"
+                        />
+                        {errors.addressLine && (
+                          <Text color={rentalAppTheme.error} fontSize="$2">
+                            {errors.addressLine}
+                          </Text>
+                        )}
+                      </YStack>
 
-                      <Input
-                        placeholder="Eircode"
-                        value={eircode}
-                        onChangeText={setEircode}
-                        borderColor={rentalAppTheme.border}
-                        borderWidth={1}
-                        padding="$3"
-                        borderRadius="$4"
-                        width="100%"
-                      />
+                      <YStack space="$1" marginVertical={6} width="100%">
+                        <Input
+                          placeholder="Eircode"
+                          value={eircode}
+                          onChangeText={(text) => {
+                            setEircode(text);
+                            if (errors.eircode) {
+                              setErrors((prev) => ({ ...prev, eircode: "" }));
+                            }
+                          }}
+                          borderColor={
+                            errors.eircode
+                              ? rentalAppTheme.error
+                              : rentalAppTheme.border
+                          }
+                          borderWidth={1}
+                          padding="$3"
+                          borderRadius="$4"
+                          width="100%"
+                        />
+                        {errors.eircode && (
+                          <Text color={rentalAppTheme.error} fontSize="$2">
+                            {errors.eircode}
+                          </Text>
+                        )}
+                      </YStack>
                     </YStack>
                   )}
 
@@ -576,7 +796,7 @@ export default function RegisterScreen() {
                       fontSize={16}
                       textAlign="center"
                     >
-                      Already have an account? Login
+                      Already have an account?
                     </Text>
                   </Button>
 

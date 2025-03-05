@@ -14,6 +14,13 @@ import { rentalAppTheme } from "../../constants/Colors";
 import { useUserStore } from "@/store/user.store";
 import { AnimatePresence, View } from "tamagui";
 import { Feather } from "@expo/vector-icons";
+import { Alert } from "react-native";
+
+// Validation helper functions
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -23,13 +30,48 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!email) {
+      newErrors.email = "Email is required";
+    } else if (!isValidEmail(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleLogin = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
     try {
       await login(email, password);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Login failed:", err);
+      if (err?.response?.status === 401) {
+        Alert.alert(
+          "Login Failed",
+          "Invalid email or password. Please try again.",
+          [{ text: "OK" }]
+        );
+      } else {
+        Alert.alert(
+          "Login Error",
+          "An error occurred while trying to log in. Please try again.",
+          [{ text: "OK" }]
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -82,29 +124,61 @@ export default function LoginScreen() {
                   </Text>
                 )}
 
-                <Input
-                  placeholder="Email"
-                  value={email}
-                  onChangeText={(text) => setEmail(text.toLowerCase())}
-                  keyboardType="email-address"
-                  borderColor={rentalAppTheme.border}
-                  borderWidth={1}
-                  padding="$3"
-                  borderRadius="$4"
-                  width="100%"
-                />
+                <YStack space="$1" width="100%">
+                  <Input
+                    placeholder="Email"
+                    value={email}
+                    onChangeText={(text) => {
+                      setEmail(text.toLowerCase());
+                      if (errors.email) {
+                        setErrors((prev) => ({ ...prev, email: "" }));
+                      }
+                    }}
+                    keyboardType="email-address"
+                    borderColor={
+                      errors.email
+                        ? rentalAppTheme.error
+                        : rentalAppTheme.border
+                    }
+                    borderWidth={1}
+                    padding="$3"
+                    borderRadius="$4"
+                    width="100%"
+                  />
+                  {errors.email && (
+                    <Text color={rentalAppTheme.error} fontSize="$2">
+                      {errors.email}
+                    </Text>
+                  )}
+                </YStack>
 
-                <Input
-                  placeholder="Password"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  borderColor={rentalAppTheme.border}
-                  borderWidth={1}
-                  padding="$3"
-                  borderRadius="$4"
-                  width="100%"
-                />
+                <YStack space="$1" width="100%">
+                  <Input
+                    placeholder="Password"
+                    value={password}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                      if (errors.password) {
+                        setErrors((prev) => ({ ...prev, password: "" }));
+                      }
+                    }}
+                    secureTextEntry
+                    borderColor={
+                      errors.password
+                        ? rentalAppTheme.error
+                        : rentalAppTheme.border
+                    }
+                    borderWidth={1}
+                    padding="$3"
+                    borderRadius="$4"
+                    width="100%"
+                  />
+                  {errors.password && (
+                    <Text color={rentalAppTheme.error} fontSize="$2">
+                      {errors.password}
+                    </Text>
+                  )}
+                </YStack>
 
                 <Button
                   onPress={handleLogin}
