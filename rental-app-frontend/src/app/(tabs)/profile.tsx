@@ -10,6 +10,7 @@ import {
   Card,
   Input,
   Dialog,
+  Spinner,
 } from "tamagui";
 import { Feather } from "@expo/vector-icons";
 import { useUserStore } from "@/store/user.store";
@@ -287,21 +288,35 @@ export default function ProfileScreen() {
                   justifyContent="space-between"
                   paddingLeft="$1"
                 >
-                  <Text fontSize={16} color={rentalAppTheme.textDark}>
-                    €{user.balance?.toFixed(2) || "0.00"}
-                  </Text>
+                  <YStack>
+                    <Text
+                      fontSize={24}
+                      fontWeight="bold"
+                      color={rentalAppTheme.textDark}
+                    >
+                      €{user.balance?.toFixed(2) || "0.00"}
+                    </Text>
+                    <Text fontSize={14} color={rentalAppTheme.textLight}>
+                      Available balance
+                    </Text>
+                  </YStack>
                   <Button
-                    backgroundColor={rentalAppTheme.primaryDark}
+                    size="$3"
+                    circular
+                    backgroundColor={`${rentalAppTheme.primaryLight}30`}
                     pressStyle={{
-                      backgroundColor: rentalAppTheme.primaryDarkPressed,
-                      scale: 0.98,
+                      backgroundColor: `${rentalAppTheme.primaryLight}50`,
+                      scale: 0.97,
                     }}
                     onPress={() => setShowTopUpDialog(true)}
-                  >
-                    <Text color="white" fontSize={14} fontWeight="500">
-                      Top Up
-                    </Text>
-                  </Button>
+                    icon={
+                      <Feather
+                        name="plus"
+                        size={20}
+                        color={rentalAppTheme.primaryDark}
+                      />
+                    }
+                  />
                 </XStack>
               </Card>
             )}
@@ -461,6 +476,7 @@ export default function ProfileScreen() {
               opacity={0.5}
               enterStyle={{ opacity: 0 }}
               exitStyle={{ opacity: 0 }}
+              backgroundColor="rgba(0, 0, 0, 0.5)"
             />
             <Dialog.Content
               bordered
@@ -476,40 +492,101 @@ export default function ProfileScreen() {
               ]}
               enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
               exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-              padding="$4"
-              borderRadius={16}
+              padding="$5"
+              borderRadius={20}
               backgroundColor="white"
+              width={350}
+              shadowColor={rentalAppTheme.textDark}
+              shadowOffset={{ width: 0, height: 4 }}
+              shadowOpacity={0.15}
+              shadowRadius={16}
             >
-              <Dialog.Title>Top Up Balance</Dialog.Title>
-              <Dialog.Description>
-                Enter the amount you want to add to your balance
-              </Dialog.Description>
-              <YStack space="$4" marginTop="$4">
-                <Input
-                  placeholder="Amount in EUR"
-                  keyboardType="decimal-pad"
-                  value={amount}
-                  onChangeText={setAmount}
-                />
-                <XStack space="$4">
-                  <Button
-                    flex={1}
-                    backgroundColor={rentalAppTheme.border}
-                    onPress={() => setShowTopUpDialog(false)}
+              <YStack space="$4">
+                <YStack space="$2">
+                  <Text
+                    fontSize={24}
+                    fontWeight="700"
+                    color={rentalAppTheme.textDark}
                   >
-                    <Text>Cancel</Text>
-                  </Button>
+                    Top Up Balance
+                  </Text>
+                  <Text fontSize={16} color={rentalAppTheme.textLight}>
+                    Enter the amount you want to add
+                  </Text>
+                </YStack>
+
+                <Card
+                  bordered
+                  padding="$3"
+                  borderRadius={16}
+                  backgroundColor={`${rentalAppTheme.primaryLight}10`}
+                  borderColor={`${rentalAppTheme.primaryLight}30`}
+                >
+                  <XStack alignItems="center" space="$2">
+                    <Text
+                      fontSize={24}
+                      fontWeight="bold"
+                      color={rentalAppTheme.textDark}
+                    >
+                      €
+                    </Text>
+                    <Input
+                      flex={1}
+                      placeholder="0.00"
+                      keyboardType="decimal-pad"
+                      value={amount}
+                      onChangeText={setAmount}
+                      borderWidth={0}
+                      backgroundColor="transparent"
+                      fontSize={24}
+                      fontWeight="bold"
+                      color={rentalAppTheme.textDark}
+                      placeholderTextColor={`${rentalAppTheme.textLight}50`}
+                    />
+                  </XStack>
+                </Card>
+
+                <YStack space="$3" marginTop="$2">
                   <Button
-                    flex={1}
                     backgroundColor={rentalAppTheme.primaryDark}
+                    pressStyle={{
+                      backgroundColor: rentalAppTheme.primaryDarkPressed,
+                      scale: 0.98,
+                    }}
                     onPress={handleTopUp}
                     disabled={isLoading}
+                    borderRadius={12}
+                    height={50}
                   >
-                    <Text color="white">
-                      {isLoading ? "Processing..." : "Pay"}
+                    {isLoading ? (
+                      <XStack space="$2" alignItems="center">
+                        <Spinner color="white" />
+                        <Text color="white" fontSize={16} fontWeight="600">
+                          Processing...
+                        </Text>
+                      </XStack>
+                    ) : (
+                      <Text color="white" fontSize={16} fontWeight="600">
+                        Confirm Payment
+                      </Text>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    borderColor={rentalAppTheme.border}
+                    pressStyle={{
+                      backgroundColor: `${rentalAppTheme.border}20`,
+                      scale: 0.98,
+                    }}
+                    onPress={() => setShowTopUpDialog(false)}
+                    borderRadius={12}
+                    height={50}
+                  >
+                    <Text color={rentalAppTheme.textDark} fontSize={16}>
+                      Cancel
                     </Text>
                   </Button>
-                </XStack>
+                </YStack>
               </YStack>
             </Dialog.Content>
           </Dialog.Portal>
