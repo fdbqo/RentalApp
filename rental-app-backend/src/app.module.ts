@@ -1,22 +1,30 @@
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 dotenv.config();
 
-import { Module } from '@nestjs/common';
-import { PropertyModule } from './property/property.module';
-import { MongooseModule } from '@nestjs/mongoose';
-import { AuthModule } from './auth/auth.module';
-import { ChatsModule } from './chats/chats.module';
-import { RoomsModule } from './rooms/rooms.module';
-import { UploadModule } from './upload/upload.module';
+import { Module } from "@nestjs/common";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { MongooseModule } from "@nestjs/mongoose";
+import { AuthModule } from "./auth/auth.module";
+import { PropertyModule } from "./property/property.module";
+import { UploadModule } from "./upload/upload.module";
+import { ChatsModule } from "./chats/chats.module";
+import { RoomsModule } from "./rooms/rooms.module";
+import { PaymentModule } from "./payment/payment.module";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
-    PropertyModule,
+    ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGO_URI),
     AuthModule,
+    PropertyModule,
+    UploadModule,
     ChatsModule,
     RoomsModule,
-    UploadModule
-  ]
+    PaymentModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

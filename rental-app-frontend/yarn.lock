@@ -2584,6 +2584,11 @@
   dependencies:
     "@sinonjs/commons" "^3.0.0"
 
+"@stripe/stripe-react-native@^0.42.0":
+  version "0.42.0"
+  resolved "https://registry.npmjs.org/@stripe/stripe-react-native/-/stripe-react-native-0.42.0.tgz"
+  integrity sha512-iV8PpDJ913CBoyq1zDtAARpsZtA8dxRFsXhc7KXsIpw2qCEqlNPSrCP4LAxI7UufJLa/gYRR1xYfnH1GXCKPfw==
+
 "@swc/core-darwin-x64@1.11.5":
   version "1.11.5"
   resolved "https://registry.npmjs.org/@swc/core-darwin-x64/-/core-darwin-x64-1.11.5.tgz"
@@ -6005,7 +6010,7 @@ expo-web-browser@~13.0.3:
   resolved "https://registry.npmjs.org/expo-web-browser/-/expo-web-browser-13.0.3.tgz"
   integrity sha512-HXb7y82ApVJtqk8tManyudtTrCtx8xcUnVzmJECeHCB0SsWSQ+penVLZxJkcyATWoJOsFMnfVSVdrTcpKKGszQ==
 
-expo@*, expo@>=50.0.0, expo@~51.0.32:
+expo@*, expo@>=46.0.9, expo@>=50.0.0, expo@~51.0.32:
   version "51.0.39"
   resolved "https://registry.npmjs.org/expo/-/expo-51.0.39.tgz"
   integrity sha512-Cs/9xopyzJrpXWbyVUZnr37rprdFJorRgfSp6cdBfvbjxZeKnw2MEu7wJwV/s626i5lZTPGjZPHUF9uQvt51cg==

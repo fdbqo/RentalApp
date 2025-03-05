@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   YStack,
   XStack,
@@ -8,17 +8,27 @@ import {
   Theme,
   ScrollView,
   Card,
+  Input,
+  Dialog,
 } from "tamagui";
 import { Feather } from "@expo/vector-icons";
 import { useUserStore } from "@/store/user.store";
 import { UserAvatar } from "@/components/UserAvatar";
 import { AnimatePresence } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
+import { Alert } from "react-native";
+import { useStripe } from "@stripe/stripe-react-native";
+import axios from "axios";
+import { env } from "../../../env";
 
 export default function ProfileScreen() {
   const user = useUserStore((state) => state.user);
   const logout = useUserStore((state) => state.logout);
   const refreshUserData = useUserStore((state) => state.refreshUserData);
+  const [showTopUpDialog, setShowTopUpDialog] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   useEffect(() => {
     refreshUserData();
@@ -37,6 +47,51 @@ export default function ProfileScreen() {
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleTopUp = async () => {
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      Alert.alert("Invalid amount", "Please enter a valid amount");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await axios.post(
+        `${env.API_URL}/payment/create-payment-intent`,
+        { amount: Number(amount) }
+      );
+
+      const { clientSecret } = response.data;
+
+      const { error: initError } = await initPaymentSheet({
+        merchantDisplayName: "RentalApp",
+        paymentIntentClientSecret: clientSecret,
+      });
+
+      if (initError) {
+        Alert.alert("Error", initError.message);
+        return;
+      }
+
+      const { error: presentError } = await presentPaymentSheet();
+
+      if (presentError) {
+        Alert.alert("Error", presentError.message);
+      } else {
+        Alert.alert("Success", "Payment successful!");
+        setAmount("");
+        setShowTopUpDialog(false);
+        refreshUserData();
+      }
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Failed to process payment"
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -200,10 +255,26 @@ export default function ProfileScreen() {
                     Balance
                   </Text>
                 </XStack>
-                <XStack alignItems="center" space={16} paddingLeft="$1">
+                <XStack
+                  alignItems="center"
+                  justifyContent="space-between"
+                  paddingLeft="$1"
+                >
                   <Text fontSize={16} color={rentalAppTheme.textDark}>
                     €{user.balance?.toFixed(2) || "0.00"}
                   </Text>
+                  <Button
+                    backgroundColor={rentalAppTheme.primaryDark}
+                    pressStyle={{
+                      backgroundColor: rentalAppTheme.primaryDarkPressed,
+                      scale: 0.98,
+                    }}
+                    onPress={() => setShowTopUpDialog(true)}
+                  >
+                    <Text color="white" fontSize={14} fontWeight="500">
+                      Top Up
+                    </Text>
+                  </Button>
                 </XStack>
               </Card>
             )}
@@ -353,6 +424,69 @@ export default function ProfileScreen() {
             </Button>
           </YStack>
         </ScrollView>
+
+        {/* Top Up Dialog */}
+        <Dialog open={showTopUpDialog} onOpenChange={setShowTopUpDialog}>
+          <Dialog.Portal>
+            <Dialog.Overlay
+              key="overlay"
+              animation="quick"
+              opacity={0.5}
+              enterStyle={{ opacity: 0 }}
+              exitStyle={{ opacity: 0 }}
+            />
+            <Dialog.Content
+              bordered
+              elevate
+              key="content"
+              animation={[
+                "quick",
+                {
+                  opacity: {
+                    overshootClamping: true,
+                  },
+                },
+              ]}
+              enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
+              exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
+              padding="$4"
+              borderRadius={16}
+              backgroundColor="white"
+            >
+              <Dialog.Title>Top Up Balance</Dialog.Title>
+              <Dialog.Description>
+                Enter the amount you want to add to your balance
+              </Dialog.Description>
+              <YStack space="$4" marginTop="$4">
+                <Input
+                  placeholder="Amount in EUR"
+                  keyboardType="decimal-pad"
+                  value={amount}
+                  onChangeText={setAmount}
+                />
+                <XStack space="$4">
+                  <Button
+                    flex={1}
+                    backgroundColor={rentalAppTheme.border}
+                    onPress={() => setShowTopUpDialog(false)}
+                  >
+                    <Text>Cancel</Text>
+                  </Button>
+                  <Button
+                    flex={1}
+                    backgroundColor={rentalAppTheme.primaryDark}
+                    onPress={handleTopUp}
+                    disabled={isLoading}
+                  >
+                    <Text color="white">
+                      {isLoading ? "Processing..." : "Pay"}
+                    </Text>
+                  </Button>
+                </XStack>
+              </YStack>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog>
       </YStack>
     </Theme>
   );
