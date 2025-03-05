@@ -11,11 +11,61 @@ import {
   Card,
   Spinner,
   Circle,
+  Select,
+  Sheet,
+  Adapt,
 } from "tamagui";
 import { AnimatePresence, View } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
 import { useUserStore } from "@/store/user.store";
 import { Feather } from "@expo/vector-icons";
+import { ChevronDown, Check } from "@tamagui/lucide-icons";
+
+// Counties and cities data
+const countiesToCities = {
+  Carlow: [
+    "Carlow Town",
+    "Tullow",
+    "Muine Bheag (Borrisokane)",
+    "Borris",
+    "Leighlinbridge",
+  ],
+  Dublin: [
+    "Dublin City",
+    "Swords",
+    "Tallaght",
+    "Blanchardstown",
+    "Malahide",
+    "Lucan",
+    "Clondalkin",
+    "Dun Laoghaire",
+  ],
+  Cork: [
+    "Cork City",
+    "Ballincollig",
+    "Carrigaline",
+    "Cobh",
+    "Midleton",
+    "Mallow",
+  ],
+  Galway: [
+    "Galway City",
+    "Salthill",
+    "Oranmore",
+    "Athenry",
+    "Ballinasloe",
+    "Tuam",
+  ],
+  Kerry: [
+    "Tralee",
+    "Killarney",
+    "Dingle",
+    "Kenmare",
+    "Listowel",
+    "Castleisland",
+  ],
+  // Add more counties as needed...
+};
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -33,14 +83,51 @@ export default function RegisterScreen() {
   const [city, setCity] = React.useState("");
   const [county, setCounty] = React.useState("");
   const [eircode, setEircode] = React.useState("");
-  const [error, setError] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
 
   const register = useUserStore((state) => state.register);
   const userError = useUserStore((state) => state.error);
 
+  const availableCities =
+    county && countiesToCities[county] ? countiesToCities[county] : [];
+
+  const handleCountyChange = React.useCallback((value: string) => {
+    setCounty(value);
+    setCity(""); // Reset city when county changes
+    setErrors((prev) => ({ ...prev, county: "", city: "" }));
+  }, []);
+
+  const handleCityChange = React.useCallback((value: string) => {
+    setCity(value);
+    setErrors((prev) => ({ ...prev, city: "" }));
+  }, []);
+
   const handleRegister = async () => {
     setLoading(true);
+    const newErrors: { [key: string]: string } = {};
+
+    if (userType === "landlord") {
+      if (!addressLine) {
+        newErrors.addressLine = "Address is required";
+      }
+      if (!county) {
+        newErrors.county = "County is required";
+      }
+      if (!city) {
+        newErrors.city = "City is required";
+      }
+      if (!eircode) {
+        newErrors.eircode = "Eircode is required";
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        setLoading(false);
+        return;
+      }
+    }
+
     const userData: any = {
       firstName,
       lastName,
@@ -54,12 +141,6 @@ export default function RegisterScreen() {
     }
 
     if (userType === "landlord") {
-      if (!addressLine || !city || !county || !eircode) {
-        setError("Please fill in all address fields");
-        setLoading(false);
-        return;
-      }
-
       userData.address = {
         addressLine1: addressLine,
         city,
@@ -74,7 +155,10 @@ export default function RegisterScreen() {
       await register(userData);
       router.push("/screens/LoginScreen");
     } catch (err) {
-      setError(userError || "Registration failed");
+      setErrors((prev) => ({
+        ...prev,
+        general: userError || "Registration failed",
+      }));
     } finally {
       setLoading(false);
     }
@@ -121,9 +205,9 @@ export default function RegisterScreen() {
                   </Text>
 
                   {/* Error Message */}
-                  {error && (
+                  {errors.general && (
                     <Text color="red" textAlign="center">
-                      {error}
+                      {errors.general}
                     </Text>
                   )}
 
@@ -260,6 +344,180 @@ export default function RegisterScreen() {
                   {/* Address - Landlord Only */}
                   {userType === "landlord" && (
                     <YStack space="$4" width="100%">
+                      <XStack space="$4">
+                        {/* County Dropdown */}
+                        <YStack flex={1}>
+                          <Text
+                            fontSize="$4"
+                            fontWeight="500"
+                            color={rentalAppTheme.text.secondary}
+                            marginBottom="$2"
+                          >
+                            County
+                          </Text>
+                          <Select
+                            value={county}
+                            onValueChange={handleCountyChange}
+                            disablePreventBodyScroll
+                          >
+                            <Select.Trigger
+                              backgroundColor="transparent"
+                              borderColor={
+                                errors.county
+                                  ? rentalAppTheme.error
+                                  : rentalAppTheme.border
+                              }
+                              borderWidth={1}
+                              borderRadius="$4"
+                              padding="$3"
+                              iconAfter={ChevronDown}
+                            >
+                              <Select.Value placeholder="Select" />
+                            </Select.Trigger>
+                            <Adapt when="sm" platform="touch">
+                              <Sheet
+                                modal
+                                dismissOnSnapToBottom
+                                animation="medium"
+                                snapPoints={[45]}
+                                position={0}
+                                zIndex={200000}
+                              >
+                                <Sheet.Overlay
+                                  animation="lazy"
+                                  enterStyle={{ opacity: 0 }}
+                                  exitStyle={{ opacity: 0 }}
+                                />
+                                <Sheet.Frame>
+                                  <Sheet.ScrollView>
+                                    <Adapt.Contents />
+                                  </Sheet.ScrollView>
+                                </Sheet.Frame>
+                              </Sheet>
+                            </Adapt>
+                            <Select.Content>
+                              <Select.Viewport>
+                                <Select.Group>
+                                  <Select.Label>County</Select.Label>
+                                  {Object.keys(countiesToCities).map(
+                                    (county, i) => (
+                                      <Select.Item
+                                        key={county}
+                                        value={county}
+                                        index={i}
+                                      >
+                                        <Select.ItemText>
+                                          {county}
+                                        </Select.ItemText>
+                                        <Select.ItemIndicator marginLeft="auto">
+                                          <Check size={16} />
+                                        </Select.ItemIndicator>
+                                      </Select.Item>
+                                    )
+                                  )}
+                                </Select.Group>
+                              </Select.Viewport>
+                            </Select.Content>
+                          </Select>
+                          {errors.county && (
+                            <Text color={rentalAppTheme.error} fontSize="$2">
+                              {errors.county}
+                            </Text>
+                          )}
+                        </YStack>
+
+                        {/* City Dropdown */}
+                        <YStack flex={1}>
+                          <Text
+                            fontSize="$4"
+                            fontWeight="500"
+                            color={rentalAppTheme.text.secondary}
+                            marginBottom="$2"
+                          >
+                            City
+                          </Text>
+                          <Select
+                            value={city}
+                            onValueChange={handleCityChange}
+                            disablePreventBodyScroll
+                          >
+                            <Select.Trigger
+                              backgroundColor="transparent"
+                              borderColor={
+                                errors.city
+                                  ? rentalAppTheme.error
+                                  : rentalAppTheme.border
+                              }
+                              borderWidth={1}
+                              borderRadius="$4"
+                              padding="$3"
+                              iconAfter={ChevronDown}
+                            >
+                              <Select.Value
+                                placeholder={
+                                  county ? "Select" : "Select"
+                                }
+                              />
+                            </Select.Trigger>
+                            <Adapt when="sm" platform="touch">
+                              <Sheet
+                                modal
+                                dismissOnSnapToBottom
+                                animation="medium"
+                                snapPoints={[45]}
+                                position={0}
+                                zIndex={200000}
+                              >
+                                <Sheet.Overlay
+                                  animation="lazy"
+                                  enterStyle={{ opacity: 0 }}
+                                  exitStyle={{ opacity: 0 }}
+                                />
+                                <Sheet.Frame>
+                                  <Sheet.ScrollView>
+                                    <Adapt.Contents />
+                                  </Sheet.ScrollView>
+                                </Sheet.Frame>
+                              </Sheet>
+                            </Adapt>
+                            <Select.Content>
+                              <Select.Viewport>
+                                <Select.Group>
+                                  <Select.Label>City</Select.Label>
+                                  {availableCities.length > 0 ? (
+                                    availableCities.map((city, i) => (
+                                      <Select.Item
+                                        key={city}
+                                        value={city}
+                                        index={i}
+                                      >
+                                        <Select.ItemText>
+                                          {city}
+                                        </Select.ItemText>
+                                        <Select.ItemIndicator marginLeft="auto">
+                                          <Check size={16} />
+                                        </Select.ItemIndicator>
+                                      </Select.Item>
+                                    ))
+                                  ) : (
+                                    <Select.Item value="" disabled index={0}>
+                                      <Select.ItemText>
+                                        No cities available
+                                      </Select.ItemText>
+                                    </Select.Item>
+                                  )}
+                                </Select.Group>
+                              </Select.Viewport>
+                            </Select.Content>
+                          </Select>
+                          {errors.city && (
+                            <Text color={rentalAppTheme.error} fontSize="$2">
+                              {errors.city}
+                            </Text>
+                          )}
+                        </YStack>
+                      </XStack>
+
                       <Input
                         placeholder="Address Line"
                         value={addressLine}
@@ -270,26 +528,7 @@ export default function RegisterScreen() {
                         borderRadius="$4"
                         width="100%"
                       />
-                      <Input
-                        placeholder="City"
-                        value={city}
-                        onChangeText={setCity}
-                        borderColor={rentalAppTheme.border}
-                        borderWidth={1}
-                        padding="$3"
-                        borderRadius="$4"
-                        width="100%"
-                      />
-                      <Input
-                        placeholder="County"
-                        value={county}
-                        onChangeText={setCounty}
-                        borderColor={rentalAppTheme.border}
-                        borderWidth={1}
-                        padding="$3"
-                        borderRadius="$4"
-                        width="100%"
-                      />
+
                       <Input
                         placeholder="Eircode"
                         value={eircode}
