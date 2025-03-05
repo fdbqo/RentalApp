@@ -59,4 +59,7 @@ export class CreateUserDto {
   @ValidateNested()
   @Type(() => AddressDto)
   address?: AddressDto;
+
+  @IsOptional()
+  balance?: number;
 }

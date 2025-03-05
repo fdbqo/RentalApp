@@ -3,6 +3,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "@/store/interfaces/User";
 import { env } from "../../env";
+
 interface UserState {
   user: User | null;
   token: string | null;
@@ -13,9 +14,8 @@ interface UserState {
   restoreAuthState: () => Promise<void>;
   register: (userData: any) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUserData: () => Promise<void>;
 }
-
-const API_URL = env.EXPO_PUBLIC_API_URL;
 
 export const useUserStore = create<UserState>((set, get) => ({
   user: null,
@@ -23,15 +23,46 @@ export const useUserStore = create<UserState>((set, get) => ({
   isAuthenticated: false,
   error: null,
 
+  refreshUserData: async () => {
+    try {
+      const token = get().token;
+      const user = get().user;
+
+      if (!token || !user) {
+        return;
+      }
+
+      const response = await axios.get(`${env.API_URL}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const updatedUser = response.data;
+      await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+      set({ user: updatedUser });
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+    }
+  },
+
   login: async (email: string, password: string) => {
     try {
       const timestamp = new Date().toISOString();
-      console.log(`[${timestamp}] Initiating login request:`, { email: email.toLowerCase() });
-      console.log("Sending login request:", { email: email.toLowerCase(), password });
-      const response = await axios.post(`${API_URL}/auth/login`, {
+      console.log(`[${timestamp}] Initiating login request:`, {
+        email: email.toLowerCase(),
+      });
+      console.log("Sending login request:", {
         email: email.toLowerCase(),
         password,
       });
+      const response = await axios.post(
+        `${env.EXPO_PUBLIC_API_URL}/auth/login`,
+        {
+          email: email.toLowerCase(),
+          password,
+        }
+      );
       const { user, access_token } = response.data;
 
       console.log("Login response user data:", user);
@@ -52,7 +83,10 @@ export const useUserStore = create<UserState>((set, get) => ({
       console.log("Token stored:", access_token);
     } catch (error: any) {
       const timestamp = new Date().toISOString();
-      console.error(`[${timestamp}] Login failed:`, error.response?.data || error.message);
+      console.error(
+        `[${timestamp}] Login failed:`,
+        error.response?.data || error.message
+      );
       console.error(
         "Error during login:",
         error.response?.data || error.message
@@ -71,7 +105,9 @@ export const useUserStore = create<UserState>((set, get) => ({
 
       if (token && userString) {
         const user = JSON.parse(userString);
-        console.log(`[${timestamp}] Auth state restored - User ID: ${user._id}`);
+        console.log(
+          `[${timestamp}] Auth state restored - User ID: ${user._id}`
+        );
         console.log(`[${timestamp}] Token present: ${!!token}`);
         console.log("Restored user from AsyncStorage:", user);
 
@@ -82,7 +118,9 @@ export const useUserStore = create<UserState>((set, get) => ({
           error: null,
         });
       } else {
-        console.log(`[${timestamp}] No auth state to restore - Token: ${!!token}, User: ${!!userString}`);
+        console.log(
+          `[${timestamp}] No auth state to restore - Token: ${!!token}, User: ${!!userString}`
+        );
         console.log("No user token found in AsyncStorage");
       }
     } catch (error) {
@@ -98,8 +136,11 @@ export const useUserStore = create<UserState>((set, get) => ({
         ...userData,
         email: userData.email.toLowerCase(),
       };
-      
-      const response = await axios.post(`${API_URL}/auth/register`, normalizedUserData);
+
+      const response = await axios.post(
+        `${env.EXPO_PUBLIC_API_URL}/auth/register`,
+        normalizedUserData
+      );
 
       if (response.status === 201 || response.status === 200) {
         set({ error: null });

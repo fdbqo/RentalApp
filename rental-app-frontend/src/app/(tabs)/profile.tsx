@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   YStack,
   XStack,
@@ -18,6 +18,11 @@ import { rentalAppTheme } from "../../constants/Colors";
 export default function ProfileScreen() {
   const user = useUserStore((state) => state.user);
   const logout = useUserStore((state) => state.logout);
+  const refreshUserData = useUserStore((state) => state.refreshUserData);
+
+  useEffect(() => {
+    refreshUserData();
+  }, []);
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : "";
 
@@ -157,6 +162,51 @@ export default function ProfileScreen() {
                 </XStack>
               )}
             </Card>
+
+            {/* Balance Card - Only for Landlords */}
+            {user?.userType === "landlord" && (
+              <Card
+                bordered
+                elevate
+                padding="$4"
+                borderRadius={16}
+                backgroundColor="white"
+                animation="bouncy"
+                scale={0.97}
+                hoverStyle={{ scale: 1 }}
+                pressStyle={{ scale: 0.96 }}
+                shadowColor={rentalAppTheme.textDark}
+                shadowOffset={{ width: 0, height: 2 }}
+                shadowOpacity={0.1}
+                shadowRadius={4}
+              >
+                <XStack alignItems="center" space={12} marginBottom="$3">
+                  <YStack
+                    backgroundColor={`${rentalAppTheme.primaryLight}30`}
+                    padding="$2"
+                    borderRadius={12}
+                  >
+                    <Feather
+                      name="credit-card"
+                      size={20}
+                      color={rentalAppTheme.primaryDark}
+                    />
+                  </YStack>
+                  <Text
+                    fontSize={18}
+                    fontWeight="600"
+                    color={rentalAppTheme.textDark}
+                  >
+                    Balance
+                  </Text>
+                </XStack>
+                <XStack alignItems="center" space={16} paddingLeft="$1">
+                  <Text fontSize={16} color={rentalAppTheme.textDark}>
+                    €{user.balance?.toFixed(2) || "0.00"}
+                  </Text>
+                </XStack>
+              </Card>
+            )}
 
             {/* Contact Card */}
             <Card

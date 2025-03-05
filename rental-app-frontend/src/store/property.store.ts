@@ -5,7 +5,7 @@ import { PropertyState } from "./interfaces/PropertyState";
 import { useUserStore } from "./user.store";
 import { env } from "../../env";
 
-const API_URL = env.EXPO_PUBLIC_API_URL;
+const API_URL = env.API_URL;
 
 export const usePropertyStore = create<PropertyState>((set, get) => ({
   properties: [],
@@ -40,11 +40,11 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     try {
       // Create form data
       const formData = new FormData();
-      const filename = imageUri.split('/').pop() || 'image.jpg';
+      const filename = imageUri.split("/").pop() || "image.jpg";
       const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
-      
-      formData.append('file', {
+      const type = match ? `image/${match[1]}` : "image/jpeg";
+
+      formData.append("file", {
         uri: imageUri,
         name: filename,
         type,
@@ -54,17 +54,21 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       const token = useUserStore.getState().token;
 
       // Upload to S3 through backend
-      const response = await axios.post(`${API_URL}/upload?folder=properties`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post(
+        `${API_URL}/upload?folder=properties`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      console.log('Image upload response:', response.data);
+      console.log("Image upload response:", response.data);
       return response.data;
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error("Error uploading image:", error);
       throw error;
     }
   },
@@ -74,7 +78,9 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const cleanFilters = Object.fromEntries(
-        Object.entries(filters).filter(([_, value]) => value !== undefined && value !== '')
+        Object.entries(filters).filter(
+          ([_, value]) => value !== undefined && value !== ""
+        )
       );
 
       const response = await axios.get(`${API_URL}/listings`, {
@@ -84,35 +90,46 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       console.log("API Response Data:", response.data); // Debugging
 
       // Process images to ensure they have valid URLs
-      const processedProperties = await Promise.all(response.data.map(async (property) => {
-        if (property.images && property.images.length > 0) {
-          // Process each image to ensure it has a valid URL
-          const processedImages = await Promise.all(property.images.map(async (img) => {
-            // If the URI is already a full URL, use it
-            if (img.uri && (img.uri.startsWith('http://') || img.uri.startsWith('https://'))) {
-              return img;
-            }
-            
-            // Otherwise, get a signed URL from the backend
-            try {
-              const signedUrlResponse = await axios.get(`${API_URL}/upload/${encodeURIComponent(img.uri)}`);
-              return { ...img, uri: signedUrlResponse.data.url };
-            } catch (error) {
-              console.error('Error getting signed URL:', error);
-              return img; // Return original image if we can't get a signed URL
-            }
-          }));
-          
-          return { ...property, images: processedImages };
-        }
-        return property;
-      }));
+      const processedProperties = await Promise.all(
+        response.data.map(async (property) => {
+          if (property.images && property.images.length > 0) {
+            // Process each image to ensure it has a valid URL
+            const processedImages = await Promise.all(
+              property.images.map(async (img) => {
+                // If the URI is already a full URL, use it
+                if (
+                  img.uri &&
+                  (img.uri.startsWith("http://") ||
+                    img.uri.startsWith("https://"))
+                ) {
+                  return img;
+                }
+
+                // Otherwise, get a signed URL from the backend
+                try {
+                  const signedUrlResponse = await axios.get(
+                    `${API_URL}/upload/${encodeURIComponent(img.uri)}`
+                  );
+                  return { ...img, uri: signedUrlResponse.data.url };
+                } catch (error) {
+                  console.error("Error getting signed URL:", error);
+                  return img; // Return original image if we can't get a signed URL
+                }
+              })
+            );
+
+            return { ...property, images: processedImages };
+          }
+          return property;
+        })
+      );
 
       set({ properties: processedProperties, isLoading: false });
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      console.error("Error fetching properties:", error);
       set({
-        error: error instanceof Error ? error.message : "Failed to fetch properties",
+        error:
+          error instanceof Error ? error.message : "Failed to fetch properties",
         isLoading: false,
       });
     }
@@ -120,56 +137,66 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
 
   fetchLandlordProperties: async () => {
     set({ isLoading: true, error: null });
-  
+
     const userId = useUserStore.getState().user?._id;
-  
+
     if (!userId) {
       set({ isLoading: false, error: "User not logged in" });
       return;
     }
-  
+
     try {
       const response = await axios.get(`${API_URL}/listings`, {
         params: { lenderId: userId },
       });
 
       console.log("API Response Data:", response.data); // Debugging
-  
+
       // Process images to ensure they have valid URLs
-      const processedProperties = await Promise.all(response.data.map(async (property) => {
-        if (property.images && property.images.length > 0) {
-          // Process each image to ensure it has a valid URL
-          const processedImages = await Promise.all(property.images.map(async (img) => {
-            // If the URI is already a full URL, use it
-            if (img.uri && (img.uri.startsWith('http://') || img.uri.startsWith('https://'))) {
-              return img;
-            }
-            
-            // Otherwise, get a signed URL from the backend
-            try {
-              const signedUrlResponse = await axios.get(`${API_URL}/upload/${encodeURIComponent(img.uri)}`);
-              return { ...img, uri: signedUrlResponse.data.url };
-            } catch (error) {
-              console.error('Error getting signed URL:', error);
-              return img; // Return original image if we can't get a signed URL
-            }
-          }));
-          
-          return { ...property, images: processedImages };
-        }
-        return property;
-      }));
+      const processedProperties = await Promise.all(
+        response.data.map(async (property) => {
+          if (property.images && property.images.length > 0) {
+            // Process each image to ensure it has a valid URL
+            const processedImages = await Promise.all(
+              property.images.map(async (img) => {
+                // If the URI is already a full URL, use it
+                if (
+                  img.uri &&
+                  (img.uri.startsWith("http://") ||
+                    img.uri.startsWith("https://"))
+                ) {
+                  return img;
+                }
+
+                // Otherwise, get a signed URL from the backend
+                try {
+                  const signedUrlResponse = await axios.get(
+                    `${API_URL}/upload/${encodeURIComponent(img.uri)}`
+                  );
+                  return { ...img, uri: signedUrlResponse.data.url };
+                } catch (error) {
+                  console.error("Error getting signed URL:", error);
+                  return img; // Return original image if we can't get a signed URL
+                }
+              })
+            );
+
+            return { ...property, images: processedImages };
+          }
+          return property;
+        })
+      );
 
       set({ properties: processedProperties, isLoading: false });
     } catch (error) {
-      console.error('Error fetching landlord properties:', error);
+      console.error("Error fetching landlord properties:", error);
       set({
-        error: error instanceof Error ? error.message : "Failed to fetch properties",
+        error:
+          error instanceof Error ? error.message : "Failed to fetch properties",
         isLoading: false,
       });
     }
   },
-  
 
   // Modified createProperty function
   createProperty: async () => {
@@ -188,7 +215,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       // Upload all images first
       const uploadedImages = await Promise.all(
         formData.images.map(async (img) => {
-          if (img.uri.startsWith('http')) {
+          if (img.uri.startsWith("http")) {
             // Image is already uploaded, return as is
             return { uri: img.uri };
           }
@@ -263,47 +290,55 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // First check if we already have this property in our properties array
-      const existingProperty = get().properties.find(p => p._id === id);
+      const existingProperty = get().properties.find((p) => p._id === id);
       if (existingProperty) {
         set({ selectedProperty: existingProperty, isLoading: false });
         return;
       }
 
       const response = await axios.get(`${API_URL}/listings/${id}`);
-      
+
       // Process images to ensure they have valid URLs
       const property = response.data;
       if (property.images && property.images.length > 0) {
         // Process each image to ensure it has a valid URL
-        const processedImages = await Promise.all(property.images.map(async (img) => {
-          // If the URI is already a full URL, use it
-          if (img.uri && (img.uri.startsWith('http://') || img.uri.startsWith('https://'))) {
-            return img;
-          }
-          
-          // Otherwise, get a signed URL from the backend
-          try {
-            const signedUrlResponse = await axios.get(`${API_URL}/upload/${encodeURIComponent(img.uri)}`);
-            return { ...img, uri: signedUrlResponse.data.url };
-          } catch (error) {
-            console.error('Error getting signed URL:', error);
-            return img; // Return original image if we can't get a signed URL
-          }
-        }));
-        
+        const processedImages = await Promise.all(
+          property.images.map(async (img) => {
+            // If the URI is already a full URL, use it
+            if (
+              img.uri &&
+              (img.uri.startsWith("http://") || img.uri.startsWith("https://"))
+            ) {
+              return img;
+            }
+
+            // Otherwise, get a signed URL from the backend
+            try {
+              const signedUrlResponse = await axios.get(
+                `${API_URL}/upload/${encodeURIComponent(img.uri)}`
+              );
+              return { ...img, uri: signedUrlResponse.data.url };
+            } catch (error) {
+              console.error("Error getting signed URL:", error);
+              return img; // Return original image if we can't get a signed URL
+            }
+          })
+        );
+
         property.images = processedImages;
       }
-      
+
       // Update both selectedProperty and add to properties array for caching
-      set(state => ({
+      set((state) => ({
         selectedProperty: property,
-        properties: [...state.properties.filter(p => p._id !== id), property],
-        isLoading: false
+        properties: [...state.properties.filter((p) => p._id !== id), property],
+        isLoading: false,
       }));
     } catch (error) {
-      console.error('Error fetching property by ID:', error);
+      console.error("Error fetching property by ID:", error);
       set({
-        error: error instanceof Error ? error.message : "Failed to fetch property",
+        error:
+          error instanceof Error ? error.message : "Failed to fetch property",
         isLoading: false,
       });
     }
@@ -394,33 +429,40 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     try {
       // If there are images in the property data, make sure they have proper URLs
       if (propertyData.images && propertyData.images.length > 0) {
-        const processedImages = await Promise.all(propertyData.images.map(async (img) => {
-          // If the image is already a full URL, use it
-          if (img.uri && (img.uri.startsWith('http://') || img.uri.startsWith('https://'))) {
-            return img;
-          }
-          
-          // If it's a local file, upload it first
-          if (img.uri && !img.uri.startsWith('properties/')) {
-            try {
-              const uploadResult = await get().uploadImage(img.uri);
-              return { uri: uploadResult.url };
-            } catch (error) {
-              console.error('Error uploading image during update:', error);
+        const processedImages = await Promise.all(
+          propertyData.images.map(async (img) => {
+            // If the image is already a full URL, use it
+            if (
+              img.uri &&
+              (img.uri.startsWith("http://") || img.uri.startsWith("https://"))
+            ) {
               return img;
             }
-          }
-          
-          // Otherwise, get a signed URL from the backend
-          try {
-            const signedUrlResponse = await axios.get(`${API_URL}/upload/${encodeURIComponent(img.uri)}`);
-            return { ...img, uri: signedUrlResponse.data.url };
-          } catch (error) {
-            console.error('Error getting signed URL during update:', error);
-            return img;
-          }
-        }));
-        
+
+            // If it's a local file, upload it first
+            if (img.uri && !img.uri.startsWith("properties/")) {
+              try {
+                const uploadResult = await get().uploadImage(img.uri);
+                return { uri: uploadResult.url };
+              } catch (error) {
+                console.error("Error uploading image during update:", error);
+                return img;
+              }
+            }
+
+            // Otherwise, get a signed URL from the backend
+            try {
+              const signedUrlResponse = await axios.get(
+                `${API_URL}/upload/${encodeURIComponent(img.uri)}`
+              );
+              return { ...img, uri: signedUrlResponse.data.url };
+            } catch (error) {
+              console.error("Error getting signed URL during update:", error);
+              return img;
+            }
+          })
+        );
+
         propertyData.images = processedImages;
       }
 
@@ -432,20 +474,30 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
       // Process the returned property to ensure images have valid URLs
       const updatedProperty = response.data;
       if (updatedProperty.images && updatedProperty.images.length > 0) {
-        const processedImages = await Promise.all(updatedProperty.images.map(async (img) => {
-          if (img.uri && (img.uri.startsWith('http://') || img.uri.startsWith('https://'))) {
-            return img;
-          }
-          
-          try {
-            const signedUrlResponse = await axios.get(`${API_URL}/upload/${encodeURIComponent(img.uri)}`);
-            return { ...img, uri: signedUrlResponse.data.url };
-          } catch (error) {
-            console.error('Error getting signed URL for updated property:', error);
-            return img;
-          }
-        }));
-        
+        const processedImages = await Promise.all(
+          updatedProperty.images.map(async (img) => {
+            if (
+              img.uri &&
+              (img.uri.startsWith("http://") || img.uri.startsWith("https://"))
+            ) {
+              return img;
+            }
+
+            try {
+              const signedUrlResponse = await axios.get(
+                `${API_URL}/upload/${encodeURIComponent(img.uri)}`
+              );
+              return { ...img, uri: signedUrlResponse.data.url };
+            } catch (error) {
+              console.error(
+                "Error getting signed URL for updated property:",
+                error
+              );
+              return img;
+            }
+          })
+        );
+
         updatedProperty.images = processedImages;
       }
 
@@ -462,7 +514,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
 
       return updatedProperty;
     } catch (error) {
-      console.error('Error updating property:', error);
+      console.error("Error updating property:", error);
       set({
         error:
           error instanceof Error ? error.message : "Failed to update property",

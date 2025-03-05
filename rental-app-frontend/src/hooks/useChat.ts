@@ -6,7 +6,7 @@ import { useUserStore } from "../store/user.store";
 import { debounce } from "lodash";
 import { env } from "../../env";
 
-const API_URL = env.EXPO_PUBLIC_API_URL;
+const API_URL = env.API_URL;
 
 export const useChat = (roomId?: string) => {
   const {
@@ -33,12 +33,9 @@ export const useChat = (roomId?: string) => {
 
       try {
         setLoading(true);
-        const response = await fetch(
-          `${API_URL}/rooms/${roomId}/chats`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await fetch(`${API_URL}/rooms/${roomId}/chats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (!response.ok) throw new Error("Failed to fetch messages");
 

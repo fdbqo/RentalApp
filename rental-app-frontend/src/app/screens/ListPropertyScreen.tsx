@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { KeyboardTypeOptions, ScrollView } from "react-native";
+import { KeyboardTypeOptions, ScrollView, Alert } from "react-native";
 import {
   YStack,
   XStack,
@@ -536,6 +536,7 @@ const countiesToCities = {
 
 export default function ListPropertyScreen() {
   const router = useRouter();
+  const isLoading = usePropertyStore((state) => state.isLoading);
   const [formData, setFormData] = useState({
     price: "",
     availability: "immediately",
@@ -1365,13 +1366,43 @@ export default function ListPropertyScreen() {
                   formData.bathrooms ? Number(formData.bathrooms) : null
                 );
                 propertyStore.setHouseAddress(formData.houseAddress);
+
                 try {
                   await propertyStore.createProperty();
                   router.replace("/(tabs)");
-                } catch (error) {
-                  console.error("Failed to create property:", error);
+                } catch (error: any) {
+                  if (error.response?.data?.message) {
+                    if (
+                      error.response.data.message.includes(
+                        "Insufficient balance"
+                      )
+                    ) {
+                      Alert.alert(
+                        "Insufficient Balance",
+                        `You don't have enough balance to list this property. The listing fee is €${(
+                          Number(formData.price) * 0.03
+                        ).toFixed(2)}. Please top up your balance to continue.`,
+                        [
+                          {
+                            text: "View Balance",
+                            onPress: () => router.push("/(tabs)/profile"),
+                          },
+                          { text: "OK", style: "cancel" },
+                        ]
+                      );
+                    } else {
+                      Alert.alert("Error", error.response.data.message);
+                    }
+                  } else {
+                    console.error("Failed to create property:", error);
+                    Alert.alert(
+                      "Error",
+                      "Failed to create property. Please try again."
+                    );
+                  }
                 }
               }}
+              disabled={isLoading}
             >
               <Text
                 color="white"
@@ -1379,7 +1410,11 @@ export default function ListPropertyScreen() {
                 fontWeight="bold"
                 textAlign="center"
               >
-                List Property
+                {isLoading
+                  ? "Listing property..."
+                  : `List Property for €${(
+                      Number(formData.price) * 0.03
+                    ).toFixed(2)} for 30 days`}
               </Text>
             </Button>
           </YStack>
