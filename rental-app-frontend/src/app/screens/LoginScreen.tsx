@@ -1,9 +1,19 @@
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
-import { YStack, XStack, Text, Button, Input, Theme, Card, Spinner } from "tamagui";
+import {
+  YStack,
+  XStack,
+  Text,
+  Button,
+  Input,
+  Theme,
+  Card,
+  Spinner,
+} from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
 import { useUserStore } from "@/store/user.store";
 import { AnimatePresence, View } from "tamagui";
+import { Feather } from "@expo/vector-icons";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -27,22 +37,45 @@ export default function LoginScreen() {
 
   return (
     <Theme name="light">
-      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor={rentalAppTheme.backgroundLight} padding="$4">
+      <YStack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        backgroundColor={rentalAppTheme.backgroundLight}
+        padding="$4"
+      >
         <AnimatePresence>
-          <View 
+          <View
             animation="lazy"
             enterStyle={{ opacity: 0, translateY: 20 }}
             exitStyle={{ opacity: 0, translateY: -20 }}
           >
-            <Card elevate shadowColor="gray" shadowOpacity={0.2} padding="$6" borderRadius="$6" width={350} backgroundColor="white">
+            <Card
+              elevate
+              shadowColor="gray"
+              shadowOpacity={0.2}
+              padding="$6"
+              borderRadius="$6"
+              width={350}
+              backgroundColor="white"
+            >
               <YStack space="$4" alignItems="center">
-                <Text fontSize={28} fontWeight="bold" color={rentalAppTheme.textDark}>
+                <Text
+                  fontSize={28}
+                  fontWeight="bold"
+                  color={rentalAppTheme.textDark}
+                >
                   Welcome Back
                 </Text>
-                <Text fontSize={16} color={rentalAppTheme.textLight} textAlign="center" marginBottom="$4">
+                <Text
+                  fontSize={16}
+                  color={rentalAppTheme.textLight}
+                  textAlign="center"
+                  marginBottom="$4"
+                >
                   Sign in to continue
                 </Text>
-                
+
                 {error && (
                   <Text color="red" textAlign="center">
                     {error}
@@ -60,7 +93,7 @@ export default function LoginScreen() {
                   borderRadius="$4"
                   width="100%"
                 />
-                
+
                 <Input
                   placeholder="Password"
                   value={password}
@@ -81,7 +114,9 @@ export default function LoginScreen() {
                   width="100%"
                   disabled={loading}
                 >
-                  {loading ? <Spinner color="white" size="small" /> : (
+                  {loading ? (
+                    <Spinner color="white" size="small" />
+                  ) : (
                     <Text color="white" fontSize={16} textAlign="center">
                       Login
                     </Text>
@@ -96,23 +131,33 @@ export default function LoginScreen() {
                   width="100%"
                   onPress={() => router.push("/screens/RegisterScreen")}
                 >
-                  <Text color={rentalAppTheme.textDark} fontSize={16} textAlign="center">
+                  <Text
+                    color={rentalAppTheme.textDark}
+                    fontSize={16}
+                    textAlign="center"
+                  >
                     Create an Account
                   </Text>
                 </Button>
 
-                <Button
-                  variant="outlined"
-                  borderColor={rentalAppTheme.border}
-                  borderWidth={0}
-                  borderRadius="$4"
-                  width="100%"
-                  onPress={() => router.replace("/(tabs)")}
-                >
-                  <Text color={rentalAppTheme.textDark} fontSize={16} textAlign="center">
-                    Back to Listings
-                  </Text>
-                </Button>
+                <XStack marginTop="$2" justifyContent="center">
+                  <Button
+                    chromeless
+                    onPress={() => router.replace("/(tabs)")}
+                    pressStyle={{ opacity: 0.7 }}
+                  >
+                    <XStack space="$1.5" alignItems="center">
+                      <Feather
+                        name="arrow-left"
+                        size={16}
+                        color={rentalAppTheme.textLight}
+                      />
+                      <Text color={rentalAppTheme.textLight} fontSize={14}>
+                        Back to Listings
+                      </Text>
+                    </XStack>
+                  </Button>
+                </XStack>
               </YStack>
             </Card>
           </View>

@@ -15,6 +15,7 @@ import {
 import { AnimatePresence, View } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
 import { useUserStore } from "@/store/user.store";
+import { Feather } from "@expo/vector-icons";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -339,6 +340,25 @@ export default function RegisterScreen() {
                       Already have an account? Login
                     </Text>
                   </Button>
+
+                  <XStack marginTop="$2" justifyContent="center">
+                    <Button
+                      chromeless
+                      onPress={() => router.replace("/(tabs)")}
+                      pressStyle={{ opacity: 0.7 }}
+                    >
+                      <XStack space="$1.5" alignItems="center">
+                        <Feather
+                          name="arrow-left"
+                          size={16}
+                          color={rentalAppTheme.textLight}
+                        />
+                        <Text color={rentalAppTheme.textLight} fontSize={14}>
+                          Back to Listings
+                        </Text>
+                      </XStack>
+                    </Button>
+                  </XStack>
                 </YStack>
               </Card>
             </View>
