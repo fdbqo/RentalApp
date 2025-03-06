@@ -23,14 +23,14 @@ export class UploadController {
   @Post()
   @UseInterceptors(FileInterceptor('file', {
     limits: {
-      fileSize: 10 * 1024 * 1024, // 10MB limit
+      fileSize: 500 * 1024 * 1024, // 500MB limit
     }
   }))
   async uploadFile(
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB limit
+          new MaxFileSizeValidator({ maxSize: 500 * 1024 * 1024 }), // 500MB limit
         ],
       }),
     ) file: Express.Multer.File,
@@ -44,7 +44,6 @@ export class UploadController {
   @Get('*path')
   async getSignedUrl(@Param('path') key: string) {
     try {
-      console.log('Getting signed URL for key:', key);
       const decodedKey = decodeURIComponent(key);
       const url = await this.uploadService.getSignedUrl(decodedKey);
       return { url };

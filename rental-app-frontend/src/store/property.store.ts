@@ -152,6 +152,13 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         )
       );
 
+      // If searching by university, modify the query
+      if (cleanFilters.searchType === 'university' && cleanFilters.searchQuery) {
+        delete cleanFilters.searchType; 
+        cleanFilters.university = cleanFilters.searchQuery;
+        delete cleanFilters.searchQuery;
+      }
+
       const response = await axios.get(`${API_URL}/listings`, {
         params: cleanFilters,
         timeout: AXIOS_TIMEOUT,
@@ -193,9 +200,7 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
         params: { lenderId: userId },
         timeout: AXIOS_TIMEOUT,
       });
-
-      console.log("API Response Data:", response.data);
-
+      
       const processedProperties = await Promise.all(
         response.data.map(async (property) => {
           if (property.images && property.images.length > 0) {

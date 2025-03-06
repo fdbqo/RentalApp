@@ -39,7 +39,6 @@ export class UploadService {
 
   async getSignedUrl(key: string): Promise<string> {
     try {
-      console.log('Getting signed URL for key:', key);
       const command = new GetObjectCommand({
         Bucket: this.bucketName,
         Key: key,

@@ -49,10 +49,59 @@ export default function ListingsScreen() {
     fetchProperties(filters);
   }, [filters]);
 
+  // Filter properties based on search criteria
+  const filteredProperties = useMemo(() => {
+    if (!properties) return [];
+    
+    let filtered = [...properties];
+
+    // Apply search filters
+    if (filters.searchQuery) {
+      const searchLower = filters.searchQuery.toLowerCase();
+      
+      if (filters.searchType === 'university') {
+        // Filter properties that have the searched university nearby
+        filtered = filtered.filter(property => 
+          property.nearestUniversities.some(uni => 
+            uni.name.toLowerCase() === searchLower
+          )
+        );
+      } else {
+        // Filter by location (county or town/city)
+        filtered = filtered.filter(property => 
+          property.houseAddress.county.toLowerCase().includes(searchLower) ||
+          property.houseAddress.townCity.toLowerCase().includes(searchLower)
+        );
+      }
+    }
+
+    // Apply price filters
+    if (filters.minPrice) {
+      filtered = filtered.filter(property => 
+        property.price >= parseInt(filters.minPrice || '0')
+      );
+    }
+    if (filters.maxPrice) {
+      filtered = filtered.filter(property => 
+        property.price <= parseInt(filters.maxPrice || '999999999')
+      );
+    }
+
+    // Apply beds filter
+    if (filters.beds) {
+      const requiredBeds = parseInt(filters.beds);
+      filtered = filtered.filter(property => 
+        (property.singleBedrooms + property.doubleBedrooms) >= requiredBeds
+      );
+    }
+
+    return filtered;
+  }, [properties, filters]);
+
   useEffect(() => {
     // Prefetch images when properties are loaded
-    if (properties.length > 0) {
-      properties.forEach((property) => {
+    if (filteredProperties.length > 0) {
+      filteredProperties.forEach((property) => {
         if (property.images && property.images.length > 0) {
           const imageUri = property.images[0].uri;
           if (imageUri) {
@@ -63,7 +112,7 @@ export default function ListingsScreen() {
         }
       });
     }
-  }, [properties]);
+  }, [filteredProperties]);
 
   const getNumColumns = useMemo(() => {
     if (!isWeb) return 1;
@@ -136,7 +185,7 @@ export default function ListingsScreen() {
       return <Text color={rentalAppTheme.accentDarkRed}>Error: {error}</Text>;
     }
 
-    if (properties.length === 0) {
+    if (filteredProperties.length === 0) {
       return (
         <YStack
           flex={1}
@@ -181,7 +230,7 @@ export default function ListingsScreen() {
           }
         >
           <XStack flexWrap="wrap" gap="$4">
-            {properties.map((item) => (
+            {filteredProperties.map((item) => (
               <YStack key={item._id} width={getCardWidth}>
                 {renderItem({ item })}
               </YStack>
@@ -193,7 +242,7 @@ export default function ListingsScreen() {
 
     return (
       <FlatList
-        data={properties}
+        data={filteredProperties}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         showsVerticalScrollIndicator={false}
@@ -216,7 +265,7 @@ export default function ListingsScreen() {
   }, [
     isLoading,
     error,
-    properties,
+    filteredProperties,
     isWeb,
     getCardWidth,
     getNumColumns,
@@ -262,7 +311,12 @@ export default function ListingsScreen() {
           )}
         </XStack>
 
-        <FilterSystem filters={filters} onFilterChange={updateFilters} />
+        <FilterSystem
+          filters={filters}
+          onFilterChange={updateFilters}
+          properties={properties}
+        />
+
         {PropertyList}
       </YStack>
     </Theme>

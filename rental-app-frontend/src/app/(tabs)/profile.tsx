@@ -78,7 +78,6 @@ export default function ProfileScreen() {
 
     try {
       setIsLoading(true);
-      console.log("Creating payment intent for amount:", amount);
       const response = await axios.post(
         `${env.API_URL}/payment/create-payment-intent`,
         { amount: Number(amount) },
@@ -90,7 +89,6 @@ export default function ProfileScreen() {
       );
 
       const { clientSecret } = response.data;
-      console.log("Payment intent created successfully");
 
       const { error: initError } = await stripe.initPaymentSheet({
         merchantDisplayName: "RentalApp",
@@ -104,19 +102,16 @@ export default function ProfileScreen() {
         return;
       }
 
-      console.log("Payment sheet initialized successfully");
       const { error: presentError } = await stripe.presentPaymentSheet();
 
       if (presentError) {
         console.error("Payment presentation error:", presentError);
         Alert.alert("Error", presentError.message);
       } else {
-        console.log("Payment successful, refreshing user data");
         Alert.alert("Success", "Payment successful!");
         setAmount("");
         setShowTopUpDialog(false);
 
-        // Add a small delay before refreshing to allow webhook processing
         setTimeout(async () => {
           try {
             await refreshUserData();
@@ -124,7 +119,7 @@ export default function ProfileScreen() {
           } catch (refreshError) {
             console.error("Error refreshing user data:", refreshError);
           }
-        }, 2000); // Wait 2 seconds before refreshing
+        }, 2000);
       }
     } catch (error) {
       console.error("Payment error:", error.response?.data || error.message);

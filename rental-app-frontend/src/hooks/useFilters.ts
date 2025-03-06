@@ -3,7 +3,7 @@ import { FilterState } from '../store/interfaces/Property'
 
 const initialFilters: FilterState = {
   searchQuery: '',
-  distance: '',
+  searchType: 'location',
   minPrice: '',
   maxPrice: '',
   beds: '',
@@ -14,10 +14,20 @@ export const useFilters = () => {
   const [filters, setFilters] = useState<FilterState>(initialFilters)
 
   const updateFilters = useCallback((newFilters: Partial<FilterState>) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      ...newFilters,
-    }))
+    setFilters((prevFilters) => {
+      // If changing search type, clear the search query
+      if (newFilters.searchType && newFilters.searchType !== prevFilters.searchType) {
+        return {
+          ...prevFilters,
+          ...newFilters,
+          searchQuery: '',
+        }
+      }
+      return {
+        ...prevFilters,
+        ...newFilters,
+      }
+    })
   }, [])
 
   return { filters, updateFilters }

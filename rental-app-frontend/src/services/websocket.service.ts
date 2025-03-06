@@ -64,7 +64,6 @@ class WebSocketService extends EventEmitter {
     if (!this.socket) return;
 
     this.socket.onopen = () => {
-      console.log("[WebSocket] Connection opened");
       this.reconnectAttempts = 0;
       this.authenticate(token);
       this.emit("connected");
@@ -83,7 +82,6 @@ class WebSocketService extends EventEmitter {
     };
 
     this.socket.onclose = () => {
-      console.log("[WebSocket] Connection closed");
       this.handleDisconnect(token);
     };
   }
@@ -97,11 +95,9 @@ class WebSocketService extends EventEmitter {
 
     switch (event) {
       case "new-chat":
-        console.log("[WebSocket] New chat received:", payload);
         useChatStore.getState().addMessage(payload as Message);
         break;
       case "room_created":
-        console.log("[WebSocket] New room created:", payload);
         useChatStore.getState().addRoom(payload);
         break;
       case "joined":
@@ -135,9 +131,6 @@ class WebSocketService extends EventEmitter {
     if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++;
-        console.log(
-          `[WebSocket] Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
-        );
         setTimeout(() => this.connect(token), this.reconnectTimeout);
       } else {
         this.emit("max_reconnect_attempts");

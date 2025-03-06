@@ -32,14 +32,11 @@ export class DistanceService {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
       addressString,
     )}&key=${this.GOOGLE_API_KEY}`;
-    console.log(`[INFO] Geocoding address: ${addressString}`);
-    console.log(`[INFO] Geocode API URL: ${url}`);
 
     try {
       const { data } = await axios.get(url);
       return data.results?.length ? data.results[0].geometry.location : null;
     } catch (error) {
-      console.error(`[ERROR] Geocode API failed: ${error.message}`);
       return null;
     }
   }
@@ -57,7 +54,6 @@ export class DistanceService {
     let pageCount = 0;
 
     do {
-      console.log(`[INFO] Places API URL (page ${pageCount + 1}): ${url}`);
       const { data } = await axios.get(url);
       if (data.results) {
         allResults = allResults.concat(data.results);
@@ -89,7 +85,6 @@ export class DistanceService {
     let pageCount = 0;
 
     do {
-      console.log(`[INFO] Fallback Places API URL (page ${pageCount + 1}): ${url}`);
       const { data } = await axios.get(url);
       if (data.results) {
         allResults = allResults.concat(data.results);
@@ -120,7 +115,6 @@ export class DistanceService {
     for (const batch of batches) {
       const destString = batch.map(d => `${d.lat},${d.lng}`).join('|');
       const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin.lat},${origin.lng}&destinations=${destString}&key=${this.GOOGLE_API_KEY}`;
-      console.log(`[INFO] Batch Distance Matrix API URL: ${url}`);
       try {
         const { data } = await axios.get(url);
         if (data && data.rows && data.rows[0] && data.rows[0].elements) {
@@ -140,14 +134,12 @@ export class DistanceService {
     if (!property?.houseAddress) return [];
 
     const addressString = this.formatAddressString(property.houseAddress);
-    console.log(`[INFO] Formatted address: ${addressString}`);
 
     const coords = await this.geocodeAddress(addressString);
     if (!coords) return [];
 
     let institutions = await this.fetchAllNearbyUniversities(coords.lat, coords.lng, 30000);
     if (!institutions.length) {
-      console.log('[INFO] No type=university results found. Using fallback keyword search.');
       institutions = await this.fetchAllNameBasedUniversities(coords.lat, coords.lng, 30000);
     }
     if (!institutions.length) return [];
@@ -188,11 +180,9 @@ export class DistanceService {
 
     let validInstitutions = filterByReviews(50);
     if (validInstitutions.length === 0) {
-      console.log('[INFO] No results with >= 50 reviews. Lowering threshold to 25.');
       validInstitutions = filterByReviews(25);
     }
     if (validInstitutions.length === 0) {
-      console.log('[INFO] No results with >= 25 reviews. Lowering threshold to 10.');
       validInstitutions = filterByReviews(10);
     }
 
@@ -222,7 +212,6 @@ export class DistanceService {
       };
     });
 
-    console.log(`[INFO] Final universities (popularity sorted): ${JSON.stringify(results)}`);
     return results;
   }
 }

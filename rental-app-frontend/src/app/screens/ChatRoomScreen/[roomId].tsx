@@ -147,7 +147,6 @@ const ChatRoomScreen = () => {
 
   const onRefresh = () => {
     setRefreshing(true);
-    // Add refresh logic here
     setTimeout(() => setRefreshing(false), 1000);
   };
 

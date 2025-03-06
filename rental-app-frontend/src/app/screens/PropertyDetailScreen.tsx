@@ -48,7 +48,6 @@ export default function PropertyDetailScreen() {
   const { selectedProperty, isLoading, error, fetchPropertyById } =
     usePropertyStore();
 
-  // Preload all images when property is loaded
   useEffect(() => {
     if (selectedProperty?.images && selectedProperty.images.length > 0) {
       selectedProperty.images.forEach((image) => {

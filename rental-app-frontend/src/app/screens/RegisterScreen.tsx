@@ -69,7 +69,7 @@ export default function RegisterScreen() {
 
   const handleCountyChange = React.useCallback((value: string) => {
     setCounty(value);
-    setCity(""); // Reset city when county changes
+    setCity("");
     setErrors((prev) => ({ ...prev, county: "", city: "" }));
   }, []);
 

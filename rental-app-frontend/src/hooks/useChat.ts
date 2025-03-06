@@ -74,9 +74,7 @@ export const useChat = (roomId?: string) => {
 
   const sendMessage = useCallback((payload: SendMessagePayload) => {
     try {
-      console.log("[useChat] Attempting to send message:", payload);
       wsService.sendMessage(payload.content, payload.room_id);
-      console.log("[useChat] Message sent to websocket service");
     } catch (error) {
       console.error("[useChat] Error sending message:", error);
       setError("Failed to send message");

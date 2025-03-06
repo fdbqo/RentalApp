@@ -49,13 +49,6 @@ export const useUserStore = create<UserState>((set, get) => ({
   login: async (email: string, password: string) => {
     try {
       const timestamp = new Date().toISOString();
-      console.log(`[${timestamp}] Initiating login request:`, {
-        email: email.toLowerCase(),
-      });
-      console.log("Sending login request:", {
-        email: email.toLowerCase(),
-        password,
-      });
       const response = await axios.post(
         `${env.API_URL}/auth/login`,
         {
@@ -65,7 +58,6 @@ export const useUserStore = create<UserState>((set, get) => ({
       );
       const { user, access_token } = response.data;
 
-      console.log("Login response user data:", user);
 
       await AsyncStorage.setItem("token", access_token);
       await AsyncStorage.setItem("user", JSON.stringify(user));
@@ -77,10 +69,6 @@ export const useUserStore = create<UserState>((set, get) => ({
         error: null,
       });
 
-      console.log(`[${timestamp}] Login successful - User ID: ${user._id}`);
-      console.log(`[${timestamp}] Auth state updated - isAuthenticated: true`);
-      console.log("User successfully logged in:", user);
-      console.log("Token stored:", access_token);
     } catch (error: any) {
       const timestamp = new Date().toISOString();
       console.error(
@@ -99,17 +87,12 @@ export const useUserStore = create<UserState>((set, get) => ({
   restoreAuthState: async () => {
     try {
       const timestamp = new Date().toISOString();
-      console.log(`[${timestamp}] Attempting to restore auth state`);
       const token = await AsyncStorage.getItem("token");
       const userString = await AsyncStorage.getItem("user");
 
       if (token && userString) {
         const user = JSON.parse(userString);
-        console.log(
-          `[${timestamp}] Auth state restored - User ID: ${user._id}`
-        );
-        console.log(`[${timestamp}] Token present: ${!!token}`);
-        console.log("Restored user from AsyncStorage:", user);
+
 
         set({
           token,
@@ -118,10 +101,6 @@ export const useUserStore = create<UserState>((set, get) => ({
           error: null,
         });
       } else {
-        console.log(
-          `[${timestamp}] No auth state to restore - Token: ${!!token}, User: ${!!userString}`
-        );
-        console.log("No user token found in AsyncStorage");
       }
     } catch (error) {
       const timestamp = new Date().toISOString();
@@ -156,7 +135,6 @@ export const useUserStore = create<UserState>((set, get) => ({
   logout: async () => {
     try {
       const timestamp = new Date().toISOString();
-      console.log(`[${timestamp}] Initiating logout`);
       await AsyncStorage.removeItem("token");
       await AsyncStorage.removeItem("user");
 
@@ -167,8 +145,6 @@ export const useUserStore = create<UserState>((set, get) => ({
         error: null,
       });
 
-      console.log(`[${timestamp}] Logout complete - Auth state cleared`);
-      console.log("User successfully logged out, AsyncStorage cleared");
     } catch (error) {
       const timestamp = new Date().toISOString();
       console.error(`[${timestamp}] Logout failed:`, error);

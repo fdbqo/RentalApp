@@ -82,7 +82,6 @@ export class PropertyService {
         await createdProperty.save();
       }
 
-      console.log("Nearest Universities Details:", nearestUniversities);
       return createdProperty.save();
     } catch (error) {
       console.error("Error creating property:", error);
