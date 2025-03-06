@@ -25,12 +25,16 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar,
+  FileText,
+  Book,
+  Clock,
 } from "@tamagui/lucide-icons";
 import NavigationHeader from "@/components/NavigationHeader";
 import { rentalAppTheme } from "@/constants/Colors";
 import { Property } from "@/store/interfaces/Property";
 import { usePropertyStore } from "@/store/property.store";
 import { useChatStore } from "@/store/chat.store";
+import { useUserStore } from "@/store/user.store";
 
 export default function PropertyDetailScreen() {
   const router = useRouter();
@@ -39,6 +43,7 @@ export default function PropertyDetailScreen() {
   const media = useMedia();
   const isMobile = !media.gtXs;
   const { width } = useWindowDimensions();
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
 
   const { selectedProperty, isLoading, error, fetchPropertyById } =
     usePropertyStore();
@@ -195,164 +200,340 @@ export default function PropertyDetailScreen() {
   );
 
   return (
-    <Theme name="blue">
-      <NavigationHeader title="Property Details" />
-      <ScrollView
-        style={{ flex: 1, backgroundColor: "white" }}
-        contentContainerStyle={{ paddingBottom: 100 }}
-      >
-        <YStack>
-          <ImageCarousel />
-          <YStack padding={isMobile ? "$2" : "$4"} space="$4">
-            <YStack space="$2">
-              <H1
-                size="$8"
-                color={rentalAppTheme.textDark}
-                numberOfLines={2}
-                ellipsizeMode="tail"
+    <Theme name="light">
+      <YStack flex={1} backgroundColor={rentalAppTheme.backgroundLight}>
+        <NavigationHeader title="Property Details" />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          <YStack>
+            <ImageCarousel />
+            <YStack padding="$4" space="$4">
+              {/* Price and Title Section */}
+              <Card
+                elevate
+                bordered
+                borderRadius="$6"
+                backgroundColor="white"
+                padding="$4"
+                shadowColor={rentalAppTheme.textDark}
+                shadowOffset={{ width: 0, height: 4 }}
+                shadowOpacity={0.1}
+                shadowRadius={8}
               >
-                {selectedProperty.shortDescription || "No title available"}
-              </H1>
-              <XStack alignItems="center">
-                <Euro size={30} color={rentalAppTheme.primaryDark} />
-                <H2 size="$9" color={rentalAppTheme.primaryDark}>
-                  {`${selectedProperty.price || "N/A"}/month`}
-                </H2>
-              </XStack>
+                <YStack space="$3">
+                  <XStack space="$2" alignItems="center">
+                    <Card
+                      backgroundColor={`${rentalAppTheme.primaryDark}10`}
+                      padding="$2"
+                      borderRadius="$4"
+                    >
+                      <Home size={20} color={rentalAppTheme.primaryDark} />
+                    </Card>
+                    <Text
+                      fontSize="$7"
+                      fontWeight="bold"
+                      color={rentalAppTheme.textDark}
+                      numberOfLines={2}
+                    >
+                      {selectedProperty.shortDescription ||
+                        "No title available"}
+                    </Text>
+                  </XStack>
+
+                  <XStack space="$2" alignItems="center">
+                    <Text
+                      fontSize="$8"
+                      color={rentalAppTheme.primaryDark}
+                      fontWeight="600"
+                    >
+                      €{selectedProperty.price.toLocaleString()}
+                      <Text fontSize="$5" color={rentalAppTheme.textLight}>
+                        /month
+                      </Text>
+                    </Text>
+                  </XStack>
+
+                  <XStack flexWrap="wrap" gap="$2">
+                    <Card
+                      backgroundColor="$gray2"
+                      paddingHorizontal="$3"
+                      paddingVertical="$2"
+                      borderRadius="$4"
+                    >
+                      <XStack space="$2" alignItems="center">
+                        <Bed size={16} color={rentalAppTheme.primaryDark} />
+                        <YStack>
+                          <Text fontSize={12} color="$gray11">
+                            Beds
+                          </Text>
+                          <Text fontSize={14} color="$gray12" fontWeight="500">
+                            {(selectedProperty.singleBedrooms || 0) +
+                              (selectedProperty.doubleBedrooms || 0)}
+                          </Text>
+                        </YStack>
+                      </XStack>
+                    </Card>
+
+                    <Card
+                      backgroundColor="$gray2"
+                      paddingHorizontal="$3"
+                      paddingVertical="$2"
+                      borderRadius="$4"
+                    >
+                      <XStack space="$2" alignItems="center">
+                        <Bath size={16} color={rentalAppTheme.primaryDark} />
+                        <YStack>
+                          <Text fontSize={12} color="$gray11">
+                            Baths
+                          </Text>
+                          <Text fontSize={14} color="$gray12" fontWeight="500">
+                            {selectedProperty.bathrooms || "N/A"}
+                          </Text>
+                        </YStack>
+                      </XStack>
+                    </Card>
+
+                    <Card
+                      backgroundColor="$gray2"
+                      paddingHorizontal="$3"
+                      paddingVertical="$2"
+                      borderRadius="$4"
+                    >
+                      <XStack space="$2" alignItems="center">
+                        <Home size={16} color={rentalAppTheme.primaryDark} />
+                        <YStack>
+                          <Text fontSize={12} color="$gray11">
+                            Type
+                          </Text>
+                          <Text fontSize={14} color="$gray12" fontWeight="500">
+                            {capitaliseFirstLetter(
+                              selectedProperty.propertyType
+                            )}
+                          </Text>
+                        </YStack>
+                      </XStack>
+                    </Card>
+                  </XStack>
+                </YStack>
+              </Card>
+
+              {/* Contact Button */}
+              <Button
+                backgroundColor={rentalAppTheme.primaryDark}
+                pressStyle={{
+                  backgroundColor: rentalAppTheme.primaryDarkPressed,
+                }}
+                borderRadius="$6"
+                size="$5"
+                elevation={4}
+                onPress={async () => {
+                  if (!isAuthenticated) {
+                    router.push("/screens/LoginScreen");
+                    return;
+                  }
+
+                  try {
+                    const chatStore = useChatStore.getState();
+                    const room = await chatStore.createRoom(
+                      selectedProperty.lenderId,
+                      selectedProperty._id || ""
+                    );
+
+                    router.push({
+                      pathname: "/screens/ChatRoomScreen/[roomId]",
+                      params: { roomId: room._id },
+                    } as any);
+                  } catch (error) {
+                    Alert.alert(
+                      "Error",
+                      "Failed to create chat room. Please try again.",
+                      [{ text: "OK" }]
+                    );
+                  }
+                }}
+              >
+                <XStack space="$2" justifyContent="center" alignItems="center">
+                  <Calendar size={20} color="white" />
+                  <Text color="white" fontSize={16} fontWeight="bold">
+                    {isAuthenticated ? "Contact Landlord" : "Login to Contact"}
+                  </Text>
+                </XStack>
+              </Button>
+
+              {/* Description Section */}
+              <Card
+                elevate
+                bordered
+                borderRadius="$6"
+                backgroundColor="white"
+                padding="$4"
+                shadowColor={rentalAppTheme.textDark}
+                shadowOffset={{ width: 0, height: 4 }}
+                shadowOpacity={0.1}
+                shadowRadius={8}
+              >
+                <YStack space="$3">
+                  <XStack space="$2" alignItems="center">
+                    <Card
+                      backgroundColor={`${rentalAppTheme.primaryDark}10`}
+                      padding="$2"
+                      borderRadius="$4"
+                    >
+                      <FileText size={20} color={rentalAppTheme.primaryDark} />
+                    </Card>
+                    <Text
+                      fontSize="$6"
+                      fontWeight="bold"
+                      color={rentalAppTheme.textDark}
+                    >
+                      Description
+                    </Text>
+                  </XStack>
+                  <Text fontSize={16} color={rentalAppTheme.textDark}>
+                    {selectedProperty.description || "No description available"}
+                  </Text>
+                </YStack>
+              </Card>
+
+              {/* Address Section */}
+              <Card
+                elevate
+                bordered
+                borderRadius="$6"
+                backgroundColor="white"
+                padding="$4"
+                shadowColor={rentalAppTheme.textDark}
+                shadowOffset={{ width: 0, height: 4 }}
+                shadowOpacity={0.1}
+                shadowRadius={8}
+              >
+                <YStack space="$3">
+                  <XStack space="$2" alignItems="center">
+                    <Card
+                      backgroundColor={`${rentalAppTheme.primaryDark}10`}
+                      padding="$2"
+                      borderRadius="$4"
+                    >
+                      <MapPin size={20} color={rentalAppTheme.primaryDark} />
+                    </Card>
+                    <Text
+                      fontSize="$6"
+                      fontWeight="bold"
+                      color={rentalAppTheme.textDark}
+                    >
+                      Address
+                    </Text>
+                  </XStack>
+                  <YStack space="$2">
+                    <Text fontSize={16} color={rentalAppTheme.textDark}>
+                      {houseAddress.addressLine1}
+                    </Text>
+                    {houseAddress.addressLine2 && (
+                      <Text fontSize={16} color={rentalAppTheme.textDark}>
+                        {houseAddress.addressLine2}
+                      </Text>
+                    )}
+                    <Text fontSize={16} color={rentalAppTheme.textDark}>
+                      {houseAddress.townCity}, {houseAddress.county}
+                    </Text>
+                    <Text fontSize={16} color={rentalAppTheme.textDark}>
+                      {houseAddress.eircode}
+                    </Text>
+                  </YStack>
+                </YStack>
+              </Card>
+
+              {/* Universities Section */}
+              <Card
+                elevate
+                bordered
+                borderRadius="$6"
+                backgroundColor="white"
+                padding="$4"
+                shadowColor={rentalAppTheme.textDark}
+                shadowOffset={{ width: 0, height: 4 }}
+                shadowOpacity={0.1}
+                shadowRadius={8}
+              >
+                <YStack space="$3">
+                  <XStack space="$2" alignItems="center">
+                    <Card
+                      backgroundColor={`${rentalAppTheme.primaryDark}10`}
+                      padding="$2"
+                      borderRadius="$4"
+                    >
+                      <Book size={20} color={rentalAppTheme.primaryDark} />
+                    </Card>
+                    <Text
+                      fontSize="$6"
+                      fontWeight="bold"
+                      color={rentalAppTheme.textDark}
+                    >
+                      Nearest Universities
+                    </Text>
+                  </XStack>
+                  {!selectedProperty.nearestUniversities ||
+                  selectedProperty.nearestUniversities.length === 0 ? (
+                    <Text fontSize={16} color={rentalAppTheme.textLight}>
+                      No university information available
+                    </Text>
+                  ) : (
+                    <YStack space="$3">
+                      {selectedProperty.nearestUniversities.map(
+                        (uni, index) => (
+                          <YStack key={index} space="$2">
+                            <Text
+                              fontSize={16}
+                              fontWeight="600"
+                              color={rentalAppTheme.textDark}
+                            >
+                              {uni.name}
+                            </Text>
+                            <XStack space="$4">
+                              <XStack space="$1" alignItems="center">
+                                <MapPin
+                                  size={14}
+                                  color={rentalAppTheme.textLight}
+                                />
+                                <Text
+                                  fontSize={14}
+                                  color={rentalAppTheme.textLight}
+                                >
+                                  {formatDistance(uni.distance || 0)} away
+                                </Text>
+                              </XStack>
+                              <XStack space="$1" alignItems="center">
+                                <Clock
+                                  size={14}
+                                  color={rentalAppTheme.textLight}
+                                />
+                                <Text
+                                  fontSize={14}
+                                  color={rentalAppTheme.textLight}
+                                >
+                                  {uni.avgTimeByCar || 0} min by car
+                                </Text>
+                              </XStack>
+                            </XStack>
+                            {index !==
+                              selectedProperty.nearestUniversities.length -
+                                1 && <Separator marginVertical="$2" />}
+                          </YStack>
+                        )
+                      )}
+                    </YStack>
+                  )}
+                </YStack>
+              </Card>
             </YStack>
-
-            <XStack space="$2" flexWrap="wrap">
-              <PropertyFeature
-                icon={Bed}
-                text={`${
-                  (selectedProperty.singleBedrooms || 0) +
-                  (selectedProperty.doubleBedrooms || 0)
-                } Bed`}
-              />
-              <PropertyFeature
-                icon={Bath}
-                text={`${selectedProperty.bathrooms || "N/A"} Bath`}
-              />
-              <PropertyFeature
-                icon={Home}
-                text={
-                  capitaliseFirstLetter(selectedProperty.propertyType) || "N/A"
-                }
-              />
-            </XStack>
-
-            <Separator marginVertical="$3" />
-
-            <Button
-              size="$5"
-              theme="active"
-              backgroundColor={rentalAppTheme.primaryDark}
-              icon={Calendar}
-              color="white"
-              width="100%"
-              onPress={async () => {
-                try {
-                  const chatStore = useChatStore.getState();
-                  const room = await chatStore.createRoom(
-                    selectedProperty.lenderId,
-                    selectedProperty._id || ""
-                  );
-
-                  router.push({
-                    pathname: "/screens/ChatRoomScreen/[roomId]",
-                    params: { roomId: room._id },
-                  } as any);
-                } catch (error) {
-                  Alert.alert(
-                    "Error",
-                    "Failed to create chat room. Please try again.",
-                    [{ text: "OK" }]
-                  );
-                }
-              }}
-            >
-              <Text color="white">Contact Landlord</Text>
-            </Button>
-
-            <AddressSection address={houseAddress} />
-            <UniversitySection
-              university={selectedProperty.nearestUniversities}
-            />
-            <DescriptionSection description={selectedProperty.description} />
           </YStack>
-        </YStack>
-      </ScrollView>
+        </ScrollView>
+      </YStack>
     </Theme>
   );
 }
-
-const PropertyFeature = ({
-  icon: Icon,
-  text,
-}: {
-  icon: React.ElementType;
-  text: string;
-}) => (
-  <XStack
-    space="$2"
-    alignItems="center"
-    padding="$2"
-    backgroundColor="$gray2"
-    borderRadius="$2"
-  >
-    <Icon size={20} color="$gray11" />
-    <Paragraph size="$4" color="$gray11">
-      {text}
-    </Paragraph>
-  </XStack>
-);
-
-const AddressSection = ({ address }: { address: Property["houseAddress"] }) => (
-  <Card
-    padding="$4"
-    borderRadius="$4"
-    borderWidth={1}
-    borderColor="$gray4"
-    elevation={3}
-    backgroundColor={rentalAppTheme.backgroundLight}
-  >
-    <YStack space="$3">
-      <H2 size="$6" color={rentalAppTheme.primaryDark}>
-        Address
-      </H2>
-      <Separator marginBottom="$2" />
-      <Paragraph>
-        {address.addressLine1 || "Address line 1 not available"}
-      </Paragraph>
-      {address.addressLine2 && <Paragraph>{address.addressLine2}</Paragraph>}
-      <Paragraph>
-        {`${address.townCity}, ${address.county}` ||
-          "City & County not available"}
-      </Paragraph>
-      <Paragraph>{address.eircode || "Eircode not available"}</Paragraph>
-    </YStack>
-  </Card>
-);
-
-const DescriptionSection = ({ description }: { description: string }) => (
-  <Card
-    padding="$4"
-    borderRadius="$4"
-    borderWidth={1}
-    borderColor="$gray4"
-    elevation={3}
-    backgroundColor={rentalAppTheme.backgroundLight}
-  >
-    <YStack space="$3">
-      <H2 size="$6" color={rentalAppTheme.primaryDark}>
-        Property Description
-      </H2>
-      <Paragraph color="$gray11">
-        {description || "No description available"}
-      </Paragraph>
-    </YStack>
-  </Card>
-);
 
 const formatNumberWithCommas = (number: number) => {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -364,50 +545,3 @@ const formatDistance = (distance: number) => {
   }
   return `${distance} m`;
 };
-
-const UniversitySection = ({
-  university,
-}: {
-  university: Property["nearestUniversities"];
-}) => (
-  <Card
-    padding="$4"
-    borderRadius="$4"
-    borderWidth={1}
-    borderColor="$gray4"
-    elevation={3}
-    backgroundColor={rentalAppTheme.backgroundLight}
-  >
-    <YStack space="$3">
-      <XStack alignItems="center" space="$2">
-        <H2 size="$6" color={rentalAppTheme.primaryDark}>
-          Nearest University
-        </H2>
-      </XStack>
-      <Separator marginBottom="$2" />
-      {university ? (
-        <YStack space="$2">
-          <Paragraph
-            size="$5"
-            fontWeight="bold"
-            color={rentalAppTheme.textDark}
-          >
-            {university[0].name}
-          </Paragraph>
-          <XStack space="$4">
-            <Paragraph color="$gray11">
-              {formatDistance(university[0].distance || 0)} away
-            </Paragraph>
-            <Paragraph color="$gray11">
-              {university[0].avgTimeByCar || 0} min by car
-            </Paragraph>
-          </XStack>
-        </YStack>
-      ) : (
-        <Paragraph color="$gray11">
-          No university information available
-        </Paragraph>
-      )}
-    </YStack>
-  </Card>
-);

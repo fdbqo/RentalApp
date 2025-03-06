@@ -1,6 +1,20 @@
 import React, { useMemo, useEffect } from "react";
-import { FlatList, useWindowDimensions, Platform, Image } from "react-native";
-import { YStack, XStack, Text, Button, Theme, ScrollView } from "tamagui";
+import {
+  FlatList,
+  useWindowDimensions,
+  Platform,
+  Image,
+  RefreshControl,
+} from "react-native";
+import {
+  YStack,
+  XStack,
+  Text,
+  Button,
+  Theme,
+  ScrollView,
+  Spinner,
+} from "tamagui";
 import { Bell } from "@tamagui/lucide-icons";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -18,8 +32,18 @@ export default function ListingsScreen() {
   const router = useRouter();
   const { filters, updateFilters } = useFilters();
   const isAuthenticated = useUserStore((state) => state.isAuthenticated);
+  const [refreshing, setRefreshing] = React.useState(false);
 
   const { properties, isLoading, error, fetchProperties } = usePropertyStore();
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchProperties(filters);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchProperties, filters]);
 
   useEffect(() => {
     fetchProperties(filters);
@@ -28,12 +52,12 @@ export default function ListingsScreen() {
   useEffect(() => {
     // Prefetch images when properties are loaded
     if (properties.length > 0) {
-      properties.forEach(property => {
+      properties.forEach((property) => {
         if (property.images && property.images.length > 0) {
           const imageUri = property.images[0].uri;
           if (imageUri) {
-            Image.prefetch(imageUri).catch(err => 
-              console.error('Error prefetching image:', err)
+            Image.prefetch(imageUri).catch((err) =>
+              console.error("Error prefetching image:", err)
             );
           }
         }
@@ -54,43 +78,58 @@ export default function ListingsScreen() {
     return `calc(50% - 16px)`;
   }, [isWeb, width]);
 
-  const renderItem = useMemo(() => 
-    ({ item }: { item: Property }) => {
-      const roomsAvailable = (item.singleBedrooms ?? 0) + (item.doubleBedrooms ?? 0);
-      return (
-        <PropertyCard
-          item={item}
-          onPress={() =>
-            router.push({
-              pathname: "/screens/PropertyDetailScreen",
-              params: {
-                id: item._id,
-                shortDescription: item.shortDescription ?? '',
-                price: item.price?.toString() ?? '',
-                images: JSON.stringify(item.images) ?? '[]',
-                availability: item.availability ?? '',
-                description: item.description ?? '',
-                propertyType: item.propertyType ?? '',
-                roomsAvailable: roomsAvailable.toString(),
-                bathrooms: item.bathrooms?.toString() ?? '',
-                nearestUniversities: JSON.stringify(item.nearestUniversities ?? {}), 
-                houseAddress: JSON.stringify(item.houseAddress) ?? '{}',
-                lenderId: item.lenderId ?? '',
-              },
-            })
-          }
-        />
-      );
-    }, [router]);
+  const renderItem = useMemo(
+    () =>
+      ({ item }: { item: Property }) => {
+        const roomsAvailable =
+          (item.singleBedrooms ?? 0) + (item.doubleBedrooms ?? 0);
+        return (
+          <PropertyCard
+            item={item}
+            onPress={() =>
+              router.push({
+                pathname: "/screens/PropertyDetailScreen",
+                params: {
+                  id: item._id,
+                  shortDescription: item.shortDescription ?? "",
+                  price: item.price?.toString() ?? "",
+                  images: JSON.stringify(item.images) ?? "[]",
+                  availability: item.availability ?? "",
+                  description: item.description ?? "",
+                  propertyType: item.propertyType ?? "",
+                  roomsAvailable: roomsAvailable.toString(),
+                  bathrooms: item.bathrooms?.toString() ?? "",
+                  nearestUniversities: JSON.stringify(
+                    item.nearestUniversities ?? {}
+                  ),
+                  houseAddress: JSON.stringify(item.houseAddress) ?? "{}",
+                  lenderId: item.lenderId ?? "",
+                },
+              })
+            }
+          />
+        );
+      },
+    [router]
+  );
 
-  const keyExtractor = useMemo(() => 
-    (item: Property) => item._id || Math.random().toString(),
+  const keyExtractor = useMemo(
+    () => (item: Property) => item._id || Math.random().toString(),
     []
   );
 
   const PropertyList = useMemo(() => {
-    if (isLoading) {
-      return <Text>Loading properties...</Text>;
+    if (isLoading && !refreshing) {
+      return (
+        <YStack
+          flex={1}
+          justifyContent="center"
+          alignItems="center"
+          padding="$8"
+        >
+          <Spinner size="large" color={rentalAppTheme.primaryDark} />
+        </YStack>
+      );
     }
 
     if (error) {
@@ -103,7 +142,17 @@ export default function ListingsScreen() {
 
     if (isWeb) {
       return (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={rentalAppTheme.primaryDark}
+              colors={[rentalAppTheme.primaryDark]}
+            />
+          }
+        >
           <XStack flexWrap="wrap" gap="$4">
             {properties.map((item) => (
               <YStack key={item._id} width={getCardWidth}>
@@ -127,14 +176,41 @@ export default function ListingsScreen() {
         windowSize={5}
         removeClippedSubviews={true}
         initialNumToRender={5}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={rentalAppTheme.primaryDark}
+            colors={[rentalAppTheme.primaryDark]}
+          />
+        }
       />
     );
-  }, [isLoading, error, properties, isWeb, getCardWidth, getNumColumns, renderItem, keyExtractor]);
+  }, [
+    isLoading,
+    error,
+    properties,
+    isWeb,
+    getCardWidth,
+    getNumColumns,
+    renderItem,
+    keyExtractor,
+    refreshing,
+    onRefresh,
+  ]);
 
   return (
     <Theme name="light">
-      <YStack flex={1} backgroundColor={rentalAppTheme.backgroundLight} padding="$4">
-        <XStack justifyContent="space-between" alignItems="center" marginBottom="$4">
+      <YStack
+        flex={1}
+        backgroundColor={rentalAppTheme.backgroundLight}
+        padding="$4"
+      >
+        <XStack
+          justifyContent="space-between"
+          alignItems="center"
+          marginBottom="$4"
+        >
           <Text fontSize={24} fontWeight="bold" color={rentalAppTheme.textDark}>
             Listings
           </Text>
@@ -165,4 +241,3 @@ export default function ListingsScreen() {
     </Theme>
   );
 }
-
