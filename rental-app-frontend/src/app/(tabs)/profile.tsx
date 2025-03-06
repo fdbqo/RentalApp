@@ -148,7 +148,7 @@ export default function ProfileScreen() {
           <Card
             bordered
             elevate
-            padding="$5"
+            padding="$4"
             marginTop="-$8"
             marginHorizontal="$2"
             borderRadius={20}
@@ -159,7 +159,7 @@ export default function ProfileScreen() {
             shadowRadius={8}
           >
             <AnimatePresence>
-              <YStack alignItems="center" space={16} marginBottom={16}>
+              <XStack alignItems="center" space={16} marginBottom={16}>
                 {user && (
                   <YStack padding="$2" borderRadius={100} marginTop="-$8">
                     <UserAvatar
@@ -169,7 +169,7 @@ export default function ProfileScreen() {
                     />
                   </YStack>
                 )}
-                <YStack alignItems="center" space={4}>
+                <YStack space={4}>
                   <Text
                     fontSize={24}
                     fontWeight="800"
@@ -181,7 +181,7 @@ export default function ProfileScreen() {
                     {user?.email}
                   </Text>
                 </YStack>
-              </YStack>
+              </XStack>
             </AnimatePresence>
           </Card>
 

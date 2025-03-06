@@ -312,7 +312,7 @@ export default function LandlordDashboardScreen() {
     <Theme name="light">
       <YStack flex={1} backgroundColor={rentalAppTheme.backgroundLight}>
         {/* Fixed Header */}
-        <YStack paddingTop="$3" paddingBottom="$1" paddingHorizontal="$3" backgroundColor={rentalAppTheme.backgroundLight}>
+        <YStack paddingTop="$3" paddingBottom="$1" paddingHorizontal="$4" backgroundColor={rentalAppTheme.backgroundLight}>
           <XStack
             justifyContent="space-between"
             alignItems="center"
