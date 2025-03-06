@@ -17,14 +17,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "RentalApp"
+      "bundleIdentifier": "com.RentalApp.PR300"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.RentalApp"
+      "package": "com.RentalApp.PR300"
     },
     "web": {
       "bundler": "metro",
