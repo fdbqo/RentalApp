@@ -16,7 +16,6 @@ export class RoomsController {
   @Post()
   @UseGuards(AuthGuard('jwt'))
   create(@Request() req, @Body() createRoomDto: CreateRoomDto) {
-    console.log('User creating room:', req.user);
     return this.roomsService.create(req.user._id.toString(), createRoomDto);
   }
 

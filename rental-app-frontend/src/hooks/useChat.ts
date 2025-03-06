@@ -33,12 +33,9 @@ export const useChat = (roomId?: string) => {
 
       try {
         setLoading(true);
-        const response = await fetch(
-          `${API_URL}/rooms/${roomId}/chats`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await fetch(`${API_URL}/rooms/${roomId}/chats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (!response.ok) throw new Error("Failed to fetch messages");
 
@@ -77,9 +74,7 @@ export const useChat = (roomId?: string) => {
 
   const sendMessage = useCallback((payload: SendMessagePayload) => {
     try {
-      console.log("[useChat] Attempting to send message:", payload);
       wsService.sendMessage(payload.content, payload.room_id);
-      console.log("[useChat] Message sent to websocket service");
     } catch (error) {
       console.error("[useChat] Error sending message:", error);
       setError("Failed to send message");

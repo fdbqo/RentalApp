@@ -15,4 +15,5 @@ export interface User {
   phone?: string;
   address?: Address;
   licenseNumber?: string; // Required only for landlords
+  balance: number; // User's balance in euros
 }

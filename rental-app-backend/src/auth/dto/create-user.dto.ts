@@ -59,4 +59,8 @@ export class CreateUserDto {
   @ValidateNested()
   @Type(() => AddressDto)
   address?: AddressDto;
+
+  @ValidateIf((o) => o.userType === "landlord")
+  @IsOptional()
+  balance?: number;
 }

@@ -81,4 +81,13 @@ export class AuthService {
     }
     return null;
   }
+
+  async getCurrentUser(userId: string): Promise<any> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+    const { password, ...result } = user.toObject();
+    return result;
+  }
 }

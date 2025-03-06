@@ -10,8 +10,9 @@ import { Image } from "react-native";
 export default function ManagePropertyScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const { properties, deleteProperty } = usePropertyStore();
+  const { properties, deleteProperty, updateProperty } = usePropertyStore();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const property = properties.find((p) => p._id === id);
@@ -64,8 +65,15 @@ export default function ManagePropertyScreen() {
     }
   };
 
-  const handleViewApplications = () => {
-    // Handle viewing applications
+  const handleToggleRentedStatus = async () => {
+    try {
+      setIsUpdating(true);
+      await updateProperty(id as string, { isRented: !property.isRented });
+      setIsUpdating(false);
+    } catch (error) {
+      console.error("Failed to update property status:", error);
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -77,40 +85,60 @@ export default function ManagePropertyScreen() {
           {/* Images */}
           {property.images && property.images.length > 0 && (
             <Card
-              bordered
               elevate
+              bordered
+              borderRadius="$6"
+              backgroundColor="white"
               padding="$4"
               marginBottom="$4"
-              borderRadius="$4"
-              backgroundColor="white"
               shadowColor={rentalAppTheme.textDark}
-              shadowOffset={{ width: 0, height: 2 }}
+              shadowOffset={{ width: 0, height: 4 }}
               shadowOpacity={0.1}
-              shadowRadius={4}
+              shadowRadius={8}
             >
-              <YStack space="$3">
-                <Text
-                  fontSize={18}
-                  fontWeight="bold"
-                  color={rentalAppTheme.textDark}
-                >
-                  Images
-                </Text>
+              <YStack space="$4">
+                <XStack space="$2" alignItems="center">
+                  <Card
+                    backgroundColor={`${rentalAppTheme.primaryDark}10`}
+                    padding="$2"
+                    borderRadius="$4"
+                  >
+                    <Feather
+                      name="image"
+                      size={20}
+                      color={rentalAppTheme.primaryDark}
+                    />
+                  </Card>
+                  <Text
+                    fontSize="$6"
+                    fontWeight="bold"
+                    color={rentalAppTheme.textDark}
+                  >
+                    Images
+                  </Text>
+                </XStack>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <XStack space="$2">
                     {property.images.map((image, index) => (
-                      <Image
+                      <Card
                         key={`${image.uri}-${index}`}
-                        source={{ 
-                          uri: image.uri,
-                          cache: 'force-cache'
-                        }}
-                        style={{
-                          width: 200,
-                          height: 150,
-                          borderRadius: 8,
-                        }}
-                      />
+                        elevate
+                        bordered
+                        borderRadius="$4"
+                        overflow="hidden"
+                      >
+                        <Image
+                          source={{
+                            uri: image.uri,
+                            cache: "force-cache",
+                          }}
+                          style={{
+                            width: 200,
+                            height: 150,
+                            borderRadius: 8,
+                          }}
+                        />
+                      </Card>
                     ))}
                   </XStack>
                 </ScrollView>
@@ -120,147 +148,209 @@ export default function ManagePropertyScreen() {
 
           {/* Property Details */}
           <Card
-            bordered
             elevate
+            bordered
+            borderRadius="$6"
+            backgroundColor="white"
             padding="$4"
             marginBottom="$4"
-            borderRadius="$4"
-            backgroundColor="white"
             shadowColor={rentalAppTheme.textDark}
-            shadowOffset={{ width: 0, height: 2 }}
+            shadowOffset={{ width: 0, height: 4 }}
             shadowOpacity={0.1}
-            shadowRadius={4}
+            shadowRadius={8}
           >
-            <YStack space="$3">
-              <Text
-                fontSize={20}
-                fontWeight="bold"
-                color={rentalAppTheme.textDark}
-              >
-                {property.shortDescription}
-              </Text>
+            <YStack space="$4">
               <XStack space="$2" alignItems="center">
-                <Feather
-                  name="check-circle"
-                  size={16}
-                  color={rentalAppTheme.textLight}
-                />
-                <Text
-                  fontSize={16}
-                  color={
-                    property.isRented
-                      ? rentalAppTheme.accentDarkRed
-                      : rentalAppTheme.primaryLight
-                  }
+                <Card
+                  backgroundColor={`${rentalAppTheme.primaryDark}10`}
+                  padding="$2"
+                  borderRadius="$4"
                 >
-                  {property.isRented ? "Rented" : "Available"}
-                </Text>
-              </XStack>
-              <XStack space="$2" alignItems="center">
-                <Feather
-                  name="map-pin"
-                  size={16}
-                  color={rentalAppTheme.textLight}
-                />
-                <Text fontSize={16} color={rentalAppTheme.textLight}>
-                  {`${property.houseAddress.addressLine1}${
-                    property.houseAddress.addressLine2
-                      ? ", " + property.houseAddress.addressLine2
-                      : ""
-                  }, ${property.houseAddress.townCity}, ${
-                    property.houseAddress.county
-                  }, ${property.houseAddress.eircode}`}
-                </Text>
-              </XStack>
-              <XStack space="$2" alignItems="center">
-                <Feather
-                  name="dollar-sign"
-                  size={16}
-                  color={rentalAppTheme.textLight}
-                />
-                <Text fontSize={16} color={rentalAppTheme.textDark}>
-                  €{property.price.toLocaleString()}/month
-                </Text>
-              </XStack>
-              <XStack space="$2" alignItems="center">
-                <Feather
-                  name="home"
-                  size={16}
-                  color={rentalAppTheme.textLight}
-                />
-                <Text fontSize={16} color={rentalAppTheme.textDark}>
-                  {`${
-                    property.propertyType.charAt(0).toUpperCase() +
-                    property.propertyType.slice(1)
-                  } • ${property.singleBedrooms} ${
-                    property.singleBedrooms === 1
-                      ? "single bedroom"
-                      : "single bedrooms"
-                  } • ${property.doubleBedrooms} ${
-                    property.doubleBedrooms === 1
-                      ? "double bedroom"
-                      : "double bedrooms"
-                  } • ${property.bathrooms} ${
-                    property.bathrooms === 1 ? "bathroom" : "bathrooms"
-                  }`}
+                  <Feather
+                    name="home"
+                    size={20}
+                    color={rentalAppTheme.primaryDark}
+                  />
+                </Card>
+                <Text
+                  fontSize="$6"
+                  fontWeight="bold"
+                  color={rentalAppTheme.textDark}
+                >
+                  Property Details
                 </Text>
               </XStack>
 
-              <XStack space="$2" alignItems="center">
-                <Feather
-                  name="calendar"
-                  size={16}
-                  color={rentalAppTheme.textLight}
-                />
-                <Text fontSize={16} color={rentalAppTheme.textDark}>
-                  {property.availability === "available_from" &&
-                  property.availableFrom
-                    ? `Available from ${property.availableFrom}`
-                    : "Available immediately"}
+              <YStack space="$3">
+                <Text
+                  fontSize={20}
+                  fontWeight="bold"
+                  color={rentalAppTheme.textDark}
+                >
+                  {property.shortDescription}
                 </Text>
-              </XStack>
+
+                <XStack space="$2" alignItems="center">
+                  <Card
+                    backgroundColor={property.isRented ? "$red2" : "$green2"}
+                    padding="$2"
+                    borderRadius="$4"
+                  >
+                    <XStack space="$2" alignItems="center">
+                      <Feather
+                        name="check-circle"
+                        size={16}
+                        color={property.isRented ? "$red9" : "$green9"}
+                      />
+                      <Text
+                        fontSize={14}
+                        color={property.isRented ? "$red9" : "$green9"}
+                        fontWeight="500"
+                      >
+                        {property.isRented ? "Rented" : "Available"}
+                      </Text>
+                    </XStack>
+                  </Card>
+                </XStack>
+
+                <XStack space="$2" alignItems="flex-start">
+                  <Card backgroundColor="$gray2" padding="$2" borderRadius="$4">
+                    <Feather
+                      name="map-pin"
+                      size={16}
+                      color={rentalAppTheme.textDark}
+                    />
+                  </Card>
+                  <Text fontSize={16} color={rentalAppTheme.textDark} flex={1} flexWrap="wrap">
+                    {`${property.houseAddress.addressLine1}${
+                      property.houseAddress.addressLine2
+                        ? ", " + property.houseAddress.addressLine2
+                        : ""
+                    }, ${property.houseAddress.townCity}, ${
+                      property.houseAddress.county
+                    }, ${property.houseAddress.eircode}`}
+                  </Text>
+                </XStack>
+
+                <XStack space="$2" alignItems="flex-start">
+                  <Card backgroundColor="$gray2" padding="$2" borderRadius="$4">
+                    <Feather
+                      name="dollar-sign"
+                      size={16}
+                      color={rentalAppTheme.textDark}
+                    />
+                  </Card>
+                  <Text
+                    fontSize={16}
+                    fontWeight="600"
+                    color={rentalAppTheme.textDark}
+                  >
+                    €{property.price.toLocaleString()}
+                    <Text fontSize={16} color={rentalAppTheme.textDark}>
+                      /month
+                    </Text>
+                  </Text>
+                </XStack>
+
+                <XStack space="$2" alignItems="flex-start">
+                  <Card backgroundColor="$gray2" padding="$2" borderRadius="$4">
+                    <Feather
+                      name="home"
+                      size={16}
+                      color={rentalAppTheme.textDark}
+                    />
+                  </Card>
+                  <Text fontSize={16} color={rentalAppTheme.textDark} flex={1} flexWrap="wrap">
+                    {`${
+                      property.propertyType.charAt(0).toUpperCase() +
+                      property.propertyType.slice(1)
+                    } • ${property.singleBedrooms} ${
+                      property.singleBedrooms === 1
+                        ? "single bedroom"
+                        : "single bedrooms"
+                    } • ${property.doubleBedrooms} ${
+                      property.doubleBedrooms === 1
+                        ? "double bedroom"
+                        : "double bedrooms"
+                    } • ${property.bathrooms} ${
+                      property.bathrooms === 1 ? "bathroom" : "bathrooms"
+                    }`}
+                  </Text>
+                </XStack>
+
+                <XStack space="$2" alignItems="center">
+                  <Card backgroundColor="$gray2" padding="$2" borderRadius="$4">
+                    <Feather
+                      name="calendar"
+                      size={16}
+                      color={rentalAppTheme.textDark}
+                    />
+                  </Card>
+                  <Text fontSize={16} color={rentalAppTheme.textDark}>
+                    {property.availability === "available_from" &&
+                    property.availableFrom
+                      ? `Available from ${property.availableFrom}`
+                      : "Available immediately"}
+                  </Text>
+                </XStack>
+              </YStack>
             </YStack>
           </Card>
 
           {/* Description */}
           <Card
-            bordered
             elevate
+            bordered
+            borderRadius="$6"
+            backgroundColor="white"
             padding="$4"
             marginBottom="$4"
-            borderRadius="$4"
-            backgroundColor="white"
             shadowColor={rentalAppTheme.textDark}
-            shadowOffset={{ width: 0, height: 2 }}
+            shadowOffset={{ width: 0, height: 4 }}
             shadowOpacity={0.1}
-            shadowRadius={4}
+            shadowRadius={8}
           >
-            <YStack space="$3">
-              <Text
-                fontSize={18}
-                fontWeight="bold"
-                color={rentalAppTheme.textDark}
-              >
-                Description
-              </Text>
-              <Text fontSize={16} color={rentalAppTheme.textLight}>
+            <YStack space="$4">
+              <XStack space="$2" alignItems="center">
+                <Card
+                  backgroundColor={`${rentalAppTheme.primaryDark}10`}
+                  padding="$2"
+                  borderRadius="$4"
+                >
+                  <Feather
+                    name="file-text"
+                    size={20}
+                    color={rentalAppTheme.primaryDark}
+                  />
+                </Card>
+                <Text
+                  fontSize="$6"
+                  fontWeight="bold"
+                  color={rentalAppTheme.textDark}
+                >
+                  Description
+                </Text>
+              </XStack>
+              <Text fontSize={16} color={rentalAppTheme.textDark}>
                 {property.description}
               </Text>
             </YStack>
           </Card>
 
           {/* Action Buttons */}
-          <YStack space="$3" marginBottom="$12">
+          <YStack space="$3" marginBottom="$8">
             {/* Edit Button */}
             <Button
               backgroundColor={rentalAppTheme.primaryDark}
               pressStyle={{
                 backgroundColor: rentalAppTheme.primaryDarkPressed,
               }}
-              borderRadius="$4"
+              borderRadius="$6"
+              size="$5"
+              elevation={4}
               onPress={handleEdit}
             >
-              <XStack alignItems="center" space="$2">
+              <XStack space="$2" justifyContent="center" alignItems="center">
                 <Feather name="edit" size={20} color="white" />
                 <Text color="white" fontSize={16} fontWeight="bold">
                   Edit Property
@@ -271,18 +361,18 @@ export default function ManagePropertyScreen() {
             {/* Confirmation Dialog */}
             {showConfirmDialog && (
               <Card
-                bordered
                 elevate
-                padding="$4"
-                borderRadius="$4"
+                bordered
+                borderRadius="$6"
                 backgroundColor="white"
+                padding="$4"
                 shadowColor={rentalAppTheme.textDark}
-                shadowOffset={{ width: 0, height: 2 }}
+                shadowOffset={{ width: 0, height: 4 }}
                 shadowOpacity={0.1}
-                shadowRadius={4}
+                shadowRadius={8}
                 marginBottom="$4"
               >
-                <YStack space="$3" alignItems="center">
+                <YStack space="$4" alignItems="center">
                   <Text
                     fontSize={18}
                     fontWeight="bold"
@@ -295,7 +385,9 @@ export default function ManagePropertyScreen() {
                     <Button
                       backgroundColor={rentalAppTheme.accentDarkRed}
                       pressStyle={{ backgroundColor: "#a80000" }}
-                      borderRadius="$4"
+                      borderRadius="$6"
+                      size="$4"
+                      elevation={4}
                       onPress={confirmDelete}
                     >
                       <Text color="white" fontSize={16} fontWeight="bold">
@@ -307,7 +399,9 @@ export default function ManagePropertyScreen() {
                       pressStyle={{
                         backgroundColor: rentalAppTheme.primaryDarkPressed,
                       }}
-                      borderRadius="$4"
+                      borderRadius="$6"
+                      size="$4"
+                      elevation={4}
                       onPress={cancelDelete}
                     >
                       <Text color="white" fontSize={16} fontWeight="bold">
@@ -324,11 +418,13 @@ export default function ManagePropertyScreen() {
               <Button
                 backgroundColor={rentalAppTheme.accentDarkRed}
                 pressStyle={{ backgroundColor: "#a80000" }}
-                borderRadius="$4"
+                borderRadius="$6"
+                size="$5"
+                elevation={4}
                 onPress={handleDeleteConfirmation}
                 disabled={isDeleting}
               >
-                <XStack alignItems="center" space="$2">
+                <XStack space="$2" justifyContent="center" alignItems="center">
                   <Feather name="trash-2" size={20} color="white" />
                   <Text color="white" fontSize={16} fontWeight="bold">
                     Delete Property
@@ -337,19 +433,36 @@ export default function ManagePropertyScreen() {
               </Button>
             )}
 
-            {/* View Applications Button */}
+            {/* Toggle Rented Status Button */}
             <Button
-              backgroundColor={rentalAppTheme.primaryLight}
+              backgroundColor={
+                property.isRented
+                  ? rentalAppTheme.primaryLight
+                  : rentalAppTheme.primaryLight
+              }
               pressStyle={{
-                backgroundColor: rentalAppTheme.primaryLightPressed,
+                backgroundColor: property.isRented
+                  ? rentalAppTheme.primaryLightPressed
+                  : rentalAppTheme.primaryLightPressed,
               }}
-              borderRadius="$4"
-              onPress={handleViewApplications}
+              borderRadius="$6"
+              size="$5"
+              elevation={4}
+              onPress={handleToggleRentedStatus}
+              disabled={isUpdating}
             >
-              <XStack alignItems="center" space="$2">
-                <Feather name="users" size={20} color="white" />
+              <XStack space="$2" justifyContent="center" alignItems="center">
+                <Feather
+                  name={property.isRented ? "check-circle" : "check-circle"}
+                  size={20}
+                  color="white"
+                />
                 <Text color="white" fontSize={16} fontWeight="bold">
-                  View Applications
+                  {isUpdating
+                    ? "Updating..."
+                    : property.isRented
+                    ? "Mark As Available"
+                    : "Mark As Rented"}
                 </Text>
               </XStack>
             </Button>

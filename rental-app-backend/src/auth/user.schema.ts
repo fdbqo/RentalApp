@@ -49,6 +49,9 @@ export class User {
 
   @Prop()
   licenseNumber?: string;
+
+  @Prop()
+  balance?: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

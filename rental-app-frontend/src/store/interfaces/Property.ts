@@ -40,7 +40,7 @@ export interface Property {
 
 export interface FilterState {
   searchQuery?: string;
-  distance?: string;
+  searchType?: 'location' | 'university';
   minPrice?: string;
   maxPrice?: string;
   beds?: string;

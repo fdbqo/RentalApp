@@ -25,8 +25,11 @@ export class Room {
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'User',
         autopopulate: { select: 'firstName lastName email' } 
-      }])
-      members: User[];
+    }])
+    members: User[];
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Chat' })
+    lastMessage: any;
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);
@@ -36,15 +39,22 @@ export class RoomDocument {
     name: string;
     type: RoomType;
     members: User[];
+    lastMessage?: {
+        content: string;
+        createdAt: string;
+        isRead?: boolean;
+        sender_id?: string;
+    };
 
     constructor(props: Partial<RoomDocument>) {
         this._id = props._id;
         this.members = props.members;
         this.name = props.name;
         this.type = props.type;
+        this.lastMessage = props.lastMessage;
 
         if (this.type == RoomType.PERSONAL) {
-            this.name = this.members.find((member: any) => member._id.toString() !== this._id.toString()).firstName;
+            this.name = this.members.find((member: any) => member._id.toString() !== this._id.toString())?.firstName;
         }
     }
 }

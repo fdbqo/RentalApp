@@ -4,12 +4,16 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Chat, ChatDocument } from "./schemas/chat.schemas";
 import { Model, Types } from "mongoose";
 import { GetChatDto } from "./dto/get-chat.dto";
+import { Room } from "src/rooms/schemas/room.schemas";
 
 @Injectable()
 export class ChatsService {
   private readonly logger = new Logger(ChatsService.name);
 
-  constructor(@InjectModel(Chat.name) private chatModel: Model<ChatDocument>) {}
+  constructor(
+    @InjectModel(Chat.name) private chatModel: Model<ChatDocument>,
+    @InjectModel(Room.name) private roomModel: Model<Room>
+  ) {}
 
   async create(data: { senderId: string } & CreateChatDto) {
     try {
@@ -23,6 +27,12 @@ export class ChatsService {
 
       const savedChat = await newChat.save();
       this.logger.log(`Chat created: ${savedChat._id}`);
+
+      // Update the room's lastMessage
+      await this.roomModel.findByIdAndUpdate(
+        data.room_id,
+        { $set: { lastMessage: savedChat._id } }
+      );
 
       return savedChat;
     } catch (error) {

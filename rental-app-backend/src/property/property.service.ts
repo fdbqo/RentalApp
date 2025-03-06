@@ -1,22 +1,34 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { Property, PropertyDocument } from './schemas/property.schema';
-import { CreatePropertyDto } from './dto/create-property.dto';
-import { UpdatePropertyDto } from './dto/update-property.dto';
-import { DistanceService } from 'src/google/google.service';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, Types } from "mongoose";
+import { Property, PropertyDocument } from "./schemas/property.schema";
+import { CreatePropertyDto } from "./dto/create-property.dto";
+import { UpdatePropertyDto } from "./dto/update-property.dto";
+import { DistanceService } from "src/google/google.service";
+import { User, UserDocument } from "../auth/user.schema";
 
 @Injectable()
 export class PropertyService {
   constructor(
     @InjectModel(Property.name) private propertyModel: Model<PropertyDocument>,
-    private distanceService: DistanceService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private distanceService: DistanceService
   ) {}
+
+  private calculateListingFee(price: number): number {
+    return price * 0.03; // 3% of the monthly price
+  }
 
   async findAll(lenderId: string): Promise<Property[]> {
     try {
       const objectId = new Types.ObjectId(lenderId);
-      const properties = await this.propertyModel.find({ lenderId: objectId }).exec();
+      const properties = await this.propertyModel
+        .find({ lenderId: objectId })
+        .exec();
       return properties;
     } catch (error) {
       return [];
@@ -25,28 +37,54 @@ export class PropertyService {
 
   async create(createPropertyDto: CreatePropertyDto): Promise<Property> {
     try {
+      // Check if user exists and is a landlord
+      const user = await this.userModel
+        .findById(createPropertyDto.lenderId)
+        .exec();
+      if (!user) {
+        throw new NotFoundException("User not found");
+      }
+      if (user.userType !== "landlord") {
+        throw new BadRequestException("Only landlords can list properties");
+      }
+
+      // Calculate listing fee
+      const listingFee = this.calculateListingFee(createPropertyDto.price);
+
+      // Check if user has enough balance
+      if (user.balance < listingFee) {
+        throw new BadRequestException(
+          `Insufficient balance. Required: €${listingFee.toFixed(2)}`
+        );
+      }
+
+      // Deduct the listing fee from user's balance
+      user.balance -= listingFee;
+      await user.save();
+
       const propertyData = {
         ...createPropertyDto,
         lenderId: new Types.ObjectId(createPropertyDto.lenderId),
-        images: createPropertyDto.images.map(img => ({
+        images: createPropertyDto.images.map((img) => ({
           _id: new Types.ObjectId(),
           uri: img.uri,
         })),
+        listingExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
       };
 
       const createdProperty = new this.propertyModel(propertyData);
 
       // Get an array of nearest universities.
-      const nearestUniversities = await this.distanceService.getNearestUniversities(createdProperty, 5);
+      const nearestUniversities =
+        await this.distanceService.getNearestUniversities(createdProperty, 5);
       if (nearestUniversities && nearestUniversities.length) {
         createdProperty.nearestUniversities = nearestUniversities;
         await createdProperty.save();
       }
 
-      console.log('Nearest Universities Details:', nearestUniversities);
       return createdProperty.save();
     } catch (error) {
-      console.error('Error creating property:', error);
+      console.error("Error creating property:", error);
       throw error;
     }
   }
@@ -63,7 +101,10 @@ export class PropertyService {
     }
   }
 
-  async update(id: string, updatePropertyDto: UpdatePropertyDto): Promise<Property> {
+  async update(
+    id: string,
+    updatePropertyDto: UpdatePropertyDto
+  ): Promise<Property> {
     try {
       const updatedProperty = await this.propertyModel
         .findByIdAndUpdate(id, updatePropertyDto, { new: true })
@@ -74,7 +115,8 @@ export class PropertyService {
       }
 
       // Update nearest universities details.
-      const nearestUniversities = await this.distanceService.getNearestUniversities(updatedProperty, 5);
+      const nearestUniversities =
+        await this.distanceService.getNearestUniversities(updatedProperty, 5);
       if (nearestUniversities && nearestUniversities.length) {
         updatedProperty.nearestUniversities = nearestUniversities;
         await updatedProperty.save();
@@ -103,10 +145,30 @@ export class PropertyService {
 
       if (filters?.searchQuery) {
         query.$or = [
-          { 'houseAddress.townCity': { $regex: filters.searchQuery, $options: 'i' } },
-          { 'houseAddress.county': { $regex: filters.searchQuery, $options: 'i' } },
-          { 'houseAddress.addressLine1': { $regex: filters.searchQuery, $options: 'i' } },
-          { 'houseAddress.addressLine2': { $regex: filters.searchQuery, $options: 'i' } },
+          {
+            "houseAddress.townCity": {
+              $regex: filters.searchQuery,
+              $options: "i",
+            },
+          },
+          {
+            "houseAddress.county": {
+              $regex: filters.searchQuery,
+              $options: "i",
+            },
+          },
+          {
+            "houseAddress.addressLine1": {
+              $regex: filters.searchQuery,
+              $options: "i",
+            },
+          },
+          {
+            "houseAddress.addressLine2": {
+              $regex: filters.searchQuery,
+              $options: "i",
+            },
+          },
         ];
       }
 
@@ -121,18 +183,20 @@ export class PropertyService {
       if (filters?.beds) {
         const totalBeds = parseInt(filters.beds);
         query.$expr = {
-          $gte: [{ $add: ['$singleBedrooms', '$doubleBedrooms'] }, totalBeds],
+          $gte: [{ $add: ["$singleBedrooms", "$doubleBedrooms"] }, totalBeds],
         };
       }
 
       // Handle distance filter (using nearestUniversities array)
       if (filters?.distance) {
-        query['nearestUniversities.distance'] = { $lte: parseInt(filters.distance) };
+        query["nearestUniversities.distance"] = {
+          $lte: parseInt(filters.distance),
+        };
       }
 
       return await this.propertyModel.find(query).exec();
     } catch (error) {
-      console.error('Error finding properties:', error);
+      console.error("Error finding properties:", error);
       return [];
     }
   }

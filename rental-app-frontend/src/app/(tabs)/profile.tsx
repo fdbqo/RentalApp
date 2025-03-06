@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   YStack,
   XStack,
@@ -8,18 +8,54 @@ import {
   Theme,
   ScrollView,
   Card,
+  Input,
+  Dialog,
+  Spinner,
 } from "tamagui";
 import { Feather } from "@expo/vector-icons";
 import { useUserStore } from "@/store/user.store";
 import { UserAvatar } from "@/components/UserAvatar";
 import { AnimatePresence } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
+import { Alert } from "react-native";
+import { useStripe, initStripe } from "@stripe/stripe-react-native";
+import axios from "axios";
+import { env } from "../../../env";
 
 export default function ProfileScreen() {
   const user = useUserStore((state) => state.user);
+  const token = useUserStore((state) => state.token);
   const logout = useUserStore((state) => state.logout);
-
+  const refreshUserData = useUserStore((state) => state.refreshUserData);
+  const [showTopUpDialog, setShowTopUpDialog] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const stripe = useStripe();
   const fullName = user ? `${user.firstName} ${user.lastName}` : "";
+
+  useEffect(() => {
+    refreshUserData();
+  }, []);
+
+  // Initialize Stripe
+  useEffect(() => {
+    if (!env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+      console.error("Stripe publishable key is not configured");
+      return;
+    }
+
+    const init = async () => {
+      try {
+        await initStripe({
+          publishableKey: env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+        });
+      } catch (error) {
+        console.error("Error initializing Stripe:", error);
+      }
+    };
+
+    init();
+  }, []);
 
   const formattedAddress = user?.address
     ? {
@@ -32,6 +68,68 @@ export default function ProfileScreen() {
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleTopUp = async () => {
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      Alert.alert("Invalid amount", "Please enter a valid amount");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await axios.post(
+        `${env.EXPO_PUBLIC_API_URL}/payment/create-payment-intent`,
+        { amount: Number(amount) },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const { clientSecret } = response.data;
+
+      const { error: initError } = await stripe.initPaymentSheet({
+        merchantDisplayName: "RentalApp",
+        paymentIntentClientSecret: clientSecret,
+        returnURL: "rentalapp://stripe-redirect",
+      });
+
+      if (initError) {
+        console.error("Payment sheet initialization error:", initError);
+        Alert.alert("Error", initError.message);
+        return;
+      }
+
+      const { error: presentError } = await stripe.presentPaymentSheet();
+
+      if (presentError) {
+        console.error("Payment presentation error:", presentError);
+        Alert.alert("Error", presentError.message);
+      } else {
+        Alert.alert("Success", "Payment successful!");
+        setAmount("");
+        setShowTopUpDialog(false);
+
+        setTimeout(async () => {
+          try {
+            await refreshUserData();
+            console.log("User data refreshed successfully");
+          } catch (refreshError) {
+            console.error("Error refreshing user data:", refreshError);
+          }
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Payment error:", error.response?.data || error.message);
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Failed to process payment"
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -60,7 +158,7 @@ export default function ProfileScreen() {
           <Card
             bordered
             elevate
-            padding="$5"
+            padding="$3"
             marginTop="-$8"
             marginHorizontal="$2"
             borderRadius={20}
@@ -71,17 +169,17 @@ export default function ProfileScreen() {
             shadowRadius={8}
           >
             <AnimatePresence>
-              <YStack alignItems="center" space={16} marginBottom={16}>
+              <XStack alignItems="center" space={16}>
                 {user && (
-                  <YStack padding="$2" borderRadius={100} marginTop="-$8">
+                  <YStack padding="$2" borderRadius={100} margin="$1">
                     <UserAvatar
                       firstName={user.firstName}
                       lastName={user.lastName}
-                      size={100}
+                      size={80}
                     />
                   </YStack>
                 )}
-                <YStack alignItems="center" space={4}>
+                <YStack space={4}>
                   <Text
                     fontSize={24}
                     fontWeight="800"
@@ -93,7 +191,7 @@ export default function ProfileScreen() {
                     {user?.email}
                   </Text>
                 </YStack>
-              </YStack>
+              </XStack>
             </AnimatePresence>
           </Card>
 
@@ -157,6 +255,81 @@ export default function ProfileScreen() {
                 </XStack>
               )}
             </Card>
+
+            {/* Balance Card - Only for Landlords */}
+            {user?.userType === "landlord" && (
+              <Card
+                bordered
+                elevate
+                padding="$4"
+                borderRadius={16}
+                backgroundColor="white"
+                animation="bouncy"
+                scale={0.97}
+                hoverStyle={{ scale: 1 }}
+                pressStyle={{ scale: 0.96 }}
+                shadowColor={rentalAppTheme.textDark}
+                shadowOffset={{ width: 0, height: 2 }}
+                shadowOpacity={0.1}
+                shadowRadius={4}
+              >
+                <XStack alignItems="center" space={12} marginBottom="$3">
+                  <YStack
+                    backgroundColor={`${rentalAppTheme.primaryLight}30`}
+                    padding="$2"
+                    borderRadius={12}
+                  >
+                    <Feather
+                      name="credit-card"
+                      size={20}
+                      color={rentalAppTheme.primaryDark}
+                    />
+                  </YStack>
+                  <Text
+                    fontSize={18}
+                    fontWeight="600"
+                    color={rentalAppTheme.textDark}
+                  >
+                    Balance
+                  </Text>
+                </XStack>
+                <XStack
+                  alignItems="center"
+                  justifyContent="space-between"
+                  paddingLeft="$1"
+                >
+                  <YStack>
+                    <Text
+                      fontSize={24}
+                      fontWeight="bold"
+                      color={rentalAppTheme.textDark}
+                    >
+                      €{user.balance?.toFixed(2) || "0.00"}
+                    </Text>
+                    <Text fontSize={14} color={rentalAppTheme.textLight}>
+                      Available balance
+                    </Text>
+                  </YStack>
+                  <Button
+                    size="$3"
+                    circular
+                    backgroundColor={`${rentalAppTheme.primaryLight}30`}
+                    pressStyle={{
+                      backgroundColor: `${rentalAppTheme.primaryLight}50`,
+                      scale: 0.97,
+                    }}
+                    onPress={() => setShowTopUpDialog(true)}
+                    icon={
+                      <Feather
+                        name="plus"
+                        size={20}
+                        color={rentalAppTheme.primaryDark}
+                      />
+                    }
+                  />
+                </XStack>
+              </Card>
+            )}
 
             {/* Contact Card */}
             <Card
@@ -303,6 +476,131 @@ export default function ProfileScreen() {
             </Button>
           </YStack>
         </ScrollView>
+
+        {/* Top Up Dialog */}
+        <Dialog open={showTopUpDialog} onOpenChange={setShowTopUpDialog}>
+          <Dialog.Portal>
+            <Dialog.Overlay
+              key="overlay"
+              animation="quick"
+              opacity={0.5}
+              enterStyle={{ opacity: 0 }}
+              exitStyle={{ opacity: 0 }}
+              backgroundColor="rgba(0, 0, 0, 0.5)"
+            />
+            <Dialog.Content
+              bordered
+              elevate
+              key="content"
+              animation={[
+                "quick",
+                {
+                  opacity: {
+                    overshootClamping: true,
+                  },
+                },
+              ]}
+              enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
+              exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
+              padding="$5"
+              borderRadius={20}
+              backgroundColor="white"
+              width={350}
+              shadowColor={rentalAppTheme.textDark}
+              shadowOffset={{ width: 0, height: 4 }}
+              shadowOpacity={0.15}
+              shadowRadius={16}
+            >
+              <YStack space="$4">
+                <YStack space="$2">
+                  <Text
+                    fontSize={24}
+                    fontWeight="700"
+                    color={rentalAppTheme.textDark}
+                  >
+                    Top Up Balance
+                  </Text>
+                  <Text fontSize={16} color={rentalAppTheme.textLight}>
+                    Enter the amount you want to add
+                  </Text>
+                </YStack>
+
+                <Card
+                  bordered
+                  padding="$3"
+                  borderRadius={16}
+                  backgroundColor={`${rentalAppTheme.primaryLight}10`}
+                  borderColor={`${rentalAppTheme.primaryLight}30`}
+                >
+                  <XStack alignItems="center" space="$2">
+                    <Text
+                      fontSize={24}
+                      fontWeight="bold"
+                      color={rentalAppTheme.textDark}
+                    >
+                      €
+                    </Text>
+                    <Input
+                      flex={1}
+                      placeholder="0.00"
+                      keyboardType="decimal-pad"
+                      value={amount}
+                      onChangeText={setAmount}
+                      borderWidth={0}
+                      backgroundColor="transparent"
+                      fontSize={24}
+                      fontWeight="bold"
+                      color={rentalAppTheme.textDark}
+                      placeholderTextColor={`${rentalAppTheme.textLight}50`}
+                    />
+                  </XStack>
+                </Card>
+
+                <YStack space="$3" marginTop="$2">
+                  <Button
+                    backgroundColor={rentalAppTheme.primaryDark}
+                    pressStyle={{
+                      backgroundColor: rentalAppTheme.primaryDarkPressed,
+                      scale: 0.98,
+                    }}
+                    onPress={handleTopUp}
+                    disabled={isLoading}
+                    borderRadius={12}
+                    height={50}
+                  >
+                    {isLoading ? (
+                      <XStack space="$2" alignItems="center">
+                        <Spinner color="white" />
+                        <Text color="white" fontSize={16} fontWeight="600">
+                          Processing...
+                        </Text>
+                      </XStack>
+                    ) : (
+                      <Text color="white" fontSize={16} fontWeight="600">
+                        Confirm Payment
+                      </Text>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    borderColor={rentalAppTheme.border}
+                    pressStyle={{
+                      backgroundColor: `${rentalAppTheme.border}20`,
+                      scale: 0.98,
+                    }}
+                    onPress={() => setShowTopUpDialog(false)}
+                    borderRadius={12}
+                    height={50}
+                  >
+                    <Text color={rentalAppTheme.textDark} fontSize={16}>
+                      Cancel
+                    </Text>
+                  </Button>
+                </YStack>
+              </YStack>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog>
       </YStack>
     </Theme>
   );

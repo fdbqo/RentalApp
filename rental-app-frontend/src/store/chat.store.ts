@@ -48,7 +48,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setMessages: (messages) => set({ messages }),
   addMessage: (message) =>
     set((state) => {
-      console.log("[ChatStore] Adding new message:", message);
 
       const updatedRooms = state.rooms.map((room) =>
         room._id === message.room_id
