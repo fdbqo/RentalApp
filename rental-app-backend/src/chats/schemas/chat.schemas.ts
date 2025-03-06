@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument, Types } from "mongoose";
-import { Room } from "src/rooms/schemas/room.schemas";
 import { User } from 'src/auth/user.schema';
 
 export type ChatDocument = HydratedDocument<Chat>;
@@ -14,11 +13,11 @@ export class Chat {
     @Prop({ required: true })
     content: string;
 
-    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: User.name, autopopulate: true })
+    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User', autopopulate: true })
     sender_id: User;
 
-    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: Room.name })
-    room_id: Room;
+    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Room' })
+    room_id: any;
 
     @Prop({ default: false })
     isRead: boolean;

@@ -1,9 +1,11 @@
 import React from "react";
 import { Dimensions, StyleSheet } from "react-native";
-import { Text, YStack, XStack, Avatar } from "tamagui";
+import { Text, YStack, XStack } from "tamagui";
 import dayjs from "dayjs";
 import { Feather } from "@expo/vector-icons";
 import { rentalAppTheme } from "@/constants/Colors";
+import { UserAvatar } from "@/components/UserAvatar";
+import { useChatStore } from "@/store/chat.store";
 
 interface MessageBubbleProps {
   message: {
@@ -12,6 +14,7 @@ interface MessageBubbleProps {
     createdAt: string;
     sender_id: string;
     sender?: {
+      firstName: string;
       name: string;
       avatar?: string;
     };
@@ -25,6 +28,9 @@ const MAX_BUBBLE_WIDTH = width * 0.75;
 
 const MessageBubble = ({ message, isCurrentUser }: MessageBubbleProps) => {
   const formattedTime = dayjs(message.createdAt).format("h:mm A");
+  const { rooms } = useChatStore();
+  const currentRoom = rooms.find(room => room.members.some(member => member._id === message.sender_id));
+  const sender = currentRoom?.members.find(member => member._id === message.sender_id);
 
   return (
     <XStack
@@ -33,17 +39,13 @@ const MessageBubble = ({ message, isCurrentUser }: MessageBubbleProps) => {
       justifyContent={isCurrentUser ? "flex-end" : "flex-start"}
     >
       {!isCurrentUser && (
-        <Avatar circular size="$3" marginRight={8} backgroundColor="$blue5">
-          {message.sender?.avatar && (
-            <Avatar.Image
-              src={message.sender.avatar}
-              alt={message.sender.name}
-            />
-          )}
-        </Avatar>
+        <UserAvatar
+          firstName={sender?.firstName || ""}
+          size={32}
+        />
       )}
 
-      <YStack maxWidth={MAX_BUBBLE_WIDTH}>
+      <YStack maxWidth={MAX_BUBBLE_WIDTH} marginLeft={!isCurrentUser ? 8 : 0}>
         {isCurrentUser ? (
           <YStack
             backgroundColor={rentalAppTheme.primaryDark}

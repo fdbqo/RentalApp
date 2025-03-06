@@ -13,7 +13,6 @@ import {
   YStack,
   XStack,
   Text,
-  Avatar,
   Input,
   Button,
   Theme,
@@ -25,6 +24,12 @@ import { formatDistanceToNow } from "date-fns";
 import { Link } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { rentalAppTheme } from "@/constants/Colors";
+import { UserAvatar } from "@/components/UserAvatar";
+import { useUserStore } from "@/store/user.store";
+
+const getOtherUser = (room, currentUser) => {
+  return room.members?.find(member => member._id !== currentUser?._id);
+};
 
 export default function MessagesScreen() {
   const { width } = useWindowDimensions();
@@ -33,6 +38,7 @@ export default function MessagesScreen() {
   const { rooms, isLoading, fetchRooms } = useChat();
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const currentUser = useUserStore((state) => state.user);
 
   useEffect(() => {
     fetchRooms();
@@ -179,115 +185,107 @@ export default function MessagesScreen() {
             ItemSeparatorComponent={() =>
               isWeb ? null : <YStack height={12} />
             }
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => handleRoomPress(item._id)}
-                style={({ pressed }) => [
-                  {
-                    opacity: pressed ? 0.9 : 1,
-                    transform: [{ scale: pressed ? 0.98 : 1 }],
-                  },
-                ]}
-              >
-                <YStack
-                  borderRadius={16}
-                  backgroundColor="white"
-                  padding="$4"
-                  style={{
-                    width: isWeb ? "100%" : "100%",
-                    ...Platform.select({
-                      ios: {
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.08,
-                        shadowRadius: 8,
-                      },
-                      android: {
-                        elevation: 3,
-                      },
-                      web: {
-                        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.08)",
-                      },
-                    }),
-                  }}
+            renderItem={({ item }) => {
+              const otherUser = getOtherUser(item, currentUser);
+              return (
+                <Pressable
+                  onPress={() => handleRoomPress(item._id)}
+                  style={({ pressed }) => [
+                    {
+                      opacity: pressed ? 0.9 : 1,
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                    },
+                  ]}
                 >
-                  <XStack space="$3" alignItems="center">
-                    {/* Avatar with Text component for the fallback */}
-                    <Avatar circular size="$6">
-                      <Avatar.Image
-                        source={{
-                          uri: `https://i.pravatar.cc/150?u=${item.members[0]._id}`,
-                        }}
+                  <YStack
+                    borderRadius={16}
+                    backgroundColor="white"
+                    padding="$4"
+                    style={{
+                      width: isWeb ? "100%" : "100%",
+                      ...Platform.select({
+                        ios: {
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.08,
+                          shadowRadius: 8,
+                        },
+                        android: {
+                          elevation: 3,
+                        },
+                        web: {
+                          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.08)",
+                        },
+                      }),
+                    }}
+                  >
+                    <XStack space="$3" alignItems="center">
+                      <UserAvatar
+                        firstName={otherUser?.firstName}
+                        size={48}
                       />
-                      <Avatar.Fallback
-                        backgroundColor={rentalAppTheme.primaryLight}
-                      >
-                        <Text color="white" fontWeight="bold" fontSize={16}>
-                          {item.name.charAt(0).toUpperCase()}
-                        </Text>
-                      </Avatar.Fallback>
-                    </Avatar>
 
-                    {/* Message Details */}
-                    <YStack flex={1} justifyContent="center">
-                      <XStack
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
-                        <Text
-                          fontSize={16}
-                          fontWeight="600"
-                          color={rentalAppTheme.textDark}
+                      {/* Message Details */}
+                      <YStack flex={1} justifyContent="center">
+                        <XStack
+                          justifyContent="space-between"
+                          alignItems="center"
                         >
-                          {item.name}
-                        </Text>
-                        {item.lastMessage && (
-                          <Text fontSize={12} color="#666">
-                            {formatDistanceToNow(
-                              new Date(item.lastMessage.createdAt),
-                              { addSuffix: true }
-                            )}
-                          </Text>
-                        )}
-                      </XStack>
-
-                      <XStack alignItems="center" marginTop="$1">
-                        <Text
-                          fontSize={14}
-                          color="#666"
-                          flexShrink={1}
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                        >
-                          {getMessagePreview(item.lastMessage?.content)}
-                        </Text>
-
-                        {/* Unread indicator - optional, using bracket notation for type safety */}
-                        {item["unreadCount"] > 0 && (
-                          <XStack
-                            backgroundColor={rentalAppTheme.primaryDark}
-                            borderRadius="$full"
-                            paddingHorizontal="$2"
-                            paddingVertical="$1"
-                            marginLeft="$2"
-                            justifyContent="center"
-                            alignItems="center"
-                            minWidth={20}
-                            height={20}
+                          <Text
+                            fontSize={16}
+                            fontWeight="600"
+                            color={rentalAppTheme.textDark}
                           >
-                            <Text fontSize={10} color="white" fontWeight="bold">
-                              {item["unreadCount"]}
+                            {otherUser?.firstName || item.name}
+                          </Text>
+                          {item.lastMessage && (
+                            <Text fontSize={12} color="#666">
+                              {formatDistanceToNow(
+                                new Date(item.lastMessage.createdAt),
+                                { addSuffix: true }
+                              )}
                             </Text>
-                          </XStack>
-                        )}
-                      </XStack>
-                    </YStack>
+                          )}
+                        </XStack>
 
-                    <Feather name="chevron-right" size={18} color="#ccc" />
-                  </XStack>
-                </YStack>
-              </Pressable>
-            )}
+                        <XStack alignItems="center" marginTop="$1">
+                          <Text
+                            fontSize={14}
+                            color="#666"
+                            flexShrink={1}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
+                            {getMessagePreview(item.lastMessage?.content)}
+                          </Text>
+
+                          {/* Unread indicator */}
+                          {item["unreadCount"] > 0 && (
+                            <XStack
+                              backgroundColor={rentalAppTheme.primaryDark}
+                              borderRadius="$full"
+                              paddingHorizontal="$2"
+                              paddingVertical="$1"
+                              marginLeft="$2"
+                              justifyContent="center"
+                              alignItems="center"
+                              minWidth={20}
+                              height={20}
+                            >
+                              <Text fontSize={10} color="white" fontWeight="bold">
+                                {item["unreadCount"]}
+                              </Text>
+                            </XStack>
+                          )}
+                        </XStack>
+                      </YStack>
+
+                      <Feather name="chevron-right" size={18} color="#ccc" />
+                    </XStack>
+                  </YStack>
+                </Pressable>
+              );
+            }}
             numColumns={isWeb ? 1 : 1}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{

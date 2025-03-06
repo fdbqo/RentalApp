@@ -15,7 +15,7 @@ import {
   ScrollView,
   Spinner,
 } from "tamagui";
-import { Bell } from "@tamagui/lucide-icons";
+import { Bell, Search } from "@tamagui/lucide-icons";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { FilterSystem } from "@/components/FilterSystem";
@@ -137,7 +137,34 @@ export default function ListingsScreen() {
     }
 
     if (properties.length === 0) {
-      return <Text>No properties found.</Text>;
+      return (
+        <YStack
+          flex={1}
+          justifyContent="center"
+          alignItems="center"
+          padding="$8"
+          space="$4"
+        >
+          <Search size={48} color={rentalAppTheme.textLight} />
+          <YStack alignItems="center" space="$2">
+            <Text
+              color={rentalAppTheme.textDark}
+              fontSize={20}
+              fontWeight="bold"
+              textAlign="center"
+            >
+              No Properties Found
+            </Text>
+            <Text
+              color={rentalAppTheme.textLight}
+              fontSize={16}
+              textAlign="center"
+            >
+              Try adjusting your filters to see more results
+            </Text>
+          </YStack>
+        </YStack>
+      );
     }
 
     if (isWeb) {

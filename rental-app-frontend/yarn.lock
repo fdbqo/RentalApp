@@ -1173,15 +1173,15 @@
   dependencies:
     tslib "^2.5.0"
 
-"@esbuild/darwin-x64@0.24.2":
+"@esbuild/darwin-arm64@0.24.2":
   version "0.24.2"
-  resolved "https://registry.npmjs.org/@esbuild/darwin-x64/-/darwin-x64-0.24.2.tgz"
-  integrity sha512-WeSrmwwHaPkNR5H3yYfowhZcbriGqooyu3zI/3GGpF8AyUdsrrP0X6KumITGA9WOyiJavnGZUwPGvxvwfWPHIA==
+  resolved "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.24.2.tgz"
+  integrity sha512-kj3AnYWc+CekmZnS5IPu9D+HWtUI49hbnyqk0FLEJDbzCIQt7hg7ucF1SQAilhtYpIujfaHr6O0UHlzzSPdOeA==
 
-"@esbuild/darwin-x64@0.25.0":
+"@esbuild/darwin-arm64@0.25.0":
   version "0.25.0"
-  resolved "https://registry.npmjs.org/@esbuild/darwin-x64/-/darwin-x64-0.25.0.tgz"
-  integrity sha512-DgDaYsPWFTS4S3nWpFcMn/33ZZwAAeAFKNHNa1QN0rI4pUjgqf0f7ONmXf6d22tqTY+H9FNdgeaAa+YIFUn2Rg==
+  resolved "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.25.0.tgz"
+  integrity sha512-mVwdUb5SRkPayVadIOI78K7aAnPamoeFR2bT5nszFUZ9P8UpK4ratOdYbZZXYSqPKMHfS1wdHCJk1P1EZpRdvw==
 
 "@expo/bunyan@^4.0.0":
   version "4.0.1"
@@ -1920,10 +1920,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@oxc-transform/binding-darwin-x64@0.47.1":
+"@oxc-transform/binding-darwin-arm64@0.47.1":
   version "0.47.1"
-  resolved "https://registry.npmjs.org/@oxc-transform/binding-darwin-x64/-/binding-darwin-x64-0.47.1.tgz"
-  integrity sha512-2lwBMYHouI8Q0wubDCRuK4lMosiA0acsk2ZZzvTzYkn2xNKXtug2+D5UsOxpRLzW1vtIiTEdE5kPaafGPIIcqw==
+  resolved "https://registry.npmjs.org/@oxc-transform/binding-darwin-arm64/-/binding-darwin-arm64-0.47.1.tgz"
+  integrity sha512-GT56Wkk/M1Eo1HCFfj8PxNn/ssBfxFVIrS3A5lJ6GE2k3gbVRORNzVA1znHtB3Tj4hIvWPNzqh+EQ2bhaFypNQ==
 
 "@pkgjs/parseargs@^0.11.0":
   version "0.11.0"
@@ -2535,10 +2535,10 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@rollup/rollup-darwin-x64@4.34.9":
+"@rollup/rollup-darwin-arm64@4.34.9":
   version "4.34.9"
-  resolved "https://registry.npmjs.org/@rollup/rollup-darwin-x64/-/rollup-darwin-x64-4.34.9.tgz"
-  integrity sha512-eOojSEAi/acnsJVYRxnMkPFqcxSMFfrw7r2iD9Q32SGkb/Q9FpUY1UlAu1DH9T7j++gZ0lHjnm4OyH2vCI7l7Q==
+  resolved "https://registry.npmjs.org/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.34.9.tgz"
+  integrity sha512-0CY3/K54slrzLDjOA7TOjN1NuLKERBgk9nY5V34mhmuu673YNb+7ghaDUs6N0ujXR7fz5XaS5Aa6d2TNxZd0OQ==
 
 "@segment/loosely-validate-event@^2.0.0":
   version "2.0.0"
@@ -2589,10 +2589,10 @@
   resolved "https://registry.npmjs.org/@stripe/stripe-react-native/-/stripe-react-native-0.42.0.tgz"
   integrity sha512-iV8PpDJ913CBoyq1zDtAARpsZtA8dxRFsXhc7KXsIpw2qCEqlNPSrCP4LAxI7UufJLa/gYRR1xYfnH1GXCKPfw==
 
-"@swc/core-darwin-x64@1.11.5":
+"@swc/core-darwin-arm64@1.11.5":
   version "1.11.5"
-  resolved "https://registry.npmjs.org/@swc/core-darwin-x64/-/core-darwin-x64-1.11.5.tgz"
-  integrity sha512-toz04z9wAClVvQSEY3xzrgyyeWBAfMWcKG4K0ugNvO56h/wczi2ZHRlnAXZW1tghKBk3z6MXqa/srfXgNhffKw==
+  resolved "https://registry.npmjs.org/@swc/core-darwin-arm64/-/core-darwin-arm64-1.11.5.tgz"
+  integrity sha512-GEd1hzEx0mSGkJYMFMGLnrGgjL2rOsOsuYWyjyiA3WLmhD7o+n/EWBDo6mzD/9aeF8dzSPC0TnW216gJbvrNzA==
 
 "@swc/core@^1.5.25", "@swc/core@^1.7.21":
   version "1.11.5"
@@ -7570,15 +7570,15 @@ lighthouse-logger@^1.0.0:
     debug "^2.6.9"
     marky "^1.2.2"
 
-lightningcss-darwin-x64@1.19.0:
+lightningcss-darwin-arm64@1.19.0:
   version "1.19.0"
-  resolved "https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.19.0.tgz"
-  integrity sha512-Lif1wD6P4poaw9c/4Uh2z+gmrWhw/HtXFoeZ3bEsv6Ia4tt8rOJBdkfVaUJ6VXmpKHALve+iTyP2+50xY1wKPw==
+  resolved "https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.19.0.tgz"
+  integrity sha512-wIJmFtYX0rXHsXHSr4+sC5clwblEMji7HHQ4Ub1/CznVRxtCFha6JIt5JZaNf8vQrfdZnBxLLC6R8pC818jXqg==
 
-lightningcss-darwin-x64@1.29.1:
+lightningcss-darwin-arm64@1.29.1:
   version "1.29.1"
-  resolved "https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.29.1.tgz"
-  integrity sha512-k33G9IzKUpHy/J/3+9MCO4e+PzaFblsgBjSGlpAaFikeBFm8B/CkO3cKU9oI4g+fjS2KlkLM/Bza9K/aw8wsNA==
+  resolved "https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.29.1.tgz"
+  integrity sha512-HtR5XJ5A0lvCqYAoSv2QdZZyoHNttBpa5EP9aNuzBQeKGfbyH5+UipLWvVzpP4Uml5ej4BYs5I9Lco9u1fECqw==
 
 lightningcss@^1.21.0:
   version "1.29.1"

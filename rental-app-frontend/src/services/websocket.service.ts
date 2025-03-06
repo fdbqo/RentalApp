@@ -100,6 +100,10 @@ class WebSocketService extends EventEmitter {
         console.log("[WebSocket] New chat received:", payload);
         useChatStore.getState().addMessage(payload as Message);
         break;
+      case "room_created":
+        console.log("[WebSocket] New room created:", payload);
+        useChatStore.getState().addRoom(payload);
+        break;
       case "joined":
         this.emit("joined", payload);
         break;

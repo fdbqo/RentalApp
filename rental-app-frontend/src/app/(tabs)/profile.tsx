@@ -78,6 +78,7 @@ export default function ProfileScreen() {
 
     try {
       setIsLoading(true);
+      console.log("Creating payment intent for amount:", amount);
       const response = await axios.post(
         `${env.API_URL}/payment/create-payment-intent`,
         { amount: Number(amount) },
@@ -89,6 +90,7 @@ export default function ProfileScreen() {
       );
 
       const { clientSecret } = response.data;
+      console.log("Payment intent created successfully");
 
       const { error: initError } = await stripe.initPaymentSheet({
         merchantDisplayName: "RentalApp",
@@ -97,19 +99,32 @@ export default function ProfileScreen() {
       });
 
       if (initError) {
+        console.error("Payment sheet initialization error:", initError);
         Alert.alert("Error", initError.message);
         return;
       }
 
+      console.log("Payment sheet initialized successfully");
       const { error: presentError } = await stripe.presentPaymentSheet();
 
       if (presentError) {
+        console.error("Payment presentation error:", presentError);
         Alert.alert("Error", presentError.message);
       } else {
+        console.log("Payment successful, refreshing user data");
         Alert.alert("Success", "Payment successful!");
         setAmount("");
         setShowTopUpDialog(false);
-        refreshUserData();
+
+        // Add a small delay before refreshing to allow webhook processing
+        setTimeout(async () => {
+          try {
+            await refreshUserData();
+            console.log("User data refreshed successfully");
+          } catch (refreshError) {
+            console.error("Error refreshing user data:", refreshError);
+          }
+        }, 2000); // Wait 2 seconds before refreshing
       }
     } catch (error) {
       console.error("Payment error:", error.response?.data || error.message);
@@ -148,7 +163,7 @@ export default function ProfileScreen() {
           <Card
             bordered
             elevate
-            padding="$4"
+            padding="$3"
             marginTop="-$8"
             marginHorizontal="$2"
             borderRadius={20}
@@ -159,13 +174,13 @@ export default function ProfileScreen() {
             shadowRadius={8}
           >
             <AnimatePresence>
-              <XStack alignItems="center" space={16} marginBottom={16}>
+              <XStack alignItems="center" space={16}>
                 {user && (
-                  <YStack padding="$2" borderRadius={100} marginTop="-$8">
+                  <YStack padding="$2" borderRadius={100} margin="$1">
                     <UserAvatar
                       firstName={user.firstName}
                       lastName={user.lastName}
-                      size={100}
+                      size={80}
                     />
                   </YStack>
                 )}

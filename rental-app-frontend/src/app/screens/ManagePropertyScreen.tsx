@@ -213,7 +213,7 @@ export default function ManagePropertyScreen() {
                   </Card>
                 </XStack>
 
-                <XStack space="$2" alignItems="center">
+                <XStack space="$2" alignItems="flex-start">
                   <Card backgroundColor="$gray2" padding="$2" borderRadius="$4">
                     <Feather
                       name="map-pin"
@@ -221,7 +221,7 @@ export default function ManagePropertyScreen() {
                       color={rentalAppTheme.textDark}
                     />
                   </Card>
-                  <Text fontSize={16} color={rentalAppTheme.textDark}>
+                  <Text fontSize={16} color={rentalAppTheme.textDark} flex={1} flexWrap="wrap">
                     {`${property.houseAddress.addressLine1}${
                       property.houseAddress.addressLine2
                         ? ", " + property.houseAddress.addressLine2
@@ -232,7 +232,7 @@ export default function ManagePropertyScreen() {
                   </Text>
                 </XStack>
 
-                <XStack space="$2" alignItems="center">
+                <XStack space="$2" alignItems="flex-start">
                   <Card backgroundColor="$gray2" padding="$2" borderRadius="$4">
                     <Feather
                       name="dollar-sign"
@@ -252,7 +252,7 @@ export default function ManagePropertyScreen() {
                   </Text>
                 </XStack>
 
-                <XStack space="$2" alignItems="center">
+                <XStack space="$2" alignItems="flex-start">
                   <Card backgroundColor="$gray2" padding="$2" borderRadius="$4">
                     <Feather
                       name="home"
@@ -260,7 +260,7 @@ export default function ManagePropertyScreen() {
                       color={rentalAppTheme.textDark}
                     />
                   </Card>
-                  <Text fontSize={16} color={rentalAppTheme.textDark}>
+                  <Text fontSize={16} color={rentalAppTheme.textDark} flex={1} flexWrap="wrap">
                     {`${
                       property.propertyType.charAt(0).toUpperCase() +
                       property.propertyType.slice(1)
