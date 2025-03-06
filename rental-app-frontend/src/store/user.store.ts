@@ -17,6 +17,8 @@ interface UserState {
   refreshUserData: () => Promise<void>;
 }
 
+const API_URL = env.EXPO_PUBLIC_API_URL;
+
 export const useUserStore = create<UserState>((set, get) => ({
   user: null,
   token: null,
@@ -32,7 +34,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         return;
       }
 
-      const response = await axios.get(`${env.API_URL}/auth/me`, {
+      const response = await axios.get(`${API_URL}/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -50,7 +52,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     try {
       const timestamp = new Date().toISOString();
       const response = await axios.post(
-        `${env.API_URL}/auth/login`,
+        `${API_URL}/auth/login`,
         {
           email: email.toLowerCase(),
           password,
@@ -117,7 +119,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       };
 
       const response = await axios.post(
-        `${env.API_URL}/auth/register`,
+        `${API_URL}/auth/register`,
         normalizedUserData
       );
 

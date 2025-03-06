@@ -6,7 +6,7 @@ import { useUserStore } from "../store/user.store";
 import { debounce } from "lodash";
 import { env } from "../../env";
 
-const API_URL = env.API_URL;
+const API_URL = env.EXPO_PUBLIC_API_URL;
 
 export const useChat = (roomId?: string) => {
   const {

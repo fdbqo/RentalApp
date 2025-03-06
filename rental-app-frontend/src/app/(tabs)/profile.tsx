@@ -79,7 +79,7 @@ export default function ProfileScreen() {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        `${env.API_URL}/payment/create-payment-intent`,
+        `${env.EXPO_PUBLIC_API_URL}/payment/create-payment-intent`,
         { amount: Number(amount) },
         {
           headers: {

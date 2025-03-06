@@ -5,7 +5,7 @@ import { PropertyState } from "./interfaces/PropertyState";
 import { useUserStore } from "./user.store";
 import { env } from "../../env";
 
-const API_URL = env.API_URL;
+const API_URL = env.EXPO_PUBLIC_API_URL;
 const AXIOS_TIMEOUT = 30000;
 const URL_REFRESH_THRESHOLD = 3600000;
 
