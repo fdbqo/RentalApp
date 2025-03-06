@@ -11,6 +11,7 @@ import {
   Theme,
   Image,
 } from "tamagui";
+import { RefreshControl } from "react-native";
 import { usePropertyStore } from "../../store/property.store";
 import { Property } from "../../store/interfaces/Property";
 import { rentalAppTheme } from "../../constants/Colors";
@@ -253,10 +254,20 @@ export default function LandlordDashboardScreen() {
   const router = useRouter();
   const { properties, isLoading, error, fetchLandlordProperties } =
     usePropertyStore();
+  const [refreshing, setRefreshing] = React.useState(false);
 
   React.useEffect(() => {
     fetchLandlordProperties();
   }, []);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchLandlordProperties();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchLandlordProperties]);
 
   const totalProperties = properties.length;
   const availableProperties = properties.filter((p) => !p.isRented).length;
@@ -281,7 +292,7 @@ export default function LandlordDashboardScreen() {
     });
   };
 
-  if (isLoading) {
+  if (isLoading && !refreshing) {
     return (
       <YStack flex={1} justifyContent="center" alignItems="center">
         <Text>Loading...</Text>
@@ -299,134 +310,158 @@ export default function LandlordDashboardScreen() {
 
   return (
     <Theme name="light">
-      <YStack
-        flex={1}
-        backgroundColor={rentalAppTheme.backgroundLight}
-        padding="$4"
-      >
-        {/* Header */}
-        <XStack
-          justifyContent="space-between"
-          alignItems="center"
-          marginBottom="$4"
-        >
-          <YStack>
-            <Text
-              fontSize={28}
-              fontWeight="bold"
-              color={rentalAppTheme.textDark}
-            >
-              Dashboard
-            </Text>
-            <Text fontSize={16} color={rentalAppTheme.textLight}>
-              Manage your properties
-            </Text>
-          </YStack>
-          <Button
-            variant="outlined"
-            padding="$2"
-            borderWidth={0}
-            backgroundColor="$gray2"
-            borderRadius="$4"
-          >
-            <Feather name="bell" size={24} color={rentalAppTheme.textDark} />
-          </Button>
-        </XStack>
-
-        {/* Statistics */}
-        <XStack space="$3" marginBottom="$4">
-          <StatCard
-            title="Total"
-            value={stats.total}
-            icon="home"
-            color={rentalAppTheme.primaryDark}
-          />
-          <StatCard
-            title="Available"
-            value={stats.available}
-            icon="check-circle"
-            color={rentalAppTheme.primaryLight}
-          />
-          <StatCard
-            title="Rented"
-            value={stats.rented}
-            icon="key"
-            color={rentalAppTheme.accentDarkRed}
-          />
-        </XStack>
-
-        {/* Revenue Card */}
-        <RevenueCard totalRevenue={stats.totalRevenue} />
-
-        {/* Properties Header */}
-        <XStack
-          justifyContent="space-between"
-          alignItems="center"
-          marginBottom="$3"
-          marginTop="$2"
-        >
-          <Text fontSize={20} fontWeight="600" color={rentalAppTheme.textDark}>
-            Your Properties
-          </Text>
-        </XStack>
-
-        {/* Properties List */}
-        {totalProperties === 0 ? (
-          <Card
-            backgroundColor="$gray2"
-            borderRadius="$6"
-            padding="$4"
+      <YStack flex={1} backgroundColor={rentalAppTheme.backgroundLight}>
+        {/* Fixed Header */}
+        <YStack paddingTop="$3" paddingBottom="$1" paddingHorizontal="$3" backgroundColor={rentalAppTheme.backgroundLight}>
+          <XStack
+            justifyContent="space-between"
             alignItems="center"
-            justifyContent="center"
-            flex={1}
             marginBottom="$4"
           >
-            <Feather name="home" size={40} color={rentalAppTheme.textLight} />
-            <Text
-              fontSize={16}
-              color={rentalAppTheme.textLight}
-              textAlign="center"
+            <YStack>
+              <Text
+                fontSize={28}
+                fontWeight="bold"
+                color={rentalAppTheme.textDark}
+              >
+                Dashboard
+              </Text>
+              <Text fontSize={16} color={rentalAppTheme.textLight}>
+                Manage your properties
+              </Text>
+            </YStack>
+            <Button
+              variant="outlined"
+              padding="$2"
+              borderWidth={0}
+              backgroundColor="$gray2"
+              borderRadius="$4"
+            >
+              <Feather name="bell" size={24} color={rentalAppTheme.textDark} />
+            </Button>
+          </XStack>
+        </YStack>
+
+        {/* Scrollable Content */}
+        <ScrollView
+          flex={1}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={rentalAppTheme.primaryDark}
+              colors={[rentalAppTheme.primaryDark]}
+            />
+          }
+        >
+          <YStack padding="$4" paddingTop="$0" paddingBottom="$2">
+            {/* Statistics */}
+            <XStack space="$3" marginBottom="$4">
+              <StatCard
+                title="Total"
+                value={stats.total}
+                icon="home"
+                color={rentalAppTheme.primaryDark}
+              />
+              <StatCard
+                title="Available"
+                value={stats.available}
+                icon="check-circle"
+                color={rentalAppTheme.primaryLight}
+              />
+              <StatCard
+                title="Rented"
+                value={stats.rented}
+                icon="key"
+                color={rentalAppTheme.accentDarkRed}
+              />
+            </XStack>
+
+            {/* Revenue Card */}
+            <RevenueCard totalRevenue={stats.totalRevenue} />
+
+            {/* Properties Header */}
+            <XStack
+              justifyContent="space-between"
+              alignItems="center"
+              marginBottom="$3"
               marginTop="$2"
             >
-              You haven't listed any properties yet
-            </Text>
-          </Card>
-        ) : (
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
-          >
-            {properties.map((property) => (
-              <PropertyItem
-                key={property._id}
-                item={property}
-                onPress={() => handlePropertyPress(property)}
-              />
-            ))}
-          </ScrollView>
-        )}
+              <Text
+                fontSize={20}
+                fontWeight="600"
+                color={rentalAppTheme.textDark}
+              >
+                Your Properties
+              </Text>
+            </XStack>
 
-        {/* Add New Property Button */}
-        <Button
-          onPress={() => router.push("/screens/ListPropertyScreen")}
-          backgroundColor={rentalAppTheme.primaryDark}
-          pressStyle={{ backgroundColor: rentalAppTheme.primaryDarkPressed }}
-          borderRadius="$6"
-          marginTop="$4"
-          elevation={4}
+            {/* Properties List */}
+            {totalProperties === 0 ? (
+              <Card
+                backgroundColor="$gray2"
+                borderRadius="$6"
+                padding="$4"
+                alignItems="center"
+                justifyContent="center"
+                flex={1}
+                marginBottom="$4"
+              >
+                <Feather
+                  name="home"
+                  size={40}
+                  color={rentalAppTheme.textLight}
+                />
+                <Text
+                  fontSize={16}
+                  color={rentalAppTheme.textLight}
+                  textAlign="center"
+                  marginTop="$2"
+                >
+                  You haven't listed any properties yet
+                </Text>
+              </Card>
+            ) : (
+              <YStack>
+                {properties.map((property) => (
+                  <PropertyItem
+                    key={property._id}
+                    item={property}
+                    onPress={() => handlePropertyPress(property)}
+                  />
+                ))}
+              </YStack>
+            )}
+          </YStack>
+        </ScrollView>
+
+        {/* Fixed Bottom Button */}
+        <YStack
+          padding="$4"
+          backgroundColor={rentalAppTheme.backgroundLight}
+          borderTopWidth={1}
+          borderTopColor="$gray4"
         >
-          <XStack space="$2" justifyContent="center" alignItems="center">
-            <Feather name="plus-circle" size={20} color="white" />
-            <Text
-              color="white"
-              fontSize={16}
-              fontWeight="bold"
-              textAlign="center"
-            >
-              List a New Property
-            </Text>
-          </XStack>
-        </Button>
+          <Button
+            onPress={() => router.push("/screens/ListPropertyScreen")}
+            backgroundColor={rentalAppTheme.primaryDark}
+            pressStyle={{ backgroundColor: rentalAppTheme.primaryDarkPressed }}
+            borderRadius="$6"
+            elevation={4}
+          >
+            <XStack space="$2" justifyContent="center" alignItems="center">
+              <Feather name="plus-circle" size={20} color="white" />
+              <Text
+                color="white"
+                fontSize={16}
+                fontWeight="bold"
+                textAlign="center"
+              >
+                List a New Property
+              </Text>
+            </XStack>
+          </Button>
+        </YStack>
       </YStack>
     </Theme>
   );

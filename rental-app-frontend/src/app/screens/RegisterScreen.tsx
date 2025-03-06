@@ -309,9 +309,9 @@ export default function RegisterScreen() {
 
                   {/* First Name */}
                   <YStack space="$1" width="100%">
-                    <Input
-                      placeholder="First Name"
-                      value={firstName}
+                  <Input
+                    placeholder="First Name"
+                    value={firstName}
                       onChangeText={(text) => {
                         setFirstName(text);
                         if (errors.firstName) {
@@ -323,11 +323,11 @@ export default function RegisterScreen() {
                           ? rentalAppTheme.error
                           : rentalAppTheme.border
                       }
-                      borderWidth={1}
-                      padding="$3"
-                      borderRadius="$4"
-                      width="100%"
-                    />
+                    borderWidth={1}
+                    padding="$3"
+                    borderRadius="$4"
+                    width="100%"
+                  />
                     {errors.firstName && (
                       <Text color={rentalAppTheme.error} fontSize="$2">
                         {errors.firstName}
@@ -337,9 +337,9 @@ export default function RegisterScreen() {
 
                   {/* Last Name */}
                   <YStack space="$1" width="100%">
-                    <Input
-                      placeholder="Last Name"
-                      value={lastName}
+                  <Input
+                    placeholder="Last Name"
+                    value={lastName}
                       onChangeText={(text) => {
                         setLastName(text);
                         if (errors.lastName) {
@@ -351,11 +351,11 @@ export default function RegisterScreen() {
                           ? rentalAppTheme.error
                           : rentalAppTheme.border
                       }
-                      borderWidth={1}
-                      padding="$3"
-                      borderRadius="$4"
-                      width="100%"
-                    />
+                    borderWidth={1}
+                    padding="$3"
+                    borderRadius="$4"
+                    width="100%"
+                  />
                     {errors.lastName && (
                       <Text color={rentalAppTheme.error} fontSize="$2">
                         {errors.lastName}
@@ -365,26 +365,26 @@ export default function RegisterScreen() {
 
                   {/* Email */}
                   <YStack space="$1" width="100%">
-                    <Input
-                      placeholder="Email"
-                      value={email}
+                  <Input
+                    placeholder="Email"
+                    value={email}
                       onChangeText={(text) => {
                         setEmail(text.toLowerCase());
                         if (errors.email) {
                           setErrors((prev) => ({ ...prev, email: "" }));
                         }
                       }}
-                      keyboardType="email-address"
+                    keyboardType="email-address"
                       borderColor={
                         errors.email
                           ? rentalAppTheme.error
                           : rentalAppTheme.border
                       }
-                      borderWidth={1}
-                      padding="$3"
-                      borderRadius="$4"
-                      width="100%"
-                    />
+                    borderWidth={1}
+                    padding="$3"
+                    borderRadius="$4"
+                    width="100%"
+                  />
                     {errors.email && (
                       <Text color={rentalAppTheme.error} fontSize="$2">
                         {errors.email}
@@ -394,26 +394,26 @@ export default function RegisterScreen() {
 
                   {/* Password */}
                   <YStack space="$1" width="100%">
-                    <Input
-                      placeholder="Password"
-                      value={password}
+                  <Input
+                    placeholder="Password"
+                    value={password}
                       onChangeText={(text) => {
                         setPassword(text);
                         if (errors.password) {
                           setErrors((prev) => ({ ...prev, password: "" }));
                         }
                       }}
-                      secureTextEntry
+                    secureTextEntry
                       borderColor={
                         errors.password
                           ? rentalAppTheme.error
                           : rentalAppTheme.border
                       }
-                      borderWidth={1}
-                      padding="$3"
-                      borderRadius="$4"
-                      width="100%"
-                    />
+                    borderWidth={1}
+                    padding="$3"
+                    borderRadius="$4"
+                    width="100%"
+                  />
                     {errors.password && (
                       <Text color={rentalAppTheme.error} fontSize="$2">
                         {errors.password}
@@ -423,16 +423,16 @@ export default function RegisterScreen() {
 
                   {/* Phone */}
                   <YStack space="$1" width="100%">
-                    <Input
-                      placeholder="Phone (Optional)"
-                      value={phone}
+                  <Input
+                    placeholder="Phone (Optional)"
+                    value={phone}
                       onChangeText={(text) => {
                         setPhone(text);
                         if (errors.phone) {
                           setErrors((prev) => ({ ...prev, phone: "" }));
                         }
                       }}
-                      keyboardType="phone-pad"
+                    keyboardType="phone-pad"
                       borderColor={
                         errors.phone
                           ? rentalAppTheme.error
@@ -447,7 +447,7 @@ export default function RegisterScreen() {
                       <Text color={rentalAppTheme.error} fontSize="$2">
                         {errors.phone}
                       </Text>
-                    )}
+                  )}
                   </YStack>
 
                   {/* License Number - Landlord Only */}
@@ -579,7 +579,7 @@ export default function RegisterScreen() {
                             City
                           </Text>
                           <Select
-                            value={city}
+                        value={city}
                             onValueChange={handleCityChange}
                             disablePreventBodyScroll
                           >
@@ -590,9 +590,9 @@ export default function RegisterScreen() {
                                   ? rentalAppTheme.error
                                   : rentalAppTheme.border
                               }
-                              borderWidth={1}
+                        borderWidth={1}
                               borderRadius="$4"
-                              padding="$3"
+                        padding="$3"
                               iconAfter={ChevronDown}
                             >
                               <Select.Value
@@ -659,7 +659,7 @@ export default function RegisterScreen() {
                       </XStack>
 
                       <YStack space="$1" marginVertical={6} width="100%">
-                        <Input
+                      <Input
                           placeholder="Address Line"
                           value={addressLine}
                           onChangeText={(text) => {
@@ -676,11 +676,11 @@ export default function RegisterScreen() {
                               ? rentalAppTheme.error
                               : rentalAppTheme.border
                           }
-                          borderWidth={1}
-                          padding="$3"
-                          borderRadius="$4"
-                          width="100%"
-                        />
+                        borderWidth={1}
+                        padding="$3"
+                        borderRadius="$4"
+                        width="100%"
+                      />
                         {errors.addressLine && (
                           <Text color={rentalAppTheme.error} fontSize="$2">
                             {errors.addressLine}
@@ -689,9 +689,9 @@ export default function RegisterScreen() {
                       </YStack>
 
                       <YStack space="$1" marginVertical={6} width="100%">
-                        <Input
-                          placeholder="Eircode"
-                          value={eircode}
+                      <Input
+                        placeholder="Eircode"
+                        value={eircode}
                           onChangeText={(text) => {
                             setEircode(text);
                             if (errors.eircode) {
@@ -703,11 +703,11 @@ export default function RegisterScreen() {
                               ? rentalAppTheme.error
                               : rentalAppTheme.border
                           }
-                          borderWidth={1}
-                          padding="$3"
-                          borderRadius="$4"
-                          width="100%"
-                        />
+                        borderWidth={1}
+                        padding="$3"
+                        borderRadius="$4"
+                        width="100%"
+                      />
                         {errors.eircode && (
                           <Text color={rentalAppTheme.error} fontSize="$2">
                             {errors.eircode}
