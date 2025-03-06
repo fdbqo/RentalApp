@@ -1,7 +1,16 @@
 import React from "react";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import { YStack, XStack, Text, Button, Card, ScrollView, Theme } from "tamagui";
+import {
+  YStack,
+  XStack,
+  Text,
+  Button,
+  Card,
+  ScrollView,
+  Theme,
+  Image,
+} from "tamagui";
 import { usePropertyStore } from "../../store/property.store";
 import { Property } from "../../store/interfaces/Property";
 import { rentalAppTheme } from "../../constants/Colors";
@@ -34,117 +43,121 @@ const PropertyItem: React.FC<PropertyItemProps> = ({ item, onPress }) => {
       scale={0.97}
       hoverStyle={{ scale: 1 }}
       pressStyle={{ scale: 0.96 }}
-      borderRadius="$4"
+      borderRadius="$6"
       backgroundColor="white"
-      marginBottom="$3"
+      marginBottom="$4"
       shadowColor={rentalAppTheme.textDark}
-      shadowOffset={{ width: 0, height: 2 }}
+      shadowOffset={{ width: 0, height: 4 }}
       shadowOpacity={0.1}
-      shadowRadius={4}
+      shadowRadius={8}
       onPress={onPress}
     >
-      <XStack padding="$3" space="$3">
+      <XStack padding="$4" space="$4">
+        {/* Left side: Property Image */}
+        {item.images && item.images.length > 0 && (
+          <Card
+            width={80}
+            height={80}
+            borderRadius="$4"
+            overflow="hidden"
+            backgroundColor={rentalAppTheme.backgroundLight}
+          >
+            <Image
+              source={{ uri: item.images[0].uri }}
+              style={{ width: "100%", height: "100%" }}
+              resizeMode="cover"
+            />
+          </Card>
+        )}
+
+        {/* Right side: Property Details */}
         <YStack flex={1} space="$2">
-          {/* Row 1: Address + Availability */}
+          {/* Row 1: Address + Status */}
           <XStack justifyContent="space-between" alignItems="center">
             <Text
               fontSize={16}
               fontWeight="bold"
               color={rentalAppTheme.textDark}
+              numberOfLines={1}
+              ellipsizeMode="tail"
             >
-              {item.houseAddress.addressLine1}
+              {item.shortDescription || item.houseAddress.addressLine1}
             </Text>
+            <Card
+              backgroundColor={!item.isRented ? "$green2" : "$red2"}
+              borderRadius="$4"
+              paddingHorizontal="$2"
+              paddingVertical="$1"
+            >
+              <Text
+                fontSize={12}
+                color={!item.isRented ? "$green9" : "$red9"}
+                fontWeight="500"
+              >
+                {item.isRented ? "Rented" : "Available"}
+              </Text>
+            </Card>
+          </XStack>
+
+          {/* Row 2: Location */}
+          <XStack space="$2" alignItems="center">
+            <Feather
+              name="map-pin"
+              size={14}
+              color={rentalAppTheme.textLight}
+            />
             <Text
               fontSize={14}
-              color={
-                !item.isRented
-                  ? rentalAppTheme.primaryLight
-                  : rentalAppTheme.accentDarkRed
-              }
-              fontWeight="500"
+              color={rentalAppTheme.textLight}
+              numberOfLines={1}
             >
-              {item.isRented
-                ? "Rented"
-                : item.availableFrom
-                  ? `Available from ${new Date(item.availableFrom).toLocaleDateString()}`
-                  : "Available Now"}
-
+              {`${item.houseAddress.addressLine1}, ${item.houseAddress.townCity}`}
             </Text>
           </XStack>
 
-          {/* Row 2: City */}
-          <XStack space="$2" alignItems="center">
-            <Feather name="map-pin" size={14} color={rentalAppTheme.textLight} />
-            <Text fontSize={14} color={rentalAppTheme.textLight}>
-              {item.houseAddress.townCity}
-            </Text>
-          </XStack>
-
-        
-
-       
-        {/* {item.nearestUniversity && (
-          <YStack space="$1">
-            <Text fontWeight="600" fontSize={14} color={rentalAppTheme.textDark}>
-              Nearest University
-            </Text>
-
-            <XStack alignItems="center" space="$2">
-              <Feather name="book" size={14} color={rentalAppTheme.textLight} />
-              <Text fontSize={14} color={rentalAppTheme.textDark}>
-                {item.nearestUniversity.name}
-              </Text>
-            </XStack>
-
-         
-            <XStack space="$2" alignItems="center">
-              {!!item.nearestUniversity.distance && (
-                <Text fontSize={14} color={rentalAppTheme.textLight}>
-                  {(item.nearestUniversity.distance / 1000).toFixed(1)} km
-                </Text>
-              )}
-              {!!item.nearestUniversity.avgTimeByCar && (
-                <Text fontSize={14} color={rentalAppTheme.textLight}>
-                  • ~{item.nearestUniversity.avgTimeByCar} min by car
-                </Text>
-              )}
-            </XStack>
-          </YStack>
-        )} */}
-
-          {/* Row 3: Price + Property Type/Rooms */}
+          {/* Row 3: Price and Details */}
           <XStack justifyContent="space-between" alignItems="center">
             <Text
-              fontSize={15}
+              fontSize={18}
               color={rentalAppTheme.primaryDark}
               fontWeight="600"
             >
-              €{item.price.toLocaleString()}/month
-            </Text>
-            <XStack space="$2" alignItems="center">
-              <Feather name="home" size={14} color={rentalAppTheme.textLight} />
+              €{item.price.toLocaleString()}
               <Text fontSize={14} color={rentalAppTheme.textLight}>
-                {item.propertyType} • {totalRooms}
-                {totalRooms === 1 ? " room" : " rooms"}
+                /month
               </Text>
-              {/* <Text fontSize={14} color={rentalAppTheme.textDark}>
-                {item.nearestUniversities?.length > 0 ? `${item.nearestUniversities[0].name} - ` : 'No nearby universities'}
-                {item.nearestUniversities?.length > 0 && item.nearestUniversities[0].distance}
-              </Text> */}
-            </XStack>
+            </Text>
+            {/* <XStack space="$2" alignItems="center">
+              <Card
+                backgroundColor="$gray2"
+                borderRadius="$4"
+                paddingHorizontal="$2"
+                paddingVertical="$1"
+              >
+                <XStack space="$1" alignItems="center">
+                  <Feather
+                    name="home"
+                    size={12}
+                    color={rentalAppTheme.textLight}
+                  />
+                  <Text fontSize={12} color={rentalAppTheme.textLight}>
+                    {totalRooms} {totalRooms === 1 ? "room" : "rooms"}
+                  </Text>
+                </XStack>
+              </Card>
+            </XStack> */}
           </XStack>
 
-
-          {/* Row 5: Last Updated */}
+          {/* Row 4: Last Updated */}
           {formattedDate && (
-            <XStack space="$2" alignItems="center">
+            <XStack space="$2" alignItems="center" marginTop="$1">
               <Feather
                 name="clock"
                 size={12}
                 color={rentalAppTheme.textLight}
               />
               <Text fontSize={12} color={rentalAppTheme.textLight}>
-                Last updated: {formattedDate}
+                Updated {formattedDate}
               </Text>
             </XStack>
           )}
@@ -165,24 +178,29 @@ const StatCard: React.FC<StatCardProps> = ({
     elevate
     bordered
     flex={1}
-    borderRadius="$4"
+    borderRadius="$6"
     backgroundColor="white"
-    padding="$2"
+    padding="$3"
     shadowColor={rentalAppTheme.textDark}
-    shadowOffset={{ width: 0, height: 2 }}
+    shadowOffset={{ width: 0, height: 4 }}
     shadowOpacity={0.1}
-    shadowRadius={4}
+    shadowRadius={8}
   >
-    <YStack space="$1" alignItems="center">
-      <Feather name={icon} size={20} color={color} />
-      <Text fontSize={18} fontWeight="bold" color={color}>
-        {value}
-      </Text>
-      <Text fontSize={12} color={rentalAppTheme.textDark}>
+    <YStack space="$2" alignItems="center">
+      <XStack space="$2" alignItems="center">
+        <Card backgroundColor={`${color}10`} padding="$2" borderRadius="$4">
+          <Feather name={icon} size={16} color={color} />
+        </Card>
+        <Text fontSize={22} fontWeight="bold" color={color}>
+          {value}
+        </Text>
+      </XStack>
+
+      <Text fontSize={14} color={rentalAppTheme.textDark} textAlign="center">
         {title}
       </Text>
       {subtitle && (
-        <Text fontSize={10} color={rentalAppTheme.textLight}>
+        <Text fontSize={12} color={rentalAppTheme.textLight} textAlign="center">
           {subtitle}
         </Text>
       )}
@@ -194,31 +212,40 @@ const RevenueCard: React.FC<{ totalRevenue: number }> = ({ totalRevenue }) => (
   <Card
     elevate
     bordered
-    borderRadius="$4"
-    backgroundColor={rentalAppTheme.primaryLight}
-    padding="$2"
+    borderRadius="$6"
+    backgroundColor="white"
+    padding="$4"
     shadowColor={rentalAppTheme.textDark}
-    shadowOffset={{ width: 0, height: 2 }}
+    shadowOffset={{ width: 0, height: 4 }}
     shadowOpacity={0.1}
-    shadowRadius={4}
+    shadowRadius={8}
     marginBottom="$4"
-    alignSelf="center"
     width="100%"
   >
-    <XStack
-      alignItems="center"
-      justifyContent="space-around"
-      space="$5"
-      paddingHorizontal="$6"
-    >
-      <Feather name="dollar-sign" size={24} color="white" />
-      <Text fontSize={16} fontWeight="bold" color="white">
-        Total Revenue:
+    <YStack space="$2">
+      <XStack space="$2" alignItems="center">
+        <Card
+          backgroundColor={`${rentalAppTheme.primaryLight}10`}
+          padding="$2"
+          borderRadius="$4"
+        >
+          <Feather
+            name="trending-up"
+            size={16}
+            color={rentalAppTheme.primaryLight}
+          />
+        </Card>
+        <Text fontSize={16} fontWeight="600" color={rentalAppTheme.textDark}>
+          Monthly Revenue
+        </Text>
+      </XStack>
+      <Text fontSize={22} fontWeight="bold" color={rentalAppTheme.primaryDark}>
+        €{totalRevenue.toLocaleString()}
+        <Text fontSize={16} color={rentalAppTheme.textLight}>
+          /month
+        </Text>
       </Text>
-      <Text fontSize={16} color="white">
-        €{totalRevenue.toLocaleString()}/month
-      </Text>
-    </XStack>
+    </YStack>
   </Card>
 );
 
@@ -285,21 +312,25 @@ export default function LandlordDashboardScreen() {
         >
           <YStack>
             <Text
-              fontSize={24}
+              fontSize={28}
               fontWeight="bold"
               color={rentalAppTheme.textDark}
             >
               Dashboard
             </Text>
-            <Text fontSize={14} color={rentalAppTheme.textLight}>
+            <Text fontSize={16} color={rentalAppTheme.textLight}>
               Manage your properties
             </Text>
           </YStack>
-          <XStack space="$2">
-            <Button variant="outlined" padding="$2" borderWidth={0}>
-              <Feather name="bell" size={24} color={rentalAppTheme.textDark} />
-            </Button>
-          </XStack>
+          <Button
+            variant="outlined"
+            padding="$2"
+            borderWidth={0}
+            backgroundColor="$gray2"
+            borderRadius="$4"
+          >
+            <Feather name="bell" size={24} color={rentalAppTheme.textDark} />
+          </Button>
         </XStack>
 
         {/* Statistics */}
@@ -324,28 +355,42 @@ export default function LandlordDashboardScreen() {
           />
         </XStack>
 
-        {/* Total Revenue Card */}
+        {/* Revenue Card */}
         <RevenueCard totalRevenue={stats.totalRevenue} />
 
         {/* Properties Header */}
         <XStack
           justifyContent="space-between"
           alignItems="center"
-          marginBottom="$2"
+          marginBottom="$3"
           marginTop="$2"
         >
-          <Text fontSize={18} fontWeight="600" color={rentalAppTheme.textDark}>
+          <Text fontSize={20} fontWeight="600" color={rentalAppTheme.textDark}>
             Your Properties
           </Text>
         </XStack>
 
-        {/* Check if there are properties */}
+        {/* Properties List */}
         {totalProperties === 0 ? (
-          <YStack flex={1} justifyContent="center" alignItems="center">
-            <Text fontSize={14} color={rentalAppTheme.textLight}>
-              You have no properties added.
+          <Card
+            backgroundColor="$gray2"
+            borderRadius="$6"
+            padding="$4"
+            alignItems="center"
+            justifyContent="center"
+            flex={1}
+            marginBottom="$4"
+          >
+            <Feather name="home" size={40} color={rentalAppTheme.textLight} />
+            <Text
+              fontSize={16}
+              color={rentalAppTheme.textLight}
+              textAlign="center"
+              marginTop="$2"
+            >
+              You haven't listed any properties yet
             </Text>
-          </YStack>
+          </Card>
         ) : (
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -366,17 +411,21 @@ export default function LandlordDashboardScreen() {
           onPress={() => router.push("/screens/ListPropertyScreen")}
           backgroundColor={rentalAppTheme.primaryDark}
           pressStyle={{ backgroundColor: rentalAppTheme.primaryDarkPressed }}
-          borderRadius="$4"
+          borderRadius="$6"
           marginTop="$4"
+          elevation={4}
         >
-          <Text
-            color="white"
-            fontSize={16}
-            fontWeight="bold"
-            textAlign="center"
-          >
-            List a New Property
-          </Text>
+          <XStack space="$2" justifyContent="center" alignItems="center">
+            <Feather name="plus-circle" size={20} color="white" />
+            <Text
+              color="white"
+              fontSize={16}
+              fontWeight="bold"
+              textAlign="center"
+            >
+              List a New Property
+            </Text>
+          </XStack>
         </Button>
       </YStack>
     </Theme>
