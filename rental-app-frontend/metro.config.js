@@ -5,9 +5,33 @@
 const { getDefaultConfig } = require('expo/metro-config')
 
 const config = getDefaultConfig(__dirname, {
-  // [Web-only]: Enables CSS support in Metro.
   isCSSEnabled: true,
 })
+
+defaultConfig.resolver.extraNodeModules = {
+  'react-native-web': path.resolve(__dirname, 'node_modules/react-native-web'),
+  '../../Utilities/Platform': path.resolve(__dirname, 'node_modules/react-native-web/dist/exports/Platform'),
+};
+
+defaultConfig.resolver.blacklistRE = [
+  /.*\/node_modules\/react-native\/Libraries\/Components\/TextInput\/TextInputState.native.js$/,
+];
+
+defaultConfig.resolver.sourceExts = [
+  'web.tsx', 'web.ts', 'web.jsx', 'web.js',
+  ...defaultConfig.resolver.sourceExts,
+];
+
+// 4. Add specific platform implementation
+defaultConfig.transformer.getTransformOptions = async () => ({
+  transform: {
+    experimentalImportSupport: false,
+    inlineRequires: true,
+  },
+  resolver: {
+    platforms: ['web', 'ios', 'android'],
+  },
+});
 
 // Enable Tamagui and add nice web support with optimizing compiler + CSS extraction
 const { withTamagui } = require('@tamagui/metro-plugin')
