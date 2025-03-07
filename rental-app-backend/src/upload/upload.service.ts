@@ -44,11 +44,14 @@ export class UploadService {
         Key: key,
       });
 
-      // Increase expiration time to 24 hours
-      return await getSignedUrl(this.s3Client, command, { expiresIn: 86400 });
+      return await getSignedUrl(this.s3Client, command, { expiresIn: 604800 });
     } catch (error) {
       console.error('Error generating signed URL:', error);
       throw error;
     }
+  }
+
+  getPublicUrl(key: string): string {
+    return `https://${this.bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
   }
 } 

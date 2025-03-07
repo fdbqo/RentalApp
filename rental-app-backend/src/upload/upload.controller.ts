@@ -37,18 +37,18 @@ export class UploadController {
     @Query('folder') folder?: string,
   ) {
     const key = await this.uploadService.uploadFile(file, folder);
-    const url = await this.uploadService.getSignedUrl(key);
+    const url = this.uploadService.getPublicUrl(key);
     return { key, url };
   }
 
   @Get('*path')
-  async getSignedUrl(@Param('path') key: string) {
+  async getImageUrl(@Param('path') key: string) {
     try {
       const decodedKey = decodeURIComponent(key);
-      const url = await this.uploadService.getSignedUrl(decodedKey);
+      const url = this.uploadService.getPublicUrl(decodedKey);
       return { url };
     } catch (error) {
-      console.error('Error getting signed URL:', error);
+      console.error('Error getting public URL:', error);
       throw error;
     }
   }

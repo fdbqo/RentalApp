@@ -11,46 +11,41 @@ const URL_REFRESH_THRESHOLD = 3600000;
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const isUrlExpired = (url: string): boolean => {
+// Check if the URL is already a public S3 URL
+const isPublicUrl = (url: string): boolean => {
   try {
-    const expiresParam = new URL(url).searchParams.get('X-Amz-Expires');
-    const dateParam = new URL(url).searchParams.get('X-Amz-Date');
-    
-    if (!expiresParam || !dateParam) return true;
-
-    const expiresIn = parseInt(expiresParam);
-    const dateStr = dateParam;
-    
-    const signedDate = Date.parse(
-      `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}T${dateStr.slice(9, 11)}:${dateStr.slice(11, 13)}:${dateStr.slice(13, 15)}Z`
-    );
-    
-    const expirationTime = signedDate + (expiresIn * 1000);
-    const currentTime = Date.now();
-    
-    return (expirationTime - currentTime) < URL_REFRESH_THRESHOLD;
+    return url.includes('.s3.') && !url.includes('?X-Amz-');
   } catch (error) {
     console.error("Error parsing URL:", error);
-    return true;
+    return false;
   }
 };
 
-// Helper function to get signed URL
-const getSignedUrl = async (imageUri: string): Promise<string> => {
+// Get a public URL for an image
+const getImageUrl = async (imageUri: string): Promise<string> => {
   try {
-
-    if (imageUri.startsWith('http://') || imageUri.startsWith('https://')) {
+    // If it's already a public URL, just return it
+    if (isPublicUrl(imageUri)) {
       return imageUri;
+    }
+
+    if (imageUri.startsWith('file://')) {
+      throw new Error("Local file URI needs to be uploaded first");
     }
 
     const token = useUserStore.getState().token;
     if (!token) {
-      console.warn("No authentication token available for signed URL request");
+      console.warn("No authentication token available for URL request");
       return imageUri;
     }
 
+    let key = imageUri;
+    if (imageUri.includes('?X-Amz-')) {
+      key = imageUri.split('?')[0].split('/').slice(3).join('/');
+    }
+
     const response = await axios.get(
-      `${API_URL}/upload/${encodeURIComponent(imageUri)}`,
+      `${API_URL}/upload/${encodeURIComponent(key)}`,
       {
         timeout: AXIOS_TIMEOUT,
         headers: {
@@ -61,20 +56,19 @@ const getSignedUrl = async (imageUri: string): Promise<string> => {
 
     return response.data.url || imageUri;
   } catch (error) {
-    console.error("Error getting signed URL:", error);
+    console.error("Error getting image URL:", error);
     return imageUri;
   }
 };
 
-// Helper function to process images without preloading
 const processImages = async (images: any[]) => {
-  if (!Array.isArray(images)) return [];
-
+  if (!images || !images.length) return [];
+  
   return await Promise.all(
     images.map(async (img) => {
       if (!img || !img.uri) return img;
-      const signedUrl = await getSignedUrl(img.uri);
-      return { ...img, uri: signedUrl };
+      const publicUrl = await getImageUrl(img.uri);
+      return { ...img, uri: publicUrl };
     })
   );
 };
@@ -500,3 +494,4 @@ export const usePropertyStore = create<PropertyState>((set, get) => ({
     }
   },
 }));
+
