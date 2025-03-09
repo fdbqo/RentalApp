@@ -18,10 +18,11 @@ import { useUserStore } from "@/store/user.store";
 import { UserAvatar } from "@/components/UserAvatar";
 import { AnimatePresence } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
-import { Alert, RefreshControl } from "react-native";
+import { Alert, RefreshControl, Platform } from "react-native";
 import { useStripe, initStripe } from "@stripe/stripe-react-native";
 import axios from "axios";
 import { env } from "../../../env";
+import { TopUpIAP } from "@/components/TopUpIAP";
 
 export default function ProfileScreen() {
   const user = useUserStore((state) => state.user);
@@ -83,6 +84,11 @@ export default function ProfileScreen() {
   };
 
   const handleTopUp = async () => {
+    if (Platform.OS === 'ios') {
+      setShowTopUpDialog(true);
+      return;
+    }
+
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       Alert.alert("Invalid amount", "Please enter a valid amount");
       return;
@@ -597,82 +603,92 @@ export default function ProfileScreen() {
                     Top Up Balance
                   </Text>
                   <Text fontSize={16} color={rentalAppTheme.textLight}>
-                    Enter the amount you want to add
+                    {Platform.OS === 'ios' 
+                      ? 'Select a top-up amount'
+                      : 'Enter the amount you want to add'
+                    }
                   </Text>
                 </YStack>
 
-                <Card
-                  bordered
-                  padding="$3"
-                  borderRadius={16}
-                  backgroundColor={`${rentalAppTheme.primaryLight}10`}
-                  borderColor={`${rentalAppTheme.primaryLight}30`}
-                >
-                  <XStack alignItems="center" space="$2">
-                    <Text
-                      fontSize={24}
-                      fontWeight="bold"
-                      color={rentalAppTheme.textDark}
+                {Platform.OS === 'ios' ? (
+                  <TopUpIAP onSuccess={() => setShowTopUpDialog(false)} />
+                ) : (
+                  <>
+                    <Card
+                      bordered
+                      padding="$3"
+                      borderRadius={16}
+                      backgroundColor={`${rentalAppTheme.primaryLight}10`}
+                      borderColor={`${rentalAppTheme.primaryLight}30`}
                     >
-                      €
-                    </Text>
-                    <Input
-                      flex={1}
-                      placeholder="0.00"
-                      keyboardType="decimal-pad"
-                      value={amount}
-                      onChangeText={setAmount}
-                      borderWidth={0}
-                      backgroundColor="transparent"
-                      fontSize={24}
-                      fontWeight="bold"
-                      color={rentalAppTheme.textDark}
-                      placeholderTextColor={`${rentalAppTheme.textLight}50`}
-                    />
-                  </XStack>
-                </Card>
-
-                <YStack space="$3" marginTop="$2">
-                  <Button
-                    backgroundColor={rentalAppTheme.primaryDark}
-                    pressStyle={{
-                      backgroundColor: rentalAppTheme.primaryDarkPressed,
-                      scale: 0.98,
-                    }}
-                    onPress={handleTopUp}
-                    disabled={isLoading}
-                    borderRadius={12}
-                    height={50}
-                  >
-                    {isLoading ? (
-                      <XStack space="$2" alignItems="center">
-                        <Spinner color="white" />
-                        <Text color="white" fontSize={16} fontWeight="600">
-                          Processing...
+                      <XStack alignItems="center" space="$2">
+                        <Text
+                          fontSize={24}
+                          fontWeight="bold"
+                          color={rentalAppTheme.textDark}
+                        >
+                          €
                         </Text>
+                        <Input
+                          flex={1}
+                          placeholder="0.00"
+                          keyboardType="decimal-pad"
+                          value={amount}
+                          onChangeText={setAmount}
+                          borderWidth={0}
+                          backgroundColor="transparent"
+                          fontSize={24}
+                          fontWeight="bold"
+                          color={rentalAppTheme.textDark}
+                          placeholderTextColor={`${rentalAppTheme.textLight}50`}
+                        />
                       </XStack>
-                    ) : (
-                      <Text color="white" fontSize={16} fontWeight="600">
-                        Confirm Payment
-                      </Text>
-                    )}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    borderColor={rentalAppTheme.border}
-                    pressStyle={{
-                      backgroundColor: `${rentalAppTheme.border}20`,
-                      scale: 0.98,
-                    }}
-                    onPress={() => setShowTopUpDialog(false)}
-                    borderRadius={12}
-                    height={50}
-                  >
-                    <Text color={rentalAppTheme.textDark} fontSize={16}>
-                      Cancel
-                    </Text>
-                  </Button>
-                </YStack>
+                    </Card>
+
+                    <YStack space="$3" marginTop="$2">
+                      <Button
+                        backgroundColor={rentalAppTheme.primaryDark}
+                        pressStyle={{
+                          backgroundColor: rentalAppTheme.primaryDarkPressed,
+                          scale: 0.98,
+                        }}
+                        onPress={handleTopUp}
+                        disabled={isLoading}
+                        borderRadius={12}
+                        height={50}
+                      >
+                        {isLoading ? (
+                          <XStack space="$2" alignItems="center">
+                            <Spinner color="white" />
+                            <Text color="white" fontSize={16} fontWeight="600">
+                              Processing...
+                            </Text>
+                          </XStack>
+                        ) : (
+                          <Text color="white" fontSize={16} fontWeight="600">
+                            Confirm Payment
+                          </Text>
+                        )}
+                      </Button>
+                    </YStack>
+                  </>
+                )}
+
+                <Button
+                  variant="outlined"
+                  borderColor={rentalAppTheme.border}
+                  pressStyle={{
+                    backgroundColor: `${rentalAppTheme.border}20`,
+                    scale: 0.98,
+                  }}
+                  onPress={() => setShowTopUpDialog(false)}
+                  borderRadius={12}
+                  height={50}
+                >
+                  <Text color={rentalAppTheme.textDark} fontSize={16}>
+                    Cancel
+                  </Text>
+                </Button>
               </YStack>
             </Dialog.Content>
           </Dialog.Portal>
