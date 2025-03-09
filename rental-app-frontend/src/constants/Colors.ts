@@ -12,7 +12,7 @@ export const rentalAppTheme = {
   textDark: "#000", 
   textLight: "#666",
   secondary: "#4b5563",
-  background: "#ffffff",
+  background: "#fff",
   border: "#e2e8f0",
   error: "#ef4444",
   text: {

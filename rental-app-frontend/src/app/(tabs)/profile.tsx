@@ -11,13 +11,14 @@ import {
   Input,
   Dialog,
   Spinner,
+  Popover,
 } from "tamagui";
 import { Feather } from "@expo/vector-icons";
 import { useUserStore } from "@/store/user.store";
 import { UserAvatar } from "@/components/UserAvatar";
 import { AnimatePresence } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
-import { Alert } from "react-native";
+import { Alert, RefreshControl } from "react-native";
 import { useStripe, initStripe } from "@stripe/stripe-react-native";
 import axios from "axios";
 import { env } from "../../../env";
@@ -30,12 +31,23 @@ export default function ProfileScreen() {
   const [showTopUpDialog, setShowTopUpDialog] = useState(false);
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const stripe = useStripe();
   const fullName = user ? `${user.firstName} ${user.lastName}` : "";
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   useEffect(() => {
     refreshUserData();
   }, []);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refreshUserData();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshUserData]);
 
   // Initialize Stripe
   useEffect(() => {
@@ -136,13 +148,68 @@ export default function ProfileScreen() {
     <Theme name="light">
       <YStack flex={1} backgroundColor={rentalAppTheme.backgroundLight}>
         {/* Header */}
-        <XStack justifyContent="space-between" alignItems="center" padding="$4">
+        <XStack justifyContent="space-between" alignItems="center" paddingBottom="$2" paddingTop="$4" paddingHorizontal="$4">
           <Text fontSize={24} fontWeight="bold" color={rentalAppTheme.textDark}>
             Profile
           </Text>
-          <Button variant="outlined" padding="$2" borderWidth={0}>
-            <Feather name="bell" size={24} color={rentalAppTheme.textDark} />
-          </Button>
+          <Popover
+            open={notificationOpen}
+            onOpenChange={setNotificationOpen}
+            placement="bottom"
+            size="$5"
+          >
+            <Popover.Trigger asChild>
+              <Button 
+                variant="outlined" 
+                padding="$2" 
+                borderWidth={0}
+                onPress={() => setNotificationOpen(true)}
+              >
+                <Feather name="bell" size={24} color={rentalAppTheme.textDark} />
+              </Button>
+            </Popover.Trigger>
+
+            <Popover.Content
+              borderWidth={1}
+              borderColor="$gray4"
+              enterStyle={{ y: -10, opacity: 0 }}
+              exitStyle={{ y: -10, opacity: 0 }}
+              elevate
+              animation={[
+                'quick',
+                {
+                  opacity: {
+                    overshootClamping: true,
+                  },
+                },
+              ]}
+              width="190%"
+              maxWidth={400}
+              borderRadius={20}
+              backgroundColor="white"
+              shadowColor={rentalAppTheme.textDark}
+              shadowOffset={{ width: 0, height: 2 }}
+              shadowOpacity={0.1}
+              shadowRadius={8}
+              padding="$5"
+              alignSelf="center"
+              x={-110}
+              y={10}
+            >
+              <YStack space="$4" minHeight={250} justifyContent="center">
+                <YStack alignItems="center" space="$3">
+                  <Feather name="inbox" size={32} color={rentalAppTheme.textLight} />
+                  <Text 
+                    color={rentalAppTheme.textLight} 
+                    textAlign="center"
+                    fontSize={16}
+                  >
+                    No new notifications
+                  </Text>
+                </YStack>
+              </YStack>
+            </Popover.Content>
+          </Popover>
         </XStack>
 
         {/* Main Content ScrollView */}
@@ -151,8 +218,17 @@ export default function ProfileScreen() {
             paddingHorizontal: 16,
             paddingBottom: 24,
             flexGrow: 1,
+            marginTop: 12,
           }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={rentalAppTheme.primaryDark}
+              colors={[rentalAppTheme.primaryDark]}
+            />
+          }
         >
           {/* Profile Card */}
           <Card

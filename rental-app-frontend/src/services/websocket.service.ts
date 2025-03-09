@@ -36,7 +36,7 @@ class WebSocketService extends EventEmitter {
   }
 
   private socket: WebSocket | null = null;
-  private readonly url = env.EXPO_PUBLIC_WEBSOCKET_URL;
+  private readonly url = env.WEBSOCKET_URL;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectTimeout = 5000;

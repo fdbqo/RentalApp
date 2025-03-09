@@ -201,8 +201,11 @@ export default function MessagesScreen() {
                     borderRadius={16}
                     backgroundColor="white"
                     padding="$4"
+                    marginHorizontal="$2"
+                    marginTop="$2"
                     style={{
-                      width: isWeb ? "100%" : "100%",
+                      width: "auto",
+                      flex: 1,
                       ...Platform.select({
                         ios: {
                           shadowColor: "#000",

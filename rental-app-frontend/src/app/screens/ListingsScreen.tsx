@@ -298,6 +298,7 @@ export default function ListingsScreen() {
             <Button
               onPress={() => router.push("/screens/LoginScreen")}
               backgroundColor={rentalAppTheme.primaryDark}
+              pressStyle={{ backgroundColor: rentalAppTheme.primaryDarkPressed }}
               padding="$2"
               borderRadius="$4"
               flexDirection="row"
