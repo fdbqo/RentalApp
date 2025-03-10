@@ -2,11 +2,17 @@ module.exports = {
   expo: {
     name: "RentalApp",
     slug: "RentalApp",
-    version: "1.0.0",
+    version: "1.0.2",
+    icon: "./assets/images/icon.png",
+    adaptiveIcon: {
+      foregroundImage: "./assets/images/adaptive-icon.png",
+      backgroundColor: "#ffffff"
+    },
     assetBundlePatterns: ["**/*"],
     ios: {
       bundleIdentifier: "com.RentalApp.PR300",
       supportsTablet: true,
+      icon: "./assets/images/icon.png",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false
       }

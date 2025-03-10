@@ -22,19 +22,48 @@ const productIds = [
   'com.rentalapp.topup.large',
 ];
 
+// Mock products for development
+const mockProducts = [
+  {
+    productId: 'com.rentalapp.topup.small',
+    title: 'Small Top Up',
+    description: 'Add €10 to your balance',
+    price: '10.00',
+    localizedPrice: '€10.00',
+  },
+  {
+    productId: 'com.rentalapp.topup.medium',
+    title: 'Medium Top Up',
+    description: 'Add €25 to your balance',
+    price: '25.00',
+    localizedPrice: '€25.00',
+  },
+  {
+    productId: 'com.rentalapp.topup.large',
+    title: 'Large Top Up',
+    description: 'Add €50 to your balance',
+    price: '50.00',
+    localizedPrice: '€50.00',
+  },
+];
+
 export function TopUpIAP({ onSuccess }: { onSuccess: () => void }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const token = useUserStore((state) => state.token);
   const refreshUserData = useUserStore((state) => state.refreshUserData);
+  const isDevelopment = __DEV__;
 
   useEffect(() => {
     const initIAP = async () => {
       try {
-        if (Platform.OS === 'ios') {
+        if (Platform.OS === 'ios' && !isDevelopment) {
           await initConnection();
           const products = await getProducts({ skus: productIds });
           setProducts(products);
+        } else if (isDevelopment) {
+          // Use mock products in development
+          setProducts(mockProducts as unknown as Product[]);
         }
       } catch (err) {
         console.error('Failed to initialize IAP:', err);
@@ -44,35 +73,53 @@ export function TopUpIAP({ onSuccess }: { onSuccess: () => void }) {
 
     initIAP();
 
-    // Set up purchase listeners
-    const purchaseUpdateSubscription = purchaseUpdatedListener(async (purchase) => {
-      try {
-        const receipt = purchase.transactionReceipt;
-        if (receipt) {
-          await handlePurchaseVerification(receipt);
-          await finishTransaction({ purchase });
+    if (!isDevelopment) {
+      // Set up purchase listeners only in production
+      const purchaseUpdateSubscription = purchaseUpdatedListener(async (purchase) => {
+        try {
+          const receipt = purchase.transactionReceipt;
+          if (receipt) {
+            await handlePurchaseVerification(receipt);
+            await finishTransaction({ purchase });
+          }
+        } catch (err) {
+          console.error('Failed to process purchase:', err);
+          Alert.alert('Error', 'Failed to process purchase');
         }
-      } catch (err) {
-        console.error('Failed to process purchase:', err);
-        Alert.alert('Error', 'Failed to process purchase');
-      }
-    });
+      });
 
-    const purchaseErrorSubscription = purchaseErrorListener((error: PurchaseError) => {
-      console.error('Purchase error:', error);
-      Alert.alert('Purchase Error', error.message);
-    });
+      const purchaseErrorSubscription = purchaseErrorListener((error: PurchaseError) => {
+        console.error('Purchase error:', error);
+        Alert.alert('Purchase Error', error.message);
+      });
 
-    return () => {
-      purchaseUpdateSubscription.remove();
-      purchaseErrorSubscription.remove();
-    };
+      return () => {
+        purchaseUpdateSubscription.remove();
+        purchaseErrorSubscription.remove();
+      };
+    }
   }, []);
 
   const handlePurchase = async (productId: string) => {
     try {
       setLoading(true);
-      await requestPurchase({ sku: productId });
+      
+      if (isDevelopment) {
+        // Simulate purchase in development
+        const mockProduct = mockProducts.find(p => p.productId === productId);
+        if (mockProduct) {
+          const mockReceipt = {
+            productId,
+            transactionId: `mock_${Date.now()}`,
+            timestamp: new Date().toISOString(),
+          };
+          
+          await handlePurchaseVerification(JSON.stringify(mockReceipt));
+          Alert.alert('Development Mode', `Simulated purchase of ${mockProduct.title}`);
+        }
+      } else {
+        await requestPurchase({ sku: productId });
+      }
     } catch (err) {
       console.error('Purchase failed:', err);
       Alert.alert('Error', 'Purchase failed');
@@ -84,7 +131,7 @@ export function TopUpIAP({ onSuccess }: { onSuccess: () => void }) {
   const handlePurchaseVerification = async (receipt: string) => {
     try {
       await axios.post(
-        `${env.API_URL}/iap/verify-receipt`,
+        `${env.EXPO_PUBLIC_API_URL}/iap/verify-receipt`,
         { receipt },
         {
           headers: {
@@ -149,6 +196,16 @@ export function TopUpIAP({ onSuccess }: { onSuccess: () => void }) {
           </XStack>
         </Card>
       ))}
+      {isDevelopment && (
+        <Text
+          fontSize={12}
+          color={rentalAppTheme.textLight}
+          textAlign="center"
+          marginTop="$2"
+        >
+          Development Mode: Using simulated purchases
+        </Text>
+      )}
     </YStack>
   );
 } 

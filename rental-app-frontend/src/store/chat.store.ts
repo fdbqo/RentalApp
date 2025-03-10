@@ -4,7 +4,7 @@ import { Room } from "./interfaces/Room";
 import { useUserStore } from "./user.store";
 import { env } from "../../env";
 
-const API_URL = env.API_URL;
+const API_URL = env.EXPO_PUBLIC_API_URL;
 
 interface ChatStore extends Chat {
   // Message actions

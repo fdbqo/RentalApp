@@ -17,7 +17,7 @@ interface UserState {
   refreshUserData: () => Promise<void>;
 }
 
-const API_URL = env.API_URL;
+const API_URL = env.EXPO_PUBLIC_API_URL;
 
 export const useUserStore = create<UserState>((set, get) => ({
   user: null,

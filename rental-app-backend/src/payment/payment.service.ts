@@ -128,4 +128,32 @@ export class PaymentService {
       `Payment failed for user ${userId}: ${paymentIntent.last_payment_error?.message || "Unknown error"}`
     );
   }
+
+  async testTopUp(userId: string, amount: number) {
+    try {
+      const updatedUser = await this.userModel.findByIdAndUpdate(
+        userId,
+        { $inc: { balance: amount } },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        this.logger.error(`User ${userId} not found`);
+        throw new Error(`User not found`);
+      }
+
+      this.logger.log(
+        `Successfully updated balance for user ${userId}: +€${amount}`
+      );
+
+      return {
+        success: true,
+        amount,
+        balance: updatedUser.balance,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to update user balance: ${error.message}`);
+      throw new Error(`Failed to update user balance: ${error.message}`);
+    }
+  }
 }
