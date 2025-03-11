@@ -146,7 +146,7 @@ export const FilterSystem: React.FC<FilterSystemProps> = React.memo(
     }
 
     const renderSearchWithSuggestions = () => (
-      <YStack>
+      <YStack zIndex={100}>
         <XStack space="$2">
           <YStack flex={1} position="relative">
             <SearchInput
@@ -170,7 +170,7 @@ export const FilterSystem: React.FC<FilterSystemProps> = React.memo(
                 shadowOpacity={0.1}
                 shadowRadius={4}
                 elevation={3}
-                zIndex={999}
+                zIndex={9999}
                 maxHeight={200}
                 overflow="hidden"
               >
@@ -233,6 +233,7 @@ export const FilterSystem: React.FC<FilterSystemProps> = React.memo(
             flexDirection="row"
             alignItems="center"
             gap="$2"
+            zIndex={50}
           >
             <Text color="$gray12">Filters</Text>
           </Button>
@@ -242,8 +243,15 @@ export const FilterSystem: React.FC<FilterSystemProps> = React.memo(
             onOpenChange={setOpen}
             snapPoints={[60]}
             dismissOnSnapToBottom
+            zIndex={150}
+            animation="medium"
+            position={0}
           >
-            <Sheet.Overlay />
+            <Sheet.Overlay 
+              animation="lazy" 
+              enterStyle={{ opacity: 0 }} 
+              exitStyle={{ opacity: 0 }} 
+            />
             <Sheet.Frame>
               <Sheet.Handle />
               <YStack padding="$4">
@@ -261,7 +269,7 @@ export const FilterSystem: React.FC<FilterSystemProps> = React.memo(
     return (
       <YStack space="$2" marginBottom="$4" position="relative">
         {renderSearchWithSuggestions()}
-        <XStack space="$2" alignItems="center">
+        <XStack space="$2" alignItems="center" zIndex={50}>
           <PriceRangeFilter
             minPrice={filters.minPrice || ''}
             maxPrice={filters.maxPrice || ''}

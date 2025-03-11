@@ -18,7 +18,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
   style,
 }) => {
   return (
-    <Select value={value} onValueChange={onValueChange}>
+    <Select value={value} onValueChange={onValueChange} disablePreventBodyScroll>
       <Select.Trigger {...style}>
         <Select.Value placeholder={placeholder} />
         <Select.Icon>
@@ -27,24 +27,40 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
       </Select.Trigger>
 
       <Adapt when="sm" platform="touch">
-        <Sheet modal dismissOnSnapToBottom>
+        <Sheet
+          modal
+          dismissOnSnapToBottom
+          animation="medium"
+          snapPoints={[45]}
+          position={0}
+          zIndex={200000}
+        >
+          <Sheet.Overlay
+            animation="lazy"
+            enterStyle={{ opacity: 0 }}
+            exitStyle={{ opacity: 0 }}
+          />
           <Sheet.Frame>
             <Sheet.ScrollView>
               <Adapt.Contents />
             </Sheet.ScrollView>
           </Sheet.Frame>
-          <Sheet.Overlay />
         </Sheet>
       </Adapt>
 
-      <Select.Content>
+      <Select.Content zIndex={200000}>
         <Select.ScrollUpButton />
         <Select.Viewport>
           <Select.Group>
+            <Select.Label>{placeholder}</Select.Label>
             {options.map((option, i) => (
-              <Select.Item key={option.value + i} value={option.value} index={i}>
+              <Select.Item 
+                key={option.value + i} 
+                value={option.value} 
+                index={i}
+              >
                 <Select.ItemText>{option.label}</Select.ItemText>
-                <Select.ItemIndicator>
+                <Select.ItemIndicator marginLeft="auto">
                   <Check size={16} />
                 </Select.ItemIndicator>
               </Select.Item>

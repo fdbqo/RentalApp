@@ -25,6 +25,7 @@ import { useUserStore } from "@/store/user.store";
 import { usePropertyStore } from "@/store/property.store";
 import { Property } from "@/store/interfaces/Property";
 import { rentalAppTheme } from "@/constants/Colors";
+import { NotificationPopover } from "@/components/NotificationPopover";
 
 export default function ListingsScreen() {
   const { width } = useWindowDimensions();
@@ -291,9 +292,7 @@ export default function ListingsScreen() {
             Listings
           </Text>
           {isAuthenticated ? (
-            <Button variant="outlined" padding="$2" borderWidth={0}>
-              <Bell size={24} color={rentalAppTheme.textDark} />
-            </Button>
+            <NotificationPopover />
           ) : (
             <Button
               onPress={() => router.push("/screens/LoginScreen")}
@@ -312,13 +311,17 @@ export default function ListingsScreen() {
           )}
         </XStack>
 
-        <FilterSystem
-          filters={filters}
-          onFilterChange={updateFilters}
-          properties={properties}
-        />
+        <YStack position="relative" zIndex={100} pointerEvents="auto">
+          <FilterSystem
+            filters={filters}
+            onFilterChange={updateFilters}
+            properties={properties}
+          />
+        </YStack>
 
-        {PropertyList}
+        <YStack flex={1} zIndex={1}>
+          {PropertyList}
+        </YStack>
       </YStack>
     </Theme>
   );

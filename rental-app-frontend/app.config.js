@@ -2,7 +2,7 @@ module.exports = {
   expo: {
     name: "RentalApp",
     slug: "RentalApp",
-    version: "1.0.2",
+    version: "1.0.5",
     icon: "./assets/images/icon.png",
     adaptiveIcon: {
       foregroundImage: "./assets/images/adaptive-icon.png",
@@ -38,7 +38,7 @@ module.exports = {
         origin: false
       },
       eas: {
-        projectId: "eda71aae-415d-4581-b0c0-a071913aa42e"
+        projectId: "58aeca61-2cd2-4e96-8663-97a4d7e2300d"
       }
     }
   }

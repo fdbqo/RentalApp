@@ -18,6 +18,7 @@ import {
   Theme,
   Separator,
   Spinner,
+  AnimatePresence,
 } from "tamagui";
 import { useChat } from "../../hooks/useChat";
 import { formatDistanceToNow } from "date-fns";
@@ -26,9 +27,33 @@ import { StatusBar } from "expo-status-bar";
 import { rentalAppTheme } from "@/constants/Colors";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useUserStore } from "@/store/user.store";
+import { NotificationPopover } from "@/components/NotificationPopover";
 
 const getOtherUser = (room, currentUser) => {
   return room.members?.find(member => member._id !== currentUser?._id);
+};
+
+// Helper function to highlight matched text
+const HighlightText = ({ text, highlight, style }) => {
+  if (!highlight.trim()) {
+    return <Text style={style}>{text}</Text>;
+  }
+
+  const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+  
+  return (
+    <Text style={style}>
+      {parts.map((part, i) => 
+        part.toLowerCase() === highlight.toLowerCase() ? (
+          <Text key={i} style={{ backgroundColor: 'rgba(255, 222, 173, 0.5)', fontWeight: '600' }}>
+            {part}
+          </Text>
+        ) : (
+          part
+        )
+      )}
+    </Text>
+  );
 };
 
 export default function MessagesScreen() {
@@ -38,6 +63,7 @@ export default function MessagesScreen() {
   const { rooms, isLoading, fetchRooms } = useChat();
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const currentUser = useUserStore((state) => state.user);
 
   useEffect(() => {
@@ -58,15 +84,40 @@ export default function MessagesScreen() {
   };
 
   const filteredRooms = searchQuery
-    ? rooms.filter(
-        (room) =>
-          room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (room.lastMessage?.content &&
-            room.lastMessage.content
-              .toLowerCase()
-              .includes(searchQuery.toLowerCase()))
-      )
+    ? rooms.filter((room) => {
+        const query = searchQuery.toLowerCase();
+        
+        // Check room name
+        if (room.name.toLowerCase().includes(query)) {
+          return true;
+        }
+        
+        // Check last message content
+        if (room.lastMessage?.content && 
+            room.lastMessage.content.toLowerCase().includes(query)) {
+          return true;
+        }
+        
+        // Check member names
+        if (room.members && room.members.length > 0) {
+          return room.members.some(member => {
+            const firstName = member.firstName || '';
+            const lastName = member.lastName || '';
+            const fullName = `${firstName} ${lastName}`.trim();
+            
+            return firstName.toLowerCase().includes(query) || 
+                   lastName?.toLowerCase().includes(query) ||
+                   fullName.toLowerCase().includes(query);
+          });
+        }
+        
+        return false;
+      })
     : rooms;
+
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
 
   const renderEmptyState = () => {
     if (isLoading) {
@@ -81,6 +132,33 @@ export default function MessagesScreen() {
           <Text color="gray" marginTop="$4">
             Loading conversations...
           </Text>
+        </YStack>
+      );
+    }
+
+    if (searchQuery && filteredRooms.length === 0) {
+      return (
+        <YStack
+          flex={1}
+          justifyContent="center"
+          alignItems="center"
+          padding="$10"
+        >
+          <Feather name="search" size={64} color="#ccc" />
+          <Text fontSize={18} fontWeight="500" marginTop="$4" textAlign="center">
+            No results found
+          </Text>
+          <Text color="gray" textAlign="center" marginTop="$2">
+            No conversations match "{searchQuery}"
+          </Text>
+          <Button 
+            marginTop="$6"
+            backgroundColor={rentalAppTheme.primaryDark}
+            color="white"
+            onPress={clearSearch}
+          >
+            Clear search
+          </Button>
         </YStack>
       );
     }
@@ -125,9 +203,7 @@ export default function MessagesScreen() {
           <Text fontSize={24} fontWeight="bold" color={rentalAppTheme.textDark}>
             Messages
           </Text>
-          <Button variant="outlined" padding="$2" borderWidth={0}>
-            <Feather name="bell" size={24} color={rentalAppTheme.textDark} />
-          </Button>
+          <NotificationPopover />
         </XStack>
 
         {/* Search Bar */}
@@ -139,14 +215,19 @@ export default function MessagesScreen() {
           paddingHorizontal="$3"
           marginBottom="$5"
           borderWidth={1}
-          borderColor="rgba(0,0,0,0.1)"
+          borderColor={isSearchFocused ? rentalAppTheme.primaryDark : "rgba(0,0,0,0.1)"}
           elevation={1}
+          animation="quick"
         >
-          <Feather name="search" size={18} color="#666" />
+          <Feather 
+            name="search" 
+            size={18} 
+            color={isSearchFocused ? rentalAppTheme.primaryDark : "#666"} 
+          />
           <Input
             flex={1}
             fontSize={16}
-            placeholder="Search conversations..."
+            placeholder="Search by name or message..."
             placeholderTextColor="#999"
             backgroundColor="transparent"
             borderWidth={0}
@@ -154,17 +235,26 @@ export default function MessagesScreen() {
             paddingLeft="$2"
             value={searchQuery}
             onChangeText={setSearchQuery}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+            autoCapitalize="none"
+            autoCorrect={false}
           />
-          {searchQuery ? (
-            <Button
-              variant="outlined"
-              padding="$1"
-              borderWidth={0}
-              onPress={() => setSearchQuery("")}
-            >
-              <Feather name="x" size={18} color="#999" />
-            </Button>
-          ) : null}
+          <AnimatePresence>
+            {searchQuery ? (
+              <Button
+                variant="outlined"
+                padding="$1"
+                borderWidth={0}
+                onPress={clearSearch}
+                animation="quick"
+                enterStyle={{ opacity: 0, scale: 0.8 }}
+                exitStyle={{ opacity: 0, scale: 0.8 }}
+              >
+                <Feather name="x" size={18} color="#999" />
+              </Button>
+            ) : null}
+          </AnimatePresence>
         </XStack>
 
         {/* Messages List */}
@@ -234,13 +324,26 @@ export default function MessagesScreen() {
                           justifyContent="space-between"
                           alignItems="center"
                         >
-                          <Text
-                            fontSize={16}
-                            fontWeight="600"
-                            color={rentalAppTheme.textDark}
-                          >
-                            {otherUser?.firstName || item.name}
-                          </Text>
+                          {searchQuery ? (
+                            <HighlightText
+                              text={otherUser?.firstName || item.name}
+                              highlight={searchQuery}
+                              style={{
+                                fontSize: 16,
+                                fontWeight: '600',
+                                color: rentalAppTheme.textDark,
+                              }}
+                            />
+                          ) : (
+                            <Text
+                              fontSize={16}
+                              fontWeight="600"
+                              color={rentalAppTheme.textDark}
+                            >
+                              {otherUser?.firstName || item.name}
+                            </Text>
+                          )}
+                          
                           {item.lastMessage && (
                             <Text fontSize={12} color="#666">
                               {formatDistanceToNow(
@@ -252,15 +355,27 @@ export default function MessagesScreen() {
                         </XStack>
 
                         <XStack alignItems="center" marginTop="$1">
-                          <Text
-                            fontSize={14}
-                            color="#666"
-                            flexShrink={1}
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                          >
-                            {getMessagePreview(item.lastMessage?.content)}
-                          </Text>
+                          {searchQuery && item.lastMessage?.content ? (
+                            <HighlightText
+                              text={getMessagePreview(item.lastMessage?.content)}
+                              highlight={searchQuery}
+                              style={{
+                                fontSize: 14,
+                                color: '#666',
+                                flexShrink: 1,
+                              }}
+                            />
+                          ) : (
+                            <Text
+                              fontSize={14}
+                              color="#666"
+                              flexShrink={1}
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                            >
+                              {getMessagePreview(item.lastMessage?.content)}
+                            </Text>
+                          )}
 
                           {/* Unread indicator */}
                           {item["unreadCount"] > 0 && (
