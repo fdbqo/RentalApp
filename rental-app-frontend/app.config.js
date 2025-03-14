@@ -2,7 +2,7 @@ module.exports = {
   expo: {
     name: "RentalApp",
     slug: "RentalApp",
-    version: "1.0.5",
+    version: "1.0.6",
     icon: "./assets/images/icon.png",
     adaptiveIcon: {
       foregroundImage: "./assets/images/adaptive-icon.png",

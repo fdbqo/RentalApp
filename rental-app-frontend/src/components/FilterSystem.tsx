@@ -49,21 +49,43 @@ export const FilterSystem: React.FC<FilterSystemProps> = React.memo(
     // Get unique locations from properties
     const getLocations = useCallback(() => {
       const locations = new Set<string>()
-      properties.forEach((property) => {
-        locations.add(property.houseAddress.county)
-        locations.add(property.houseAddress.townCity)
-      })
+      
+      try {
+        properties.forEach((property) => {
+          if (property && property.houseAddress) {
+            if (typeof property.houseAddress.county === 'string' && property.houseAddress.county.trim() !== '') {
+              locations.add(property.houseAddress.county.trim())
+            }
+            if (typeof property.houseAddress.townCity === 'string' && property.houseAddress.townCity.trim() !== '') {
+              locations.add(property.houseAddress.townCity.trim())
+            }
+          }
+        })
+      } catch (error) {
+        console.error('Error getting locations:', error)
+      }
+      
       return Array.from(locations).sort()
     }, [properties])
 
     // Get unique universities from properties
     const getUniversities = useCallback(() => {
       const universities = new Set<string>()
-      properties.forEach((property) => {
-        property.nearestUniversities.forEach((uni) => {
-          universities.add(uni.name)
+      
+      try {
+        properties.forEach((property) => {
+          if (property && property.nearestUniversities && Array.isArray(property.nearestUniversities)) {
+            property.nearestUniversities.forEach((uni) => {
+              if (uni && typeof uni.name === 'string' && uni.name.trim() !== '') {
+                universities.add(uni.name.trim())
+              }
+            })
+          }
         })
-      })
+      } catch (error) {
+        console.error('Error getting universities:', error)
+      }
+      
       return Array.from(universities).sort()
     }, [properties])
 
@@ -73,16 +95,21 @@ export const FilterSystem: React.FC<FilterSystemProps> = React.memo(
         if (!searchText) return []
         
         const searchLower = searchText.toLowerCase()
-        if (filters.searchType === 'university') {
-          const universities = getUniversities()
-          return universities.filter((uni) =>
-            uni.toLowerCase().includes(searchLower)
-          )
-        } else {
-          const locations = getLocations()
-          return locations.filter((location) =>
-            location.toLowerCase().includes(searchLower)
-          )
+        try {
+          if (filters.searchType === 'university') {
+            const universities = getUniversities()
+            return universities.filter((uni) =>
+              uni.toLowerCase().includes(searchLower)
+            )
+          } else {
+            const locations = getLocations()
+            return locations.filter((location) =>
+              location.toLowerCase().includes(searchLower)
+            )
+          }
+        } catch (error) {
+          console.error('Error filtering suggestions:', error)
+          return []
         }
       },
       [filters.searchType, getLocations, getUniversities]
@@ -90,13 +117,29 @@ export const FilterSystem: React.FC<FilterSystemProps> = React.memo(
 
     const handleSearchChange = useCallback(
       (text: string) => {
-        onFilterChange({ searchQuery: text })
-        const suggestions = filterSuggestions(text)
-        setSearchSuggestions(suggestions)
-        setShowSuggestions(suggestions.length > 0 && text.length > 0)
+        try {
+          // Ensure text is a string
+          const safeText = typeof text === 'string' ? text : '';
+          
+          // Update the filter state
+          onFilterChange({ searchQuery: safeText });
+          
+          // Get suggestions based on the search text
+          const suggestions = filterSuggestions(safeText);
+          
+          // Update the suggestions state
+          setSearchSuggestions(suggestions || []);
+          setShowSuggestions((suggestions?.length > 0) && (safeText.length > 0));
+        } catch (error) {
+          console.error('Error handling search change:', error);
+          // Still update the search query even if suggestions fail
+          onFilterChange({ searchQuery: typeof text === 'string' ? text : '' });
+          setSearchSuggestions([]);
+          setShowSuggestions(false);
+        }
       },
       [onFilterChange, filterSuggestions]
-    )
+    );
 
     const handleSearchTypeChange = useCallback(
       (value: string) => {
@@ -203,20 +246,30 @@ export const FilterSystem: React.FC<FilterSystemProps> = React.memo(
     )
 
     const renderFilters = () => (
-      <YStack space="$4" width="100%" padding={isMobile ? "$4" : 0}>
+      <YStack space="$4" width="100%" padding={isMobile ? "$2" : 0} zIndex={200002}>
         <PriceRangeFilter
           minPrice={filters.minPrice || ''}
           maxPrice={filters.maxPrice || ''}
           onMinPriceChange={handleMinPriceChange}
           onMaxPriceChange={handleMaxPriceChange}
-          style={commonStyles}
+          style={{
+            ...commonStyles,
+            zIndex: 200003,
+            backgroundColor: 'white',
+            borderColor: '$gray5',
+          }}
         />
         <FilterSelect
           options={bedOptions}
           value={filters.beds}
           onValueChange={handleBedsChange}
           placeholder="Beds"
-          style={commonStyles}
+          style={{
+            ...commonStyles,
+            zIndex: 200003,
+            backgroundColor: 'white',
+            borderColor: '$gray5',
+          }}
         />
       </YStack>
     )
@@ -234,6 +287,9 @@ export const FilterSystem: React.FC<FilterSystemProps> = React.memo(
             alignItems="center"
             gap="$2"
             zIndex={50}
+            backgroundColor="white"
+            borderColor="$gray5"
+            pressStyle={{ backgroundColor: '$gray2' }}
           >
             <Text color="$gray12">Filters</Text>
           </Button>
@@ -243,22 +299,40 @@ export const FilterSystem: React.FC<FilterSystemProps> = React.memo(
             onOpenChange={setOpen}
             snapPoints={[60]}
             dismissOnSnapToBottom
-            zIndex={150}
+            zIndex={200000}
             animation="medium"
             position={0}
+            disableDrag={false}
           >
             <Sheet.Overlay 
               animation="lazy" 
               enterStyle={{ opacity: 0 }} 
-              exitStyle={{ opacity: 0 }} 
+              exitStyle={{ opacity: 0 }}
+              opacity={0.5}
+              zIndex={199999}
             />
-            <Sheet.Frame>
+            <Sheet.Frame
+              padding="$4"
+              backgroundColor="white"
+              borderTopLeftRadius={16}
+              borderTopRightRadius={16}
+              zIndex={200000}
+            >
               <Sheet.Handle />
-              <YStack padding="$4">
+              <YStack padding="$2" zIndex={200001}>
                 <Text fontSize={20} fontWeight="600" marginBottom="$4">
                   Filters
                 </Text>
                 {renderFilters()}
+                <Button 
+                  marginTop="$4" 
+                  backgroundColor="$blue10" 
+                  color="white"
+                  onPress={() => setOpen(false)}
+                  zIndex={200004}
+                >
+                  <Text color="white" fontWeight="bold">Apply Filters</Text>
+                </Button>
               </YStack>
             </Sheet.Frame>
           </Sheet>

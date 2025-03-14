@@ -18,7 +18,12 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
   style,
 }) => {
   return (
-    <Select value={value} onValueChange={onValueChange} disablePreventBodyScroll>
+    <Select 
+      value={value} 
+      onValueChange={onValueChange} 
+      disablePreventBodyScroll
+      zIndex={300000}
+    >
       <Select.Trigger {...style}>
         <Select.Value placeholder={placeholder} />
         <Select.Icon>
@@ -33,14 +38,21 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
           animation="medium"
           snapPoints={[45]}
           position={0}
-          zIndex={200000}
+          zIndex={300000}
         >
           <Sheet.Overlay
             animation="lazy"
             enterStyle={{ opacity: 0 }}
             exitStyle={{ opacity: 0 }}
+            opacity={0.5}
+            zIndex={299999}
           />
-          <Sheet.Frame>
+          <Sheet.Frame
+            backgroundColor="white"
+            padding="$2"
+            zIndex={300000}
+          >
+            <Sheet.Handle />
             <Sheet.ScrollView>
               <Adapt.Contents />
             </Sheet.ScrollView>
@@ -48,7 +60,7 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
         </Sheet>
       </Adapt>
 
-      <Select.Content zIndex={200000}>
+      <Select.Content zIndex={300000}>
         <Select.ScrollUpButton />
         <Select.Viewport>
           <Select.Group>
