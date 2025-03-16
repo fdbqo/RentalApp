@@ -11,16 +11,19 @@ import {
   Input,
   Dialog,
   Spinner,
+  Popover,
 } from "tamagui";
 import { Feather } from "@expo/vector-icons";
 import { useUserStore } from "@/store/user.store";
 import { UserAvatar } from "@/components/UserAvatar";
 import { AnimatePresence } from "tamagui";
 import { rentalAppTheme } from "../../constants/Colors";
-import { Alert } from "react-native";
+import { Alert, RefreshControl, Platform } from "react-native";
 import { useStripe, initStripe } from "@stripe/stripe-react-native";
 import axios from "axios";
 import { env } from "../../../env";
+import { TopUpIAP } from "@/components/TopUpIAP";
+import { NotificationPopover } from "@/components/NotificationPopover";
 
 export default function ProfileScreen() {
   const user = useUserStore((state) => state.user);
@@ -30,12 +33,23 @@ export default function ProfileScreen() {
   const [showTopUpDialog, setShowTopUpDialog] = useState(false);
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const stripe = useStripe();
   const fullName = user ? `${user.firstName} ${user.lastName}` : "";
+  const [notificationOpen, setNotificationOpen] = useState(false);
 
   useEffect(() => {
     refreshUserData();
   }, []);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refreshUserData();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshUserData]);
 
   // Initialize Stripe
   useEffect(() => {
@@ -79,7 +93,7 @@ export default function ProfileScreen() {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        `${env.API_URL}/payment/create-payment-intent`,
+        `${env.EXPO_PUBLIC_API_URL}/payment/test-top-up`,
         { amount: Number(amount) },
         {
           headers: {
@@ -88,44 +102,16 @@ export default function ProfileScreen() {
         }
       );
 
-      const { clientSecret } = response.data;
+      Alert.alert("Success", "Balance updated successfully!");
+      setAmount("");
+      setShowTopUpDialog(false);
 
-      const { error: initError } = await stripe.initPaymentSheet({
-        merchantDisplayName: "RentalApp",
-        paymentIntentClientSecret: clientSecret,
-        returnURL: "rentalapp://stripe-redirect",
-      });
-
-      if (initError) {
-        console.error("Payment sheet initialization error:", initError);
-        Alert.alert("Error", initError.message);
-        return;
-      }
-
-      const { error: presentError } = await stripe.presentPaymentSheet();
-
-      if (presentError) {
-        console.error("Payment presentation error:", presentError);
-        Alert.alert("Error", presentError.message);
-      } else {
-        Alert.alert("Success", "Payment successful!");
-        setAmount("");
-        setShowTopUpDialog(false);
-
-        setTimeout(async () => {
-          try {
-            await refreshUserData();
-            console.log("User data refreshed successfully");
-          } catch (refreshError) {
-            console.error("Error refreshing user data:", refreshError);
-          }
-        }, 2000);
-      }
+      await refreshUserData();
     } catch (error) {
-      console.error("Payment error:", error.response?.data || error.message);
+      console.error("Top up error:", error.response?.data || error.message);
       Alert.alert(
         "Error",
-        error.response?.data?.message || "Failed to process payment"
+        error.response?.data?.message || "Failed to update balance"
       );
     } finally {
       setIsLoading(false);
@@ -136,13 +122,11 @@ export default function ProfileScreen() {
     <Theme name="light">
       <YStack flex={1} backgroundColor={rentalAppTheme.backgroundLight}>
         {/* Header */}
-        <XStack justifyContent="space-between" alignItems="center" padding="$4">
+        <XStack justifyContent="space-between" alignItems="center" paddingBottom="$2" paddingTop="$4" paddingHorizontal="$4">
           <Text fontSize={24} fontWeight="bold" color={rentalAppTheme.textDark}>
             Profile
           </Text>
-          <Button variant="outlined" padding="$2" borderWidth={0}>
-            <Feather name="bell" size={24} color={rentalAppTheme.textDark} />
-          </Button>
+          <NotificationPopover />
         </XStack>
 
         {/* Main Content ScrollView */}
@@ -151,8 +135,17 @@ export default function ProfileScreen() {
             paddingHorizontal: 16,
             paddingBottom: 24,
             flexGrow: 1,
+            marginTop: 12,
           }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={rentalAppTheme.primaryDark}
+              colors={[rentalAppTheme.primaryDark]}
+            />
+          }
         >
           {/* Profile Card */}
           <Card
@@ -577,10 +570,11 @@ export default function ProfileScreen() {
                       </XStack>
                     ) : (
                       <Text color="white" fontSize={16} fontWeight="600">
-                        Confirm Payment
+                        Confirm Top Up
                       </Text>
                     )}
                   </Button>
+
                   <Button
                     variant="outlined"
                     borderColor={rentalAppTheme.border}

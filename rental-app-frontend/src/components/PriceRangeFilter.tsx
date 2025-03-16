@@ -31,6 +31,8 @@ export const PriceRangeFilter: React.FC<PriceRangeFilterProps> = ({
           color="$gray12"
           placeholderTextColor="$gray9"
           paddingLeft="$1"
+          backgroundColor="transparent"
+          zIndex={200004}
         />
       </XStack>
       <Text color="$gray11" paddingHorizontal="$1">-</Text>
@@ -48,6 +50,8 @@ export const PriceRangeFilter: React.FC<PriceRangeFilterProps> = ({
           placeholderTextColor="$gray9"
           paddingLeft="$1"
           paddingRight="$3"
+          backgroundColor="transparent"
+          zIndex={200004}
         />
       </XStack>
     </XStack>

@@ -15,6 +15,7 @@ import { RefreshControl } from "react-native";
 import { usePropertyStore } from "../../store/property.store";
 import { Property } from "../../store/interfaces/Property";
 import { rentalAppTheme } from "../../constants/Colors";
+import { NotificationPopover } from "../../components/NotificationPopover";
 
 interface StatCardProps {
   title: string;
@@ -330,15 +331,7 @@ export default function LandlordDashboardScreen() {
                 Manage your properties
               </Text>
             </YStack>
-            <Button
-              variant="outlined"
-              padding="$2"
-              borderWidth={0}
-              backgroundColor="$gray2"
-              borderRadius="$4"
-            >
-              <Feather name="bell" size={24} color={rentalAppTheme.textDark} />
-            </Button>
+            <NotificationPopover />
           </XStack>
         </YStack>
 
@@ -399,27 +392,41 @@ export default function LandlordDashboardScreen() {
             {/* Properties List */}
             {totalProperties === 0 ? (
               <Card
-                backgroundColor="$gray2"
+                backgroundColor="white"
                 borderRadius="$6"
                 padding="$4"
-                alignItems="center"
-                justifyContent="center"
-                flex={1}
                 marginBottom="$4"
+                height={250}
               >
-                <Feather
-                  name="home"
-                  size={40}
-                  color={rentalAppTheme.textLight}
-                />
-                <Text
-                  fontSize={16}
-                  color={rentalAppTheme.textLight}
-                  textAlign="center"
-                  marginTop="$2"
+                <YStack
+                  flex={1}
+                  alignItems="center"
+                  justifyContent="center"
+                  space="$4"
+                  paddingTop="$6"
                 >
-                  You haven't listed any properties yet
-                </Text>
+                  <Feather
+                    name="home"
+                    size={48}
+                    color={rentalAppTheme.textLight}
+                  />
+                  <YStack alignItems="center" space="$1">
+                    <Text
+                      fontSize={16}
+                      color={rentalAppTheme.textLight}
+                      textAlign="center"
+                    >
+                      You haven't listed
+                    </Text>
+                    <Text
+                      fontSize={16}
+                      color={rentalAppTheme.textLight}
+                      textAlign="center"
+                    >
+                      any properties yet
+                    </Text>
+                  </YStack>
+                </YStack>
               </Card>
             ) : (
               <YStack>

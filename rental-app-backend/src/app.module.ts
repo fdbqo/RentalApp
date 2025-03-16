@@ -12,6 +12,7 @@ import { ChatsModule } from "./chats/chats.module";
 import { RoomsModule } from "./rooms/rooms.module";
 import { PaymentModule } from "./payment/payment.module";
 import { ConfigModule } from "@nestjs/config";
+import { IAPModule } from './iap/iap.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ConfigModule } from "@nestjs/config";
     ChatsModule,
     RoomsModule,
     PaymentModule,
+    IAPModule,
   ],
   controllers: [AppController],
   providers: [AppService],

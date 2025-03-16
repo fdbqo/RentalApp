@@ -25,6 +25,7 @@ import { useUserStore } from "@/store/user.store";
 import { usePropertyStore } from "@/store/property.store";
 import { Property } from "@/store/interfaces/Property";
 import { rentalAppTheme } from "@/constants/Colors";
+import { NotificationPopover } from "@/components/NotificationPopover";
 
 export default function ListingsScreen() {
   const { width } = useWindowDimensions();
@@ -61,17 +62,25 @@ export default function ListingsScreen() {
       
       if (filters.searchType === 'university') {
         // Filter properties that have the searched university nearby
-        filtered = filtered.filter(property => 
-          property.nearestUniversities.some(uni => 
-            uni.name.toLowerCase() === searchLower
-          )
-        );
+        filtered = filtered.filter(property => {
+          if (!property.nearestUniversities || !Array.isArray(property.nearestUniversities)) {
+            return false;
+          }
+          return property.nearestUniversities.some(uni => 
+            uni && uni.name && uni.name.toLowerCase().includes(searchLower)
+          );
+        });
       } else {
         // Filter by location (county or town/city)
-        filtered = filtered.filter(property => 
-          property.houseAddress.county.toLowerCase().includes(searchLower) ||
-          property.houseAddress.townCity.toLowerCase().includes(searchLower)
-        );
+        filtered = filtered.filter(property => {
+          if (!property.houseAddress) {
+            return false;
+          }
+          const county = property.houseAddress.county || '';
+          const townCity = property.houseAddress.townCity || '';
+          return county.toLowerCase().includes(searchLower) || 
+                 townCity.toLowerCase().includes(searchLower);
+        });
       }
     }
 
@@ -291,13 +300,12 @@ export default function ListingsScreen() {
             Listings
           </Text>
           {isAuthenticated ? (
-            <Button variant="outlined" padding="$2" borderWidth={0}>
-              <Bell size={24} color={rentalAppTheme.textDark} />
-            </Button>
+            <NotificationPopover />
           ) : (
             <Button
               onPress={() => router.push("/screens/LoginScreen")}
               backgroundColor={rentalAppTheme.primaryDark}
+              pressStyle={{ backgroundColor: rentalAppTheme.primaryDarkPressed }}
               padding="$2"
               borderRadius="$4"
               flexDirection="row"
@@ -311,13 +319,17 @@ export default function ListingsScreen() {
           )}
         </XStack>
 
-        <FilterSystem
-          filters={filters}
-          onFilterChange={updateFilters}
-          properties={properties}
-        />
+        <YStack position="relative" zIndex={100} pointerEvents="auto">
+          <FilterSystem
+            filters={filters}
+            onFilterChange={updateFilters}
+            properties={properties}
+          />
+        </YStack>
 
-        {PropertyList}
+        <YStack flex={1} zIndex={1}>
+          {PropertyList}
+        </YStack>
       </YStack>
     </Theme>
   );

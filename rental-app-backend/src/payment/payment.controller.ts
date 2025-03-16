@@ -48,4 +48,13 @@ export class PaymentController {
 
     return this.paymentService.handleWebhook(signature, rawBody);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post("test-top-up")
+  async testTopUp(@Req() req, @Body("amount") amount: number) {
+    this.logger.log(
+      `Test top-up for user ${req.user._id} with amount ${amount}`
+    );
+    return this.paymentService.testTopUp(req.user._id, amount);
+  }
 }

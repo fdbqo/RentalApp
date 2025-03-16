@@ -4,13 +4,18 @@ import { Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useUserStore } from "@/store/user.store";
 
+export const unstable_settings = {
+  initialRouteName: "index",
+};
+
 export default function TabLayout() {
   const tintColor = "#016180";
 
   const isAuthenticated = useUserStore((state) => state.isAuthenticated);
+  console.log('Tab Layout - Auth State:', isAuthenticated);
   const userType = useUserStore((state) => state.user?.userType);
 
-  const router = useRouter();
+  const router = useRouter(); 
 
   const CustomTabIcon = ({
     name,
@@ -42,6 +47,7 @@ export default function TabLayout() {
           name="index"
           options={{
             title: "Home",
+            href: "/",
           }}
         />
       </Tabs>
@@ -56,11 +62,13 @@ export default function TabLayout() {
         tabBarShowLabel: false,
         headerShown: false,
       }}
+      initialRouteName="index"
     >
       <Tabs.Screen
         name="index"
         options={{
           title: userType === "landlord" ? "Dashboard" : "Home",
+          href: "/",
           tabBarIcon: ({ focused }) => (
             <CustomTabIcon
               name="home"
@@ -74,6 +82,7 @@ export default function TabLayout() {
         name="messages"
         options={{
           title: "Messages",
+          href: "/messages",
           tabBarIcon: ({ focused }) => (
             <CustomTabIcon
               name="chatbubble"
@@ -87,8 +96,13 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
+          href: "/profile",
           tabBarIcon: ({ focused }) => (
-            <CustomTabIcon name="person" title="Profile" focused={focused} />
+            <CustomTabIcon 
+              name="person" 
+              title="Profile" 
+              focused={focused} 
+            />
           ),
         }}
       />
